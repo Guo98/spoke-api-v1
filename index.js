@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/offboard", async (req, res) => {
-  const resp = await addRow();
+  const resp = await addRow(req.body);
   res.send(resp.data);
 });
 
