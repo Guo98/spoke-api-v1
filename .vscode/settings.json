@@ -1,0 +1,5 @@
+{
+    "appService.showBuildDuringDeployPrompt": false,
+    "appService.defaultWebAppToDeploy": "/subscriptions/8584cf2b-6c0e-40e1-8173-8367fdf0147b/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/offboarding-api",
+    "appService.deploySubpath": ""
+}
