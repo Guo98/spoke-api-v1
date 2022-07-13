@@ -1,6 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { addRow } from "./services/googleSheets.js";
+import { basicAuth } from "./services/basicAuth.js";
+import "dotenv/config";
 // defining the Express app
 const app = express();
 // defining an array to work as the database (temporary solution)
@@ -14,11 +16,24 @@ app.get("/", (req, res) => {
 });
 
 app.post("/offboard", async (req, res) => {
+  if (
+    !req.headers.authorization ||
+    req.headers.authorization.indexOf("Basic") === -1
+  ) {
+    res.status(401).json({ message: "Missing Authorization Header" });
+  }
+
   if (req.body && req.body !== {}) {
-    const resp = await addRow(req.body);
-    res.send(resp.data);
+    const isAuthenticated = await basicAuth(req.headers.authorization);
+
+    if (isAuthenticated) {
+      const resp = await addRow(req.body);
+      res.send(resp.data);
+    } else {
+      res.status(401).json({ message: "Wrong Authentication" });
+    }
   } else {
-    res.send({ message: "no body here" });
+    res.status(500).json({ message: "no body here" });
   }
 });
 
