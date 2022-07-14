@@ -5,14 +5,12 @@ import { basicAuth } from "./services/basicAuth.js";
 import "dotenv/config";
 // defining the Express app
 const app = express();
-// defining an array to work as the database (temporary solution)
-const ads = [{ title: "Hello, world (again)!" }];
 
 // adding Helmet to enhance your Rest API's security
 app.use(bodyParser.json());
 // defining an endpoint to return all ads
-app.get("/", (req, res) => {
-  res.send(ads);
+app.get("/sitehealth", (req, res) => {
+  res.status(200).json({ status: "healthy" });
 });
 
 app.post("/offboard", async (req, res) => {
@@ -36,6 +34,8 @@ app.post("/offboard", async (req, res) => {
     res.status(500).json({ message: "no body here" });
   }
 });
+
+app.post("/sendTrackingEmail", async (req, res) => {});
 
 // starting the server
 app.listen(process.env.PORT || 3001, () => {
