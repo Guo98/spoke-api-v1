@@ -1,7 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { addRow } from "./services/googleSheets.js";
+import { addOffboardRow, addRedeployRow } from "./services/googleSheets.js";
 import { basicAuth } from "./services/basicAuth.js";
+import { sendEmail } from "./services/sendEmail.js";
 import "dotenv/config";
 // defining the Express app
 const app = express();
@@ -25,7 +26,7 @@ app.post("/offboard", async (req, res) => {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
-      const resp = await addRow(req.body);
+      const resp = await addOffboardRow(req.body);
       res.send(resp.data);
     } else {
       res.status(401).json({ message: "Wrong Authentication" });
@@ -35,7 +36,39 @@ app.post("/offboard", async (req, res) => {
   }
 });
 
-app.post("/sendTrackingEmail", async (req, res) => {});
+app.post("/redeploy", async (req, res) => {
+  if (
+    !req.headers.authorization ||
+    req.headers.authorization.indexOf("Basic") === -1
+  ) {
+    res.status(401).json({ message: "Missing Authorization Header" });
+  }
+
+  if (req.body && req.body !== {}) {
+    const isAuthenticated = await basicAuth(req.headers.authorization);
+
+    if (isAuthenticated) {
+      const resp = await addRedeployRow(req.body);
+      res.send(resp.data);
+    } else {
+      res.status(401).json({ message: "Wrong Authentication" });
+    }
+  } else {
+  }
+});
+
+app.post("/sendTrackingEmail", async (req, res) => {
+  if (req.body && req.body !== {}) {
+    const resp = await sendEmail(req.body);
+    if (resp) {
+      res.send(resp);
+    } else {
+      res.status(500).json({ message: "error sending email" });
+    }
+  } else {
+    res.status(500).json({ message: "no body here" });
+  }
+});
 
 // starting the server
 app.listen(process.env.PORT || 3001, () => {
