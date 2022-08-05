@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import { addOffboardRow, addRedeployRow } from "./services/googleSheets.js";
 import { basicAuth } from "./services/basicAuth.js";
-import { sendEmail } from "./services/sendEmail.js";
+import { sendEmail, sendConfirmation } from "./services/sendEmail.js";
 import "dotenv/config";
 // defining the Express app
 const app = express();
@@ -64,6 +64,29 @@ app.post("/sendTrackingEmail", async (req, res) => {
       res.send(resp);
     } else {
       res.status(500).json({ message: "error sending email" });
+    }
+  } else {
+    res.status(500).json({ message: "no body here" });
+  }
+});
+
+app.post("/sendConfirmationEmail", async (req, res) => {
+  if (
+    !req.headers.authorization ||
+    req.headers.authorization.indexOf("Basic") === -1
+  ) {
+    res.status(401).json({ message: "Missing Authorization Header" });
+  }
+  if (req.body && req.body !== {}) {
+    const isAuthenticated = await basicAuth(req.headers.authorization);
+
+    if (isAuthenticated) {
+      const resp = await sendConfirmation(req.body);
+      if (resp) {
+        res.send(resp);
+      } else {
+        res.status(500).json({ message: "error sending email" });
+      }
     }
   } else {
     res.status(500).json({ message: "no body here" });
