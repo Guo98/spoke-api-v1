@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import { body } from "express-validator";
 import { addOffboardRow, addRedeployRow } from "./services/googleSheets.js";
 import { basicAuth } from "./services/basicAuth.js";
 import { sendEmail, sendConfirmation } from "./services/sendEmail.js";
@@ -57,40 +58,81 @@ app.post("/redeploy", async (req, res) => {
   }
 });
 
-app.post("/sendTrackingEmail", async (req, res) => {
-  if (req.body && req.body !== {}) {
-    const resp = await sendEmail(req.body);
-    if (resp) {
-      res.send(resp);
-    } else {
-      res.status(500).json({ message: "error sending email" });
-    }
-  } else {
-    res.status(500).json({ message: "no body here" });
-  }
-});
-
-app.post("/sendConfirmationEmail", async (req, res) => {
-  if (
-    !req.headers.authorization ||
-    req.headers.authorization.indexOf("Basic") === -1
-  ) {
-    res.status(401).json({ message: "Missing Authorization Header" });
-  }
-  if (req.body && req.body !== {}) {
-    const isAuthenticated = await basicAuth(req.headers.authorization);
-
-    if (isAuthenticated) {
-      const resp = await sendConfirmation(req.body);
+app.post(
+  "/sendTrackingEmail",
+  body("email")
+    .isEmail()
+    .normalizeEmail(),
+  body("name")
+    .not()
+    .isEmpty()
+    .trim()
+    .escape(),
+  body("tracking_number")
+    .not()
+    .isEmpty()
+    .trim()
+    .escape(),
+  async (req, res) => {
+    if (req.body && req.body !== {}) {
+      const resp = await sendEmail(req.body);
       if (resp) {
         res.send(resp);
       } else {
         res.status(500).json({ message: "error sending email" });
       }
+    } else {
+      res.status(500).json({ message: "no body here" });
     }
-  } else {
-    res.status(500).json({ message: "no body here" });
   }
+);
+
+app.post(
+  "/sendConfirmationEmail",
+  body("email")
+    .isEmail()
+    .normalizeEmail(),
+  body("name")
+    .not()
+    .isEmpty()
+    .trim()
+    .escape(),
+  body("address")
+    .not()
+    .isEmpty()
+    .trim()
+    .escape(),
+  body("company")
+    .not()
+    .isEmpty()
+    .trim()
+    .escape(),
+  async (req, res) => {
+    if (
+      !req.headers.authorization ||
+      req.headers.authorization.indexOf("Basic") === -1
+    ) {
+      res.status(401).json({ message: "Missing Authorization Header" });
+    }
+    if (req.body && req.body !== {}) {
+      const isAuthenticated = await basicAuth(req.headers.authorization);
+
+      if (isAuthenticated) {
+        const resp = await sendConfirmation(req.body);
+        if (resp) {
+          res.send(resp);
+        } else {
+          res.status(500).json({ message: "error sending email" });
+        }
+      }
+    } else {
+      res.status(500).json({ message: "no body here" });
+    }
+  }
+);
+
+app.use("*", (req, res) => {
+  res.status(404).json({ message: "Not found" });
 });
 
 // starting the server
