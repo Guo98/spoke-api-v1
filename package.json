@@ -21,6 +21,7 @@
   "homepage": "https://github.com/andyWithSpoke/offboarding-api#readme",
   "dependencies": {
     "@azure/communication-email": "^1.0.0-beta.1",
+    "axios": "^0.27.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "express": "^4.18.1",
@@ -28,7 +29,8 @@
     "google-auth-library": "^8.1.0",
     "googleapis": "^39.2.0",
     "helmet": "^5.1.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "qs": "^6.11.0"
   },
   "devDependencies": {
     "dotenv": "^16.0.1",
