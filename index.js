@@ -20,6 +20,8 @@ app.use(routes.sendEmail);
 
 app.use(routes.validation);
 
+app.use(routes.login);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });

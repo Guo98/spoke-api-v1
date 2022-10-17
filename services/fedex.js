@@ -32,7 +32,7 @@ async function getToken() {
 
 async function validateAddress(body) {
   let streetLines = [body.addr1];
-  if (body.addr2) {
+  if (body.addr2 !== "") {
     streetLines.push(body.addr2);
   }
   const postdata = {
@@ -67,10 +67,21 @@ async function validateAddress(body) {
       }
     })
     .then(nextData => {
-      if (nextData.status && nextData.status === 200) {
+      if (
+        nextData.data.output.resolvedAddresses[0].customerMessages.length > 0 &&
+        nextData.data.output.resolvedAddresses[0].customerMessages[0].code !==
+          "STANDARDIZED.ADDRESS.NOTFOUND"
+      ) {
+        throw new Error("Invalid Address");
+      } else if (
+        nextData.status &&
+        nextData.status === 200 &&
+        nextData.data.output.resolvedAddresses.length > 0 &&
+        nextData.data.output.resolvedAddresses[0].classification !== "UNKNOWN"
+      ) {
         return { status: 200, data: nextData };
       } else {
-        return { status: 500, data: "Invalid Address" };
+        throw new Error("Invalid Address");
       }
     })
     .catch(err => {

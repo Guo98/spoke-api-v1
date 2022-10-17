@@ -1,6 +1,9 @@
 import { EmailClient } from "@azure/communication-email";
 const connectionString = process.env.COMMUNICATION_SERVICES_CONNECTION_STRING;
 
+const fedexTrackingEmail =
+  "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=";
+
 async function sendEmail(body) {
   try {
     console.log("Sending tracking email with body: ", body);
@@ -9,8 +12,8 @@ async function sendEmail(body) {
     const emailMessage = {
       sender: "DoNotReply@withspoke.io",
       content: {
-        subject: "Spoke Offboarding Tracking",
-        plainText: `Hi ${body.name}, Your offboarding tracking number is: ${body.tracking_number}`
+        subject: `Offboarding Tracking - Subject: {Company Name} Equipment Return`,
+        plainText: generateTrackingEmailBody(body.name, body.tracking_number)
       },
       recipients: {
         to: [
@@ -31,21 +34,38 @@ async function sendEmail(body) {
 
 async function sendConfirmation(body) {
   // company, name, address
-  const { company, name, address, email } = body;
+  const { company, name, email, requestor_email, type } = body;
   try {
     console.log("Sending confirmation email with body: ", body);
     let client = new EmailClient(connectionString);
     //send mail
+    let emailBody = "";
+    let emailSubject = "";
+    if (type === "redeployment") {
+      emailBody = generateRedeploymentEmailBody(company, name, body.item);
+      emailSubject = `Redeployment - Subject: ${company} Equipment Deployment`;
+    } else if (type === "Offboarding") {
+      emailBody = generateOffboardingEmailBody(company, name, body.address);
+      emailSubject = `[Action Required] ${company} Equipment Return`;
+    } else {
+      emailBody = generateReturnEmailBody(company, name, body.address);
+      emailSubject = `[Action Required] ${company} Equipment Return`;
+    }
     const emailMessage = {
       sender: "DoNotReply@withspoke.io",
       content: {
-        subject: `${company} Equipment Return`,
-        plainText: generateConfirmationEmailBody(company, name, address)
+        subject: emailSubject,
+        plainText: emailBody
       },
       recipients: {
         to: [
           {
             email: email
+          }
+        ],
+        bCC: [
+          {
+            email: requestor_email
           }
         ]
       }
@@ -59,8 +79,66 @@ async function sendConfirmation(body) {
   }
 }
 
-function generateConfirmationEmailBody(company, name, address) {
-  const emailBody = `Hi ${name},\n\nWe've been informed by ${company} that you are departing. As part of your offboarding process, we will be handling the return of your laptop.\nYou can expect to receive a box with a prepaid return label. All you need to do is put the device (along with the charger) into the box and mail it back.\nCan you please confirm the following mailing address is accurate:\n\t\u2022 ${address}\nThanks & let us know if you have any questions!\n\nBest regards,\nSpoke`;
+function generateReturnEmailBody(company, name, address) {
+  const emailBody = `Hi ${name},
+
+  We’ve been informed by ${company} that you have old / faulty equipment to return. We will be handling the return of this equipment.
+  
+  You can expect to receive a box with a prepaid return label. All you need to do is put the device (along with the charger) into the box and mail it back.
+  
+  Can you please confirm the following mailing address is accurate:
+  ${address}
+  
+  Thanks & let us know if you have any questions!
+  `;
+  return emailBody;
+}
+
+function generateOffboardingEmailBody(company, name, address) {
+  const emailBody = `Hi ${name},
+  We’ve been informed by ${
+    company === "Bowery" ? "Bowery Valuation" : company
+  } that you are departing. As part of the offboarding process, we will be handling the return of your laptop & office keycard.
+  You can expect to receive a box with a prepaid return label. When you receive the box, please ensure to complete the following:
+
+  1. Log out of all accounts on the device (especially iCloud if you have an Apple device)
+
+  2. Place the device (along with the charger) and office keycard into the box
+
+  3. Apply the return label and mail the box back
+
+  The box will be sent to:
+  ${address}
+  
+  If you have any questions or the mailing address is incorrect, please let us know by emailing ddonhaue@withspoke.io.
+  `;
+
+  return emailBody;
+}
+
+function generateRedeploymentEmailBody(company, name, item) {
+  const emailBody = `Hi ${name},
+
+  We’re writing to let you know that ${company} are sending you the following: 
+  ${item} 
+  
+  Once the package ships, you will receive a tracking email.
+  
+  Thanks & if you have any questions, please let us know!
+  `;
+
+  return emailBody;
+}
+
+function generateTrackingEmailBody(name, tracking_num) {
+  const emailBody = `Hi ${name},
+
+  We’ve sent you a return box for your device. As a reminder, all you need to do is place your device (along with the charger) into the box and apply the prepaid label.
+  
+  You can track the delivery of the return box here: ${tracking_num}
+  
+  Thanks & if you have any questions, please let us know!
+  `;
   return emailBody;
 }
 
