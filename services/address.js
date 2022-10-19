@@ -1,4 +1,6 @@
 import axios from "axios";
+import parser from "parse-address";
+import { parse } from "dotenv";
 
 async function autocompleteAddress(address) {
   const validateUrl =
@@ -40,15 +42,25 @@ async function validateAddress(address) {
     method: "GET",
     url: validateUrl
   };
-
+  const parsed = parser.parseLocation(address);
+  // console.log("parsed address :::::: ", parsed);
   const result = await axios(options)
     .then(data => {
       if (data.status && data.status === 200) {
         const features = data.data.features[0];
+        // console.log("addres obj :::::: ", features);
         if (features.properties.country === "United States") {
           if (features.properties.rank.confidence > 0.9) {
+            let addressLine2 = "";
+            const splitAddr = address.split(",");
+            if (parsed.sec_unit_type && parsed.sec_unit_num) {
+              addressLine2 = parsed.sec_unit_type + " " + parsed.sec_unit_num;
+            } else if (splitAddr.length === 6) {
+              addressLine2 = splitAddr[1];
+            }
             const addressObj = {
               address_line1: features.properties.address_line1,
+              address_line2: addressLine2,
               city: features.properties.city,
               zipCode: features.properties.postcode,
               state: features.properties.state_code,

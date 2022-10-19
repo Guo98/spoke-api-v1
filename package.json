@@ -30,6 +30,7 @@
     "googleapis": "^39.2.0",
     "helmet": "^5.1.0",
     "morgan": "^1.10.0",
+    "parse-address": "^1.1.2",
     "qs": "^6.11.0"
   },
   "devDependencies": {
