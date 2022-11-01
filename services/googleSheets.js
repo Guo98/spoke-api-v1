@@ -10,17 +10,18 @@ async function addOffboardRow(req) {
     recipient_email,
     item,
     shipping_address,
-    phone_num
+    phone_num,
+    requestor_email,
   } = req;
   const auth = new GoogleAuth({
     keyFile: "keys.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets"
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
   });
   const authClient = await auth.getClient();
 
   const sheets = google.sheets({
     version: "v4",
-    auth: authClient
+    auth: authClient,
   });
 
   const readData = await sheets.spreadsheets.values.append({
@@ -43,10 +44,20 @@ async function addOffboardRow(req) {
           "Offboarding",
           "Ground",
           shipping_address,
-          phone_num
-        ]
-      ]
-    }
+          phone_num,
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          requestor_email,
+        ],
+      ],
+    },
   });
 
   return readData;
@@ -60,17 +71,18 @@ async function addRedeployRow(req) {
     item,
     shipping_address,
     phone_num,
-    notes
+    notes,
+    order_no,
   } = req;
   const auth = new GoogleAuth({
     keyFile: "keys.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets"
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
   });
   const authClient = await auth.getClient();
 
   const sheets = google.sheets({
     version: "v4",
-    auth: authClient
+    auth: authClient,
   });
 
   const readData = await sheets.spreadsheets.values.append({
@@ -80,16 +92,17 @@ async function addRedeployRow(req) {
     resource: {
       values: [
         [
+          order_no,
           recipient_name,
           recipient_email,
           phone_num,
           shipping_address,
           notes,
           client,
-          item
-        ]
-      ]
-    }
+          item,
+        ],
+      ],
+    },
   });
 
   return readData;
@@ -98,18 +111,18 @@ async function addRedeployRow(req) {
 async function readRow() {
   const auth = new GoogleAuth({
     keyFile: "keys.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets"
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
   });
   const authClient = await auth.getClient();
 
   const sheets = google.sheets({
     version: "v4",
-    auth: authClient
+    auth: authClient,
   });
 
   const readData = await sheets.spreadsheets.values.get({
     spreadsheetId: "1YdyC4l2u3iT5GwuP6DfvsDgsTOd2Rs6xZKKGFroqyiI",
-    range: "Sheet1!A:B"
+    range: "Sheet1!A:B",
   });
 
   return readData;

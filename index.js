@@ -22,6 +22,8 @@ app.use(routes.validation);
 
 app.use(routes.login);
 
+app.use(routes.tracking);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });
