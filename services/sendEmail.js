@@ -13,15 +13,15 @@ async function sendEmail(body) {
       sender: "DoNotReply@withspoke.io",
       content: {
         subject: `Offboarding Tracking - Subject: {Company Name} Equipment Return`,
-        plainText: generateTrackingEmailBody(body.name, body.tracking_number)
+        plainText: generateTrackingEmailBody(body.name, body.tracking_number),
       },
       recipients: {
         to: [
           {
-            email: body.email
-          }
-        ]
-      }
+            email: body.email,
+          },
+        ],
+      },
     };
     var response = await client.send(emailMessage);
     console.log("Sent tracking email: ", response);
@@ -55,20 +55,23 @@ async function sendConfirmation(body) {
       sender: "DoNotReply@withspoke.io",
       content: {
         subject: emailSubject,
-        plainText: emailBody
+        plainText: emailBody,
       },
       recipients: {
         to: [
           {
-            email: email
-          }
+            email: email,
+          },
         ],
         bCC: [
           {
-            email: requestor_email
-          }
-        ]
-      }
+            email: requestor_email,
+          },
+          {
+            email: "offboarding@withspoke.com",
+          },
+        ],
+      },
     };
     var response = await client.send(emailMessage);
     console.log("Sent confirmation email: ", response);
@@ -96,14 +99,15 @@ function generateReturnEmailBody(company, name, address) {
 
 function generateOffboardingEmailBody(company, name, address) {
   const emailBody = `Hi ${name},
+  
   We’ve been informed by ${
     company === "Bowery" ? "Bowery Valuation" : company
-  } that you are departing. As part of the offboarding process, we will be handling the return of your laptop & office keycard.
+  } that you are departing. As part of the offboarding process, we will be handling the return of your laptop.
   You can expect to receive a box with a prepaid return label. When you receive the box, please ensure to complete the following:
 
   1. Log out of all accounts on the device (especially iCloud if you have an Apple device)
 
-  2. Place the device (along with the charger) and office keycard into the box
+  2. Place the device (along with the charger) into the box
 
   3. Apply the return label and mail the box back
 
