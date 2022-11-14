@@ -42,9 +42,10 @@ router.post("/pushTracking", async (req, res) => {
  * @param {Number} body.order_no
  */
 router.post("/createOrder", async (req, res) => {
+  console.log("staring /createOrder route :::::: ");
   const { customerInfo } = req.body;
   const mappedInfo = mapLineItems(customerInfo);
-  // console.log("mapped info ::::::: ", mappedInfo);
+  console.log("mapped info ::::::: ", mappedInfo);
   const { orderNo, firstName, lastName, address, note, items, email, phone } =
     mappedInfo;
   for (let i = 0; i < items.length; i++) {
