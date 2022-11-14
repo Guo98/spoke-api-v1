@@ -27,4 +27,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/auth", async (req, res) => {});
+
 export default router;

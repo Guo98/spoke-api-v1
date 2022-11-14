@@ -5,11 +5,11 @@ config.key =
   "NMmic15UKrSBcT03gno73KPWIQPhHNVzO48rXGK0ME1b054TWzXsAP7Pa0Tr9McnzyfnTCrZ450HACDbK0KCYQ==";
 
 config.database = {
-  id: "ToDoList",
+  id: "Spoke",
 };
 
 config.container = {
-  id: "Items",
+  id: "Orders",
 };
 
 config.items = {

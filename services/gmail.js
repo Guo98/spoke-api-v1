@@ -8,7 +8,7 @@ async function getEmailId(historyid) {
   const authClient = new JWT({
     keyFile: path.resolve(path.resolve(), "keys.json"),
     scopes: ["https://mail.google.com/"],
-    subject: "andy@withspoke.com",
+    subject: "info@withspoke.com",
   });
 
   await authClient.authorize();
@@ -19,7 +19,7 @@ async function getEmailId(historyid) {
   });
 
   const res = await gmail.users.history.list({
-    userId: "andy@withspoke.com",
+    userId: "info@withspoke.com",
     startHistoryId: historyid,
   });
   console.log("result  ::::::: ", res.data);
@@ -34,7 +34,7 @@ async function getEmailBody(messageId) {
   const authClient = new JWT({
     keyFile: path.resolve(path.resolve(), "keys.json"),
     scopes: ["https://mail.google.com/"],
-    subject: "andy@withspoke.com",
+    subject: "info@withspoke.com",
   });
 
   await authClient.authorize();
@@ -45,7 +45,7 @@ async function getEmailBody(messageId) {
   });
 
   const res = await gmail.users.messages.get({
-    userId: "andy@withspoke.com",
+    userId: "info@withspoke.com",
     id: messageId,
   });
   //res.data.payload.headers
@@ -54,7 +54,12 @@ async function getEmailBody(messageId) {
   // part 0 is the text, part 1 is the html
   if (isTrackingEmail) {
     let body = res?.data?.payload?.parts[1].body;
-    const trackingNumber = getTrackingNumber(body);
+    const trackingNumber = getTrackingNumber(
+      body,
+      isTrackingEmail.id,
+      "test name",
+      "test address"
+    );
   }
   console.log("message res ::::::::: ", res);
 }
@@ -65,8 +70,8 @@ function checkFromEmail(headers) {
 
   if (fromHeader && fromHeader.length > 0) {
     trackingEmails.every((email) => {
-      if (fromHeader[0].value.includes(email)) {
-        isTrackingEmail = true;
+      if (fromHeader[0].value.includes(email.email)) {
+        isTrackingEmail = email;
         return false;
       }
     });

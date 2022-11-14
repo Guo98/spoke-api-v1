@@ -128,4 +128,179 @@ async function readRow() {
   return readData;
 }
 
-export { addOffboardRow, readRow, addRedeployRow };
+async function addOrderRow(
+  orderNo,
+  client,
+  name,
+  email,
+  item,
+  price,
+  address,
+  phone,
+  note
+) {
+  const auth = new GoogleAuth({
+    keyFile: "keys.json",
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
+  });
+  const authClient = await auth.getClient();
+
+  const sheets = google.sheets({
+    version: "v4",
+    auth: authClient,
+  });
+  const todayDate = new Date();
+
+  const insertData = await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+    resource: {
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId: 1276989321,
+              dimension: "ROWS",
+              startIndex: 2,
+              endIndex: 3,
+            },
+            inheritFromBefore: false,
+          },
+        },
+        {
+          updateCells: {
+            rows: {
+              values: [
+                {
+                  userEnteredValue: {
+                    numberValue: orderNo,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    formulaValue: `=DATE(${todayDate.getFullYear()}, ${
+                      todayDate.getMonth() + 1
+                    }, ${todayDate.getDate()})`,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: client,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: name,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: item,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    numberValue: price,
+                  },
+                  userEnteredFormat: {
+                    numberFormat: { type: "CURRENCY" },
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue:
+                      address.addressLine +
+                      ", " +
+                      address.city +
+                      ", " +
+                      address.subdivision +
+                      " " +
+                      address.postalCode +
+                      ", " +
+                      address.country,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: email,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: phone,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: note,
+                  },
+                },
+              ],
+            },
+            fields: "*",
+            range: {
+              sheetId: 1276989321,
+              startRowIndex: 2,
+              endRowIndex: 3,
+              startColumnIndex: 0,
+              endColumnIndex: 16,
+            },
+          },
+        },
+        {
+          updateBorders: {
+            range: {
+              sheetId: 1276989321,
+              startRowIndex: 2,
+              endRowIndex: 3,
+              startColumnIndex: 0,
+              endColumnIndex: 16,
+            },
+            top: {
+              style: "SOLID",
+            },
+            bottom: {
+              style: "SOLID",
+            },
+            left: {
+              style: "SOLID",
+            },
+            right: {
+              style: "SOLID",
+            },
+            innerVertical: {
+              style: "SOLID",
+            },
+          },
+        },
+      ],
+    },
+  });
+  return insertData;
+}
+
+export { addOffboardRow, readRow, addRedeployRow, addOrderRow };

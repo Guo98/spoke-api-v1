@@ -1,4 +1,5 @@
 import mockData from "./mock.json" assert { type: "json" };
+import { trackingRegex } from "../utils/constants.js";
 
 // need to check name and address
 /**
@@ -7,7 +8,7 @@ import mockData from "./mock.json" assert { type: "json" };
  * @param {string} name
  * @param {string} address
  */
-function getTrackingNumber(emailBody, name, address) {
+function getTrackingNumber(emailBody, supplier, name, address) {
   const fedexRegEx = "";
   const upsRegEx = "";
 
@@ -20,9 +21,7 @@ function getTrackingNumber(emailBody, name, address) {
   if (name) {
     const nameCheck = decodedMessage.indexOf(name);
   }
-  const dellTrack = /trknbr=(\d{12}|\d{15})/
-    .exec(decodedMessage)[0]
-    .split("=")[1];
+  const dellTrack = trackingRegex.dell.exec(decodedMessage)[0].split("=")[1];
   console.log("regex exec :::::: ", dellTrack);
   console.log("what is here :::::::: ", decodedMessage[17548]);
   return dellTrack;
