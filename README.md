@@ -1,12 +1,8 @@
-# offboarding-api
+# Spoke API
 
-post body EXAMPLE format:
-{
-order_no: 1,
-client: string,
-recipient_name: string,
-recipient_email: email,
-item: string,
-shipping_address: string,
-phone_num: string
-}
+Supports:
+
+- Offboarding
+- Order Creation
+- Address Validation
+- Auto Email
