@@ -1,8 +1,9 @@
 import Airtable from "airtable";
+import { baseIds } from "../utils/airtableConstants.js";
 
 async function createRecord(customerInfo, item) {
   let base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-    "appeCVfCNVVQOYcFI"
+    baseIds.test
   );
   console.log("customer info :::::::: ", customerInfo);
   await retrieveRecord(base);

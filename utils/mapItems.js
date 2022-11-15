@@ -26,7 +26,6 @@ function mapLineItems(customerInfo) {
   }
   if (customerInfo?.items.length > 0) {
     customerInfo.items.forEach((item) => {
-      console.log("item name ??????? ", item.name);
       if (suppliers[item.name]) {
         if (
           typeof suppliers[item.name] === "object" &&
