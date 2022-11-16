@@ -5,10 +5,12 @@ import { basicAuth } from "../services/basicAuth.js";
 const router = Router();
 
 router.post("/offboard", async (req, res) => {
+  console.log("/offboard => Starting route.");
   if (
     !req.headers.authorization ||
     req.headers.authorization.indexOf("Basic") === -1
   ) {
+    console.log("/offboard => Unauthorized (Missing auth).");
     res.status(401).json({ message: "Missing Authorization Header" });
   }
 
@@ -16,12 +18,16 @@ router.post("/offboard", async (req, res) => {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
+      console.log("/offboard => Starting addOffboardRow function.");
       const resp = await addOffboardRow(req.body);
+      console.log("/offboard => Ending route.");
       res.send(resp.data);
     } else {
+      console.log("/offboard => Unauthorized (Wrong header).");
       res.status(401).json({ message: "Wrong Authentication" });
     }
   } else {
+    console.log("/offbaord => Missing post body in request.");
     res.status(500).json({ message: "Missing Body" });
   }
 });
