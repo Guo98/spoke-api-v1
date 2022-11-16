@@ -42,14 +42,15 @@ router.post("/pushTracking", async (req, res) => {
  * @param {Number} body.order_no
  */
 router.post("/createOrder", async (req, res) => {
-  console.log("staring /createOrder route :::::: ");
+  console.log("/createOrder => Starting route. ");
   const { customerInfo } = req.body;
   const mappedInfo = mapLineItems(customerInfo);
-  console.log("mapped info ::::::: ", mappedInfo);
+
   const { orderNo, firstName, lastName, address, note, items, email, phone } =
     mappedInfo;
+  console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
-    console.log("mapped info items ::::: ", items[i]);
+    console.log("/createOrder => Mapped row item: " + items[i].name);
     const resp = await addOrderRow(
       orderNo,
       mappedInfo.client,
@@ -59,10 +60,13 @@ router.post("/createOrder", async (req, res) => {
       items[i].price,
       address,
       phone,
-      note
+      note,
+      items[i].variant
     );
   }
-  // await setOrders(orders, mappedInfo);
+  console.log("/createOrder => Adding order to Orders db.");
+  await setOrders(orders, mappedInfo);
+  console.log("/createOrder => Ending route.");
   res.send("Creating order");
 });
 
