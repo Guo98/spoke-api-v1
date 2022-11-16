@@ -2,7 +2,6 @@ import { suppliers } from "./constants.js";
 import { createRecord } from "../services/airtable.js";
 
 function mapLineItems(customerInfo) {
-  console.log("order in here ::::: ", customerInfo);
   if (customerInfo?.discount?.appliedCoupon) {
     switch (customerInfo.discount.appliedCoupon?.code) {
       case "intersectpower":
@@ -34,7 +33,7 @@ function mapLineItems(customerInfo) {
           Object.assign(item, suppliers[item.name]);
           if (!customerInfo.client)
             customerInfo.client = suppliers[item.name].company;
-          createRecord(customerInfo, item);
+          // createRecord(customerInfo, item);
         } else {
           item.supplier = suppliers[item.name];
         }
@@ -43,7 +42,6 @@ function mapLineItems(customerInfo) {
       }
     });
   }
-  console.log("updated customer info ::::: ", customerInfo);
   return customerInfo;
 }
 
