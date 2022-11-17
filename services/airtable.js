@@ -1,23 +1,93 @@
 import Airtable from "airtable";
 import { baseIds } from "../utils/airtableConstants.js";
 
-async function createRecord(customerInfo, item) {
+async function createRecord(customerInfo) {
+  const { items, orderNo, firstName, lastName } = customerInfo;
+  console.log("createRecord() => Starting function.");
   let base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
     baseIds.test
   );
-  console.log("customer info :::::::: ", customerInfo);
-  await retrieveRecord(base);
-  base("Table 1").create(
+  let workplaceList = [];
+  if (items.length > 0) {
+    items.forEach(async (item) => {
+      if (item.name === "FLYR Swag Pack") {
+        const swagObj = [
+          {
+            fields: {
+              "Order No": orderNo,
+              "Order Date": new Date().toISOString().slice(0, 10),
+              Recipient: firstName + " " + lastName,
+              Item: item.name,
+              "Workplace Stipend": 0,
+              Status: "Order Received",
+              Location: "US",
+            },
+          },
+        ];
+        await addToSwag(base, swagObj);
+      } else if (!item.type) {
+        workplaceList.push({
+          fields: {
+            "Order No": orderNo,
+            "Order Date": new Date().toISOString().slice(0, 10),
+            Recipient: firstName + " " + lastName,
+            Item: item.name,
+            "Workplace Stipend": 0,
+            Status: "Order Received",
+            Location: "US",
+          },
+        });
+      } else if (item.type === "laptop") {
+        await updateInventory(base, item);
+        await updateLaptopAndDeployed(base, customerInfo, item);
+      }
+    });
+  }
+
+  if (workplaceList.length > 0) {
+    await addToWorkspace(base, workplaceList);
+  }
+
+  console.log("createRecord() => Ending function.");
+}
+
+async function addToSwag(base, obj) {
+  return base("Swag").create(obj, (err, records) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    records.forEach((record) => {
+      console.log(record.getId());
+    });
+  });
+}
+
+async function addToWorkspace(base, obj) {
+  return base("Workplace").create(obj, (err, records) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    records.forEach((record) => {
+      console.log(record.getId());
+    });
+  });
+}
+
+async function updateLaptopAndDeployed(base, customerInfo, laptop) {
+  const { orderNo, firstName, lastName } = customerInfo;
+  base("Laptops").create(
     [
       {
         fields: {
-          "Order No": customerInfo.orderNo,
+          "Order No": orderNo,
           "Order Date": new Date().toISOString().slice(0, 10),
-          Recipient: customerInfo.firstName + " " + customerInfo.lastName,
-          Laptop: item.name,
+          Recipient: firstName + " " + lastName,
+          Laptop: laptop.name,
           "Workplace Stipend": 0,
-          "Laptop Status": "Shipped",
-          Location: item.location,
+          "Laptop Status": "Order Received",
+          Location: laptop.location,
         },
       },
     ],
@@ -32,28 +102,57 @@ async function createRecord(customerInfo, item) {
     }
   );
 
-  // take one from inventory, add one to deployed, subtract from inventory overview
-}
-
-async function retrieveRecord(base) {
-  let inStockLaptops = [];
-  await base("Inventory")
-    .select({ view: "Grid view" })
-    .firstPage((err, records) => {
+  base("Deployed").create(
+    [
+      {
+        fields: {
+          "Order No": orderNo,
+          "Order Date": new Date().toISOString().slice(0, 10),
+          Recipient: firstName + " " + lastName,
+          Item: laptop.name,
+          Status: "Order Received",
+          Location: laptop.location,
+        },
+      },
+    ],
+    (err, records) => {
       if (err) {
-        console.error("err :::: ", err);
+        console.error(err);
         return;
       }
-
-      records.forEach(function (record) {
-        console.log("Retrieved ::::::: ", record.get("Item"));
-        if (inStockLaptops.indexOf(record.get("Item")) < -1) {
-          inStockLaptops.push(record.get("Item"));
-        }
+      records.forEach((record) => {
+        console.log(record.getId());
       });
-    });
-
-  console.log("in stock laptops :::::: ", inStockLaptops);
+    }
+  );
 }
 
-export { createRecord, retrieveRecord };
+async function updateInventory(base, laptop) {
+  const records = await base("Inventory")
+    .select({ view: "Grid view" })
+    .firstPage();
+  let recordId = "";
+
+  for (let i = 0; i < records.length; i++) {
+    if (
+      records[i].fields.Item === laptop.name &&
+      records[i].fields.Status === "In Stock"
+    ) {
+      recordId = records[i].id;
+      break;
+    }
+  }
+
+  const updatedRecord = await base("Inventory").update([
+    {
+      id: recordId,
+      fields: {
+        Status: "In Transit",
+      },
+    },
+  ]);
+
+  return recordId;
+}
+
+export { createRecord };

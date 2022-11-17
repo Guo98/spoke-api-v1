@@ -7,19 +7,9 @@ const router = Router();
 
 router.post(
   "/sendTrackingEmail",
-  body("email")
-    .isEmail()
-    .normalizeEmail(),
-  body("name")
-    .not()
-    .isEmpty()
-    .trim()
-    .escape(),
-  body("tracking_number")
-    .not()
-    .isEmpty()
-    .trim()
-    .escape(),
+  body("email").isEmail().normalizeEmail(),
+  body("name").not().isEmpty().trim().escape(),
+  body("tracking_number").not().isEmpty().trim().escape(),
   async (req, res) => {
     if (req.body && req.body !== {}) {
       const resp = await sendEmail(req.body);
@@ -36,24 +26,10 @@ router.post(
 
 router.post(
   "/sendConfirmationEmail",
-  body("email")
-    .isEmail()
-    .normalizeEmail(),
-  body("name")
-    .not()
-    .isEmpty()
-    .trim()
-    .escape(),
-  body("address")
-    .not()
-    .isEmpty()
-    .trim()
-    .escape(),
-  body("company")
-    .not()
-    .isEmpty()
-    .trim()
-    .escape(),
+  body("email").isEmail().normalizeEmail(),
+  body("name").not().isEmpty().trim().escape(),
+  body("address").not().isEmpty().trim().escape(),
+  body("company").not().isEmpty().trim().escape(),
   async (req, res) => {
     if (
       !req.headers.authorization ||

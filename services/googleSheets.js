@@ -138,7 +138,8 @@ async function addOrderRow(
   address,
   phone,
   note,
-  variant
+  variant,
+  supplier
 ) {
   const auth = new GoogleAuth({
     keyFile: "keys.json",
@@ -267,7 +268,13 @@ async function addOrderRow(
                 },
                 {
                   userEnteredValue: {
-                    stringValue: variant,
+                    stringValue:
+                      variant?.length > 0 ? JSON.stringify(variant) : "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: supplier,
                   },
                 },
               ],
@@ -278,7 +285,7 @@ async function addOrderRow(
               startRowIndex: 2,
               endRowIndex: 3,
               startColumnIndex: 0,
-              endColumnIndex: 18,
+              endColumnIndex: 19,
             },
           },
         },
@@ -289,7 +296,7 @@ async function addOrderRow(
               startRowIndex: 2,
               endRowIndex: 3,
               startColumnIndex: 0,
-              endColumnIndex: 18,
+              endColumnIndex: 19,
             },
             top: {
               style: "SOLID",

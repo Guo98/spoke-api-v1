@@ -7,6 +7,7 @@ import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
+import { createRecord } from "../services/airtable.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -46,26 +47,38 @@ router.post("/createOrder", async (req, res) => {
   const { customerInfo } = req.body;
   const mappedInfo = mapLineItems(customerInfo);
 
-  const { orderNo, firstName, lastName, address, note, items, email, phone } =
-    mappedInfo;
+  const {
+    orderNo,
+    firstName,
+    lastName,
+    address,
+    note,
+    items,
+    email,
+    phone,
+    client,
+  } = mappedInfo;
   console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
     console.log("/createOrder => Mapped row item: " + items[i].name);
-    const resp = await addOrderRow(
-      orderNo,
-      mappedInfo.client,
-      firstName + " " + lastName,
-      email,
-      items[i].name,
-      items[i].price,
-      address,
-      phone,
-      note,
-      items[i].variant
-    );
+    // const resp = await addOrderRow(
+    //   orderNo,
+    //   client,
+    //   firstName + " " + lastName,
+    //   email,
+    //   items[i].name,
+    //   items[i].price,
+    //   address,
+    //   phone,
+    //   note,
+    //   items[i].variant,
+    //   items[i].supplier
+    // );
   }
+  console.log("/createOrder => Adding order to airtable.");
+  await createRecord(customerInfo);
   console.log("/createOrder => Adding order to Orders db.");
-  await setOrders(orders, mappedInfo);
+  // await setOrders(orders, mappedInfo);
   console.log("/createOrder => Ending route.");
   res.send("Creating order");
 });

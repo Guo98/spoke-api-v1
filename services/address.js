@@ -12,18 +12,18 @@ async function autocompleteAddress(address) {
 
   const options = {
     method: "GET",
-    url: validateUrl
+    url: validateUrl,
   };
 
   const result = await axios(options)
-    .then(data => {
+    .then((data) => {
       if (data.status && data.status === 200) {
         return { status: 200, data: data.data };
       } else {
         return { status: 500, data: data.data };
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return { status: 500, data: err };
     });
 
@@ -40,12 +40,13 @@ async function validateAddress(address) {
 
   const options = {
     method: "GET",
-    url: validateUrl
+    url: validateUrl,
   };
   const parsed = parser.parseLocation(address);
   // console.log("parsed address :::::: ", parsed);
   const result = await axios(options)
-    .then(data => {
+    .then((data) => {
+      // console.log("address data :::::::: ", data.data.features[0]);
       if (data.status && data.status === 200) {
         const features = data.data.features[0];
         // console.log("addres obj :::::: ", features);
@@ -64,7 +65,7 @@ async function validateAddress(address) {
               city: features.properties.city,
               zipCode: features.properties.postcode,
               state: features.properties.state_code,
-              country: features.properties.country_code.toUpperCase()
+              country: features.properties.country_code.toUpperCase(),
             };
             return { status: 200, data: addressObj };
           } else {
@@ -77,7 +78,7 @@ async function validateAddress(address) {
         return { status: 500, data: data.data };
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return { status: 500, data: err };
     });
 
