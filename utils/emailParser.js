@@ -6,12 +6,12 @@ import {
 } from "../utils/constants.js";
 import cheerio from "cheerio";
 
-// need to check name and address
 /**
  *
  * @param {base64 string} emailBody
- * @param {string} name
- * @param {string} address
+ * @param {string} supplier
+ * @param {Array[Object]} orders
+ * @param {string} subject
  */
 function getTrackingNumber(emailBody, supplier, orders, subject) {
   let trackNum = "";
@@ -72,6 +72,11 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   return [orderIndex, orders[orderIndex]?.items];
 }
 
+/* 
+  Different parsing methods for different suppliers
+*/
+
+// CTS smartsheet email parser
 function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
   const $ = cheerio.load(decodedMessage);
   $("p").each((i, ptag) => {
@@ -89,8 +94,8 @@ function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
   });
 }
 
+// Fully parser, handles the multiple parts of desks
 function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
-  // const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
   const $ = cheerio.load(decodedMessage);
   let trackNum = "";
   let itemMapping = {};
@@ -127,31 +132,6 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
       counterIndex++;
     }
   });
-}
-
-function addTrackingNumber(items, numbers, supplier) {
-  items.forEach((item) => {
-    if (
-      supplier === "Fully" &&
-      item.supplier === supplier &&
-      item.tracking_number === ""
-    ) {
-      // fullyMapping[item.name]
-      const colorFilter = item?.variant.filter((opt) => opt.option === "Color");
-      //console.log("color filter ::::::::: ", colorFilter);
-      if (colorFilter.length > 0) {
-        const color = colorFilter[0].selection;
-        // console.log("fully mapping stuff testing >>>>>>>>>> ", numbers);
-        // console.log("color filter <<<<<<<<< ", fullyMapping[item.name][color]);
-        if (numbers[fullyMapping[item.name][color]]) {
-          item.tracking_number = numbers[fullyMapping[item.name][color]];
-        }
-      }
-    }
-  });
-
-  console.log("items ::::: ", items);
-  return items;
 }
 
 export { getTrackingNumber };
