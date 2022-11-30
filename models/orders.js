@@ -41,16 +41,23 @@ class Orders {
     return doc;
   }
 
-  async updateItem(itemId) {
-    const doc = this.getItem(itemId);
+  async updateOrder(itemId, items) {
+    const doc = await this.getItem(itemId);
 
-    doc.completed = true;
+    doc.items = items;
 
     const { resource: replaced } = await this.container
       .item(itemId, partitionKey)
       .replace(doc);
 
     return replaced;
+  }
+
+  async getAllReceived() {
+    const { resources: receivedList } = await this.container.items
+      .readAll()
+      .fetchAll();
+    return receivedList;
   }
 
   async getItem(itemId) {

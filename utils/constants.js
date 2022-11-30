@@ -2,10 +2,17 @@ const trackingEmails = [
   { email: "shipment-tracking@amazon.com", id: "amazon" },
   { email: "ord-status@bhphotovideo.com", id: "bh" },
   { email: "outfordelivery@order.dell.com", id: "dell" },
+  { email: "donotreply@fully.com", id: "Fully" },
+  { email: "donotreply@buy.logitech.com", id: "logitech" },
+  { email: "automation@app.smartsheet.com", id: "CTS" },
 ];
 
 const trackingRegex = {
   dell: /trknbr=(\d{12}|\d{15})/,
+  Fully: /tracknumbers=(.*)/,
+  logitech: /InquiryNumber1=(\w{18})/,
+  bh: /<a[^>]*>(\d{12}|\d{15})<\/a>/,
+  CTS: /(\d{12}|\d{15})/,
 };
 
 const devices = {
@@ -154,6 +161,53 @@ const suppliers = {
   "Vari Task Chair": "Vari",
   "Razer Kiyo Streaming Webcam": "Amazon",
   "Fully Desk Chair": "Fully",
+  "Fully Remi Standing Desk": "Fully",
 };
 
-export { trackingEmails, trackingRegex, devices, suppliers };
+const fullyMapping = {
+  "Fully Remi Standing Desk": {
+    Oak: 'Fully Work Surface - Laminate - 46"x27" - Oak - with Grommet',
+    default: [
+      "Remi for Fully; Box 1 - V2 - Lifting Columns & Control Box - Black - Mid Range",
+      "Remi for Fully; Box 2 - V2 - Frame Kit - Black - Programmable",
+    ],
+  },
+  "Fully Desk Chair": {
+    Black: "Fully Desk Chair - Black/Black",
+    "White/Gray": "Alani Desk Chair - White/Grey",
+  },
+  "Jarvis Monitor Arm": {
+    Black: "Jarvis Arm - Single - Black",
+    Gray: "Jarvis Arm - Single - Silver",
+  },
+  "Clamp-Mounted Surge Protector": {
+    Black: "Clamp-Mounted Surge Protector - Black",
+  },
+  "Anti Fatigue Mat": {
+    Black: "Topo Mini Standing Mat - Black",
+  },
+};
+
+const fullyMappingToWix = {
+  "Remi for Fully; Box 1 - V2 - Lifting Columns & Control Box - Black - Mid Range":
+    "Fully Remi Standing Desk",
+  "Remi for Fully; Box 2 - V2 - Frame Kit - Black - Programmable":
+    "Fully Remi Standing Desk",
+  'Fully Work Surface - Laminate - 46"x27" - Oak - with Grommet':
+    "Fully Remi Standing Desk",
+  "Fully Desk Chair - Black/Black": "Fully Desk Chair",
+  "Alani Desk Chair - White/Grey": "Fully Desk Chair",
+  "Jarvis Arm - Single - Black": "Jarvis Monitor Arm",
+  "Jarvis Arm - Single - Silver": "Jarvis Monitor Arm",
+  "Clamp-Mounted Surge Protector - Black": "Clamp-Mounted Surge Protector",
+  "Topo Mini Standing Mat - Black": "Anti Fatigue Mat",
+};
+
+export {
+  trackingEmails,
+  trackingRegex,
+  devices,
+  suppliers,
+  fullyMapping,
+  fullyMappingToWix,
+};

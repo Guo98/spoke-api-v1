@@ -1,6 +1,7 @@
 import Airtable from "airtable";
 import { baseIds } from "../utils/airtableConstants.js";
 
+// on hold status -> send email to info email of out of stock
 async function createRecord(customerInfo) {
   const { items, orderNo, firstName, lastName } = customerInfo;
   console.log("createRecord() => Starting function.");
@@ -11,6 +12,7 @@ async function createRecord(customerInfo) {
   if (items.length > 0) {
     items.forEach(async (item) => {
       if (item.name === "FLYR Swag Pack") {
+        console.log("createRecord() => Adding swag record.");
         const swagObj = [
           {
             fields: {
@@ -38,13 +40,18 @@ async function createRecord(customerInfo) {
           },
         });
       } else if (item.type === "laptop") {
-        await updateInventory(base, item);
+        console.log("createRecord() => Adding laptop record.");
+        const recordId = await updateInventory(base, item);
+        if (recordId === "") {
+          item.status = "On Hold";
+        }
         await updateLaptopAndDeployed(base, customerInfo, item);
       }
     });
   }
 
   if (workplaceList.length > 0) {
+    console.log("createRecord() => Adding workplace records.");
     await addToWorkspace(base, workplaceList);
   }
 
@@ -54,11 +61,11 @@ async function createRecord(customerInfo) {
 async function addToSwag(base, obj) {
   return base("Swag").create(obj, (err, records) => {
     if (err) {
-      console.error(err);
+      console.log("addToSwag() => Error in adding record: ", err);
       return;
     }
     records.forEach((record) => {
-      console.log(record.getId());
+      console.log("addToSwag() => Successfully added record: ", record.getId());
     });
   });
 }
@@ -66,11 +73,14 @@ async function addToSwag(base, obj) {
 async function addToWorkspace(base, obj) {
   return base("Workplace").create(obj, (err, records) => {
     if (err) {
-      console.error(err);
+      console.log("addToWorkspace() => Error in adding records: ", err);
       return;
     }
     records.forEach((record) => {
-      console.log(record.getId());
+      console.log(
+        "addToWorkspace() => Successfully added record: ",
+        record.getId()
+      );
     });
   });
 }
@@ -86,45 +96,58 @@ async function updateLaptopAndDeployed(base, customerInfo, laptop) {
           Recipient: firstName + " " + lastName,
           Laptop: laptop.name,
           "Workplace Stipend": 0,
-          "Laptop Status": "Order Received",
+          "Laptop Status": laptop.status || "Order Received",
           Location: laptop.location,
         },
       },
     ],
     (err, records) => {
       if (err) {
-        console.error(err);
+        console.log(
+          "updateLaptopAndDeployed() => Error in adding record to laptops table: ",
+          err
+        );
         return;
       }
       records.forEach((record) => {
-        console.log(record.getId());
+        console.log(
+          "updateLaptopAndDeployed() => Successfully added record to laptops table: ",
+          record.getId()
+        );
       });
     }
   );
-
-  base("Deployed").create(
-    [
-      {
-        fields: {
-          "Order No": orderNo,
-          "Order Date": new Date().toISOString().slice(0, 10),
-          Recipient: firstName + " " + lastName,
-          Item: laptop.name,
-          Status: "Order Received",
-          Location: laptop.location,
+  if (!laptop.status) {
+    base("Deployed").create(
+      [
+        {
+          fields: {
+            "Order No": orderNo,
+            "Order Date": new Date().toISOString().slice(0, 10),
+            Recipient: firstName + " " + lastName,
+            Item: laptop.name,
+            Status: "Order Received",
+            Location: laptop.location,
+          },
         },
-      },
-    ],
-    (err, records) => {
-      if (err) {
-        console.error(err);
-        return;
+      ],
+      (err, records) => {
+        if (err) {
+          console.log(
+            "updateLaptopAndDeployed() => Error in adding record to deployed table: ",
+            err
+          );
+          return;
+        }
+        records.forEach((record) => {
+          console.log(
+            "updateLaptopAndDeployed() => Successfully added record to deployed table: ",
+            record.getId()
+          );
+        });
       }
-      records.forEach((record) => {
-        console.log(record.getId());
-      });
-    }
-  );
+    );
+  }
 }
 
 async function updateInventory(base, laptop) {
@@ -142,15 +165,21 @@ async function updateInventory(base, laptop) {
       break;
     }
   }
-
-  const updatedRecord = await base("Inventory").update([
-    {
-      id: recordId,
-      fields: {
-        Status: "In Transit",
-      },
-    },
-  ]);
+  // delete
+  if (recordId !== "") {
+    base("Inventory").destroy([recordId], (err, records) => {
+      if (err) {
+        console.log("updateInventory() => Error in updating record: ", err);
+        return;
+      }
+      records.forEach((record) => {
+        console.log(
+          "updateInventory() => Successfully updated record: ",
+          record.getId()
+        );
+      });
+    });
+  }
 
   return recordId;
 }

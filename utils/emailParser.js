@@ -1,5 +1,10 @@
-import mockData from "./mock.json" assert { type: "json" };
-import { trackingRegex } from "../utils/constants.js";
+// import mockData from "./mock.json" assert { type: "json" };
+import {
+  trackingRegex,
+  fullyMapping,
+  fullyMappingToWix,
+} from "../utils/constants.js";
+import cheerio from "cheerio";
 
 // need to check name and address
 /**
@@ -8,23 +13,145 @@ import { trackingRegex } from "../utils/constants.js";
  * @param {string} name
  * @param {string} address
  */
-function getTrackingNumber(emailBody, supplier, name, address) {
-  const fedexRegEx = "";
-  const upsRegEx = "";
+function getTrackingNumber(emailBody, supplier, orders, subject) {
+  let trackNum = "";
+  const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
+  const $ = cheerio.load(decodedMessage);
+  let orderIndex = -1;
 
-  const decodedMessage = atob(
-    mockData.data.replace(/-/g, "+").replace(/_/g, "/")
-  );
-  const fedexRegex = new RegExp("/trknbr=d{12}/");
-  //"\b([0-9]{12}|100d{31}|d{15}|d{18}|96d{20}|96d{32})\b"
-  // console.log("fedex regex ::::: ", fedexRegex.exec(decodedMessage));
-  if (name) {
-    const nameCheck = decodedMessage.indexOf(name);
+  if (orders?.length > 0) {
+    let orderNum = 0;
+    if (supplier === "CTS") {
+      orderNum = parseInt(subject.replace(/\D/g, ""));
+    }
+    for (let i = 0; i < orders.length; i++) {
+      if (
+        supplier !== "CTS" &&
+        decodedMessage.indexOf(orders[i].firstName) > -1 &&
+        decodedMessage.indexOf(orders[i].address?.city) > -1
+      ) {
+        orderIndex = i;
+      } else if (supplier === "CTS" && orders[i].orderNo === orderNum) {
+        orderIndex = i;
+      }
+      // console.log("checking db order no >>>>>>>>> ", orders[i].orderNo);
+      // console.log("parsed out ");
+    }
   }
-  const dellTrack = trackingRegex.dell.exec(decodedMessage)[0].split("=")[1];
-  console.log("regex exec :::::: ", dellTrack);
-  console.log("what is here :::::::: ", decodedMessage[17548]);
-  return dellTrack;
+
+  if (supplier === "dell") {
+    $("span").each((i, span) => {
+      const spanId = span.attribs.id;
+      if (spanId?.indexOf("CARRIER_TRACKING_NO_0_0_0") > -1) {
+        trackNum = $(span).text();
+      }
+    });
+  }
+  if (supplier !== "dell") {
+    $("a").each((i, link) => {
+      const href = link.attribs.href;
+      if (href?.indexOf("Package_Detail") > -1 && supplier === "bh") {
+        if ($(link).text() !== "Track Package") {
+          trackNum = $(link).text().trim();
+        }
+      } else if (
+        supplier === "logitech" &&
+        $(link).text().indexOf("TRACK YOUR ORDER") > -1
+      ) {
+        trackNum = trackingRegex[supplier].exec(href)[0].split("=")[1];
+      }
+    });
+  }
+
+  if (supplier === "Fully") {
+    addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+  } else if (supplier === "CTS") {
+    addCTSTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+  }
+
+  return [orderIndex, orders[orderIndex]?.items];
+}
+
+function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
+  const $ = cheerio.load(decodedMessage);
+  $("p").each((i, ptag) => {
+    const text = $(ptag).text();
+    console.log("ptag text ::::::: ", text);
+    if (text.indexOf("Tracking #") > -1) {
+      const trackNum = trackingRegex[supplier].exec(text)[0];
+
+      orders[index].items.forEach((item) => {
+        if (item.supplier === supplier && item.tracking_number === "") {
+          item.tracking_number = [trackNum];
+        }
+      });
+    }
+  });
+}
+
+function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
+  // const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
+  const $ = cheerio.load(decodedMessage);
+  let trackNum = "";
+  let itemMapping = {};
+
+  $("a").each((i, link) => {
+    const href = link.attribs.href;
+    if (href?.indexOf("apps/fedextrack") > -1) {
+      trackNum = trackingRegex[supplier].exec(href)[1].split("&");
+    }
+  });
+
+  $("td").each((i, row) => {
+    const colSpan = row.attribs.colspan;
+    let counterIndex = 0;
+
+    if (colSpan === "18") {
+      const itemText = $(row).text();
+      itemMapping[itemText] = trackNum[counterIndex];
+      const wixItemName = fullyMappingToWix[itemText];
+      const orderIndex = orders[index]?.items?.findIndex(
+        (item) => item.name === wixItemName
+      );
+      if (orders[index]?.items[orderIndex]?.tracking_number === "") {
+        orders[index].items[orderIndex].tracking_number = [
+          trackNum[counterIndex],
+        ];
+      } else if (
+        orders[index]?.items[orderIndex]?.tracking_number?.length > 0
+      ) {
+        orders[index].items[orderIndex].tracking_number.push(
+          trackNum[counterIndex]
+        );
+      }
+      counterIndex++;
+    }
+  });
+}
+
+function addTrackingNumber(items, numbers, supplier) {
+  items.forEach((item) => {
+    if (
+      supplier === "Fully" &&
+      item.supplier === supplier &&
+      item.tracking_number === ""
+    ) {
+      // fullyMapping[item.name]
+      const colorFilter = item?.variant.filter((opt) => opt.option === "Color");
+      //console.log("color filter ::::::::: ", colorFilter);
+      if (colorFilter.length > 0) {
+        const color = colorFilter[0].selection;
+        // console.log("fully mapping stuff testing >>>>>>>>>> ", numbers);
+        // console.log("color filter <<<<<<<<< ", fullyMapping[item.name][color]);
+        if (numbers[fullyMapping[item.name][color]]) {
+          item.tracking_number = numbers[fullyMapping[item.name][color]];
+        }
+      }
+    }
+  });
+
+  console.log("items ::::: ", items);
+  return items;
 }
 
 export { getTrackingNumber };

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { CosmosClient } from "@azure/cosmos";
 import { getTrackingNumber } from "../utils/emailParser.js";
-import { getEmailId } from "../services/gmail.js";
+import { getEmailId, getEmailBody } from "../services/gmail.js";
 import { config } from "../utils/config.js";
 import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
@@ -14,7 +14,7 @@ const cosmosClient = new CosmosClient({
   key: config.key,
 });
 
-const orders = new Orders(cosmosClient, "Spoke", "Orders");
+const orders = new Orders(cosmosClient, "Orders", "Received");
 
 orders
   .init((err) => {
@@ -28,12 +28,22 @@ orders
 const router = Router();
 
 router.post("/pushTracking", async (req, res) => {
+  // console.log("reaches here ::::::: ", req.body);
   const historyData = JSON.parse(atob(req.body.message.data));
   console.log("reaches this here :::: ", historyData);
 
   if (historyData.historyId) await getEmailId(historyData.historyId);
-  getTrackingNumber();
+  // getTrackingNumber();
   res.send("Hello World!");
+});
+
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, receivedOrders);
+
+  await orders.updateOrder(updateItems[0], updateItems[1]);
+  res.send("Hello world email!");
 });
 
 /**
@@ -75,8 +85,8 @@ router.post("/createOrder", async (req, res) => {
     //   items[i].supplier
     // );
   }
-  console.log("/createOrder => Adding order to airtable.");
-  await createRecord(customerInfo);
+  // console.log("/createOrder => Adding order to airtable.");
+  //await createRecord(customerInfo);
   console.log("/createOrder => Adding order to Orders db.");
   // await setOrders(orders, mappedInfo);
   console.log("/createOrder => Ending route.");

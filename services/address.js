@@ -43,7 +43,7 @@ async function validateAddress(address) {
     url: validateUrl,
   };
   const parsed = parser.parseLocation(address);
-  // console.log("parsed address :::::: ", parsed);
+  console.log("parsed address :::::: ", parsed);
   const result = await axios(options)
     .then((data) => {
       // console.log("address data :::::::: ", data.data.features[0]);
@@ -51,14 +51,14 @@ async function validateAddress(address) {
         const features = data.data.features[0];
         // console.log("addres obj :::::: ", features);
         if (features.properties.country === "United States") {
+          let addressLine2 = "";
+          const splitAddr = address.split(",");
+          if (parsed.sec_unit_type && parsed.sec_unit_num) {
+            addressLine2 = parsed.sec_unit_type + " " + parsed.sec_unit_num;
+          } else if (splitAddr.length === 6) {
+            addressLine2 = splitAddr[1];
+          }
           if (features.properties.rank.confidence > 0.9) {
-            let addressLine2 = "";
-            const splitAddr = address.split(",");
-            if (parsed.sec_unit_type && parsed.sec_unit_num) {
-              addressLine2 = parsed.sec_unit_type + " " + parsed.sec_unit_num;
-            } else if (splitAddr.length === 6) {
-              addressLine2 = splitAddr[1];
-            }
             const addressObj = {
               address_line1: features.properties.address_line1,
               address_line2: addressLine2,
@@ -69,7 +69,16 @@ async function validateAddress(address) {
             };
             return { status: 200, data: addressObj };
           } else {
-            return { status: 500, data: "not a confident full match" };
+            const addressObj = {
+              address_line1: `${parsed.number} ${parsed.street} ${parsed.type}`,
+              address_line2: addressLine2,
+              city: parsed.city,
+              zipCode: parsed.zip,
+              state: parsed.state,
+              country: features?.properties?.country_code.toUpperCase(),
+              message: "not a confident full match",
+            };
+            return { status: 200, data: addressObj };
           }
         } else {
           return { status: 500, data: "not in the united states" };
