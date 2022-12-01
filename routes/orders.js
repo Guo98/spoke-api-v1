@@ -28,23 +28,39 @@ orders
 const router = Router();
 
 router.post("/pushTracking", async (req, res) => {
-  // console.log("reaches here ::::::: ", req.body);
+  console.log("/pushTracking => Starting route.");
   const historyData = JSON.parse(atob(req.body.message.data));
-  console.log("reaches this here :::: ", historyData);
+  console.log("/pushTracking => history data:", historyData);
 
-  if (historyData.historyId) await getEmailId(historyData.historyId);
-  // getTrackingNumber();
-  res.send("Hello World!");
+  if (historyData.historyId) {
+    try {
+      console.log(
+        "/pushTracking => Starting getEmailId() with:",
+        historyData.historyId
+      );
+      await getEmailId(historyData.historyId, orders);
+      console.log(
+        "/pushTracking => Finishing getEmailId() with:",
+        historyData.historyId
+      );
+    } catch (e) {
+      console.log("/pushTracking => Error in getEmailId(): ", e);
+    }
+  }
+  res.send({ message: "Successful!" });
 });
 
-router.get("/getMessage/:messageid", async (req, res) => {
-  const messageId = req.params.messageid;
-  const receivedOrders = await orders.getAllReceived();
-  const updateItems = await getEmailBody(messageId, receivedOrders);
+// router.get("/getMessage/:messageid", async (req, res) => {
+//   const messageId = req.params.messageid;
+//   // const receivedOrders = await orders.getAllReceived();
+//   const updateItems = await getEmailBody(messageId, orders);
+//   console.log("update items ::::::::: ", updateItems);
+//   if (updateItems && updateItems[0]) {
+//     await orders.updateOrder(updateItems[0], updateItems[1]);
+//   }
 
-  await orders.updateOrder(updateItems[0], updateItems[1]);
-  res.send("Hello world email!");
-});
+//   res.send("Hello world email!");
+// });
 
 /**
  * @param {string} body.customer_name
@@ -53,7 +69,7 @@ router.get("/getMessage/:messageid", async (req, res) => {
  * @param {Number} body.order_no
  */
 router.post("/createOrder", async (req, res) => {
-  console.log("/createOrder => Starting route. ");
+  console.log("/createOrder => Starting route.");
   const { customerInfo } = req.body;
   const mappedInfo = mapLineItems(customerInfo);
 
@@ -71,28 +87,28 @@ router.post("/createOrder", async (req, res) => {
   console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
     console.log("/createOrder => Mapped row item: " + items[i].name);
-    // const resp = await addOrderRow(
-    //   orderNo,
-    //   client,
-    //   firstName + " " + lastName,
-    //   email,
-    //   items[i].name,
-    //   items[i].price,
-    //   address,
-    //   phone,
-    //   note,
-    //   items[i].variant,
-    //   items[i].supplier
-    // );
+    const resp = await addOrderRow(
+      orderNo,
+      client,
+      firstName + " " + lastName,
+      email,
+      items[i].name,
+      items[i].price,
+      address,
+      phone,
+      note,
+      items[i].variant,
+      items[i].supplier
+    );
   }
   // console.log("/createOrder => Adding order to airtable.");
   //await createRecord(customerInfo);
   console.log("/createOrder => Adding order to Orders db.");
-  // await setOrders(orders, mappedInfo);
+  await setOrders(orders, mappedInfo);
   console.log("/createOrder => Ending route.");
   res.send("Creating order");
 });
 
-router.post("/updateOrder", async (req, res) => {});
+// router.post("/updateOrder", async (req, res) => {});
 
 export default router;

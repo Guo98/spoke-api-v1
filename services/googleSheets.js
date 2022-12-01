@@ -12,6 +12,7 @@ async function addOffboardRow(req) {
     shipping_address,
     phone_num,
     requestor_email,
+    note,
   } = req;
   const auth = new GoogleAuth({
     keyFile: "keys.json",
@@ -55,6 +56,7 @@ async function addOffboardRow(req) {
           "",
           "",
           requestor_email,
+          note,
         ],
       ],
     },
