@@ -201,6 +201,11 @@ const fullyMappingToWix = {
   "Jarvis Arm - Single - Silver": "Jarvis Monitor Arm",
   "Clamp-Mounted Surge Protector - Black": "Clamp-Mounted Surge Protector",
   "Topo Mini Standing Mat - Black": "Anti Fatigue Mat",
+  "Remi for Fully; Box 1 - Lifting Columns & Control Box - White - Mid Range":
+    "Fully Remi Standing Desk",
+  'Fully Work Surface - Laminate - 46"x27" - White - with Grommet':
+    "Fully Remi Standing Desk",
+  "Jarvis Grommet Cover - Black": "Fully Remi Standing Desk",
 };
 
 export {

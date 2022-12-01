@@ -72,7 +72,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   } else if (supplier === "CTS") {
     addCTSTrackingNumber(decodedMessage, orders, supplier, orderIndex);
   }
-
+  console.log("checking :::::: ", orders[orderIndex]?.items);
   return [orderIndex, orders[orderIndex]?.items];
 }
 

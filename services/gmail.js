@@ -75,6 +75,9 @@ async function getEmailBody(messageId, orders) {
     switch (isTrackingEmail.id) {
       case "Fully":
         body = res?.data?.payload?.body?.data;
+        subject = res.data.payload.headers.filter(
+          (header) => header.name === "Subject"
+        )[0].value;
         break;
       case "logitech":
         body = res?.data?.payload.parts[0]?.body?.data;
@@ -99,7 +102,10 @@ async function getEmailBody(messageId, orders) {
       `getEmailBody(${messageId}) => Starting getTrackingNumber(supplier: ${isTrackingEmail.id}) function.`
     );
 
-    if (isTrackingEmail.id === "Fully" || isTrackingEmail.id === "CTS") {
+    if (
+      (isTrackingEmail.id === "Fully" && subject.indexOf("has shipped") > -1) ||
+      (isTrackingEmail.id === "CTS" && subject.indexOf("Has Shipped") > -1)
+    ) {
       const trackingResult = getTrackingNumber(
         body,
         isTrackingEmail.id,
