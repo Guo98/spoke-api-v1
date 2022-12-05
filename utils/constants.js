@@ -188,12 +188,29 @@ const fullyMapping = {
   },
 };
 
+const looseFullyMappings = {
+  "Fully Remi Standing Desk": [
+    "Remi for Fully",
+    "Fully Work Surface",
+    "Jarvis Grommet Cover",
+  ],
+  "Jarvis Monitor Arm": ["Jarvis Arm"],
+  "Clamp-Mounted Surge Protector": ["Surge Protector"],
+  "Bottle Opener for Remi Desk": ["Bottle Opener"],
+  "Alani Desk Chair": ["Alani Desk Chair"],
+  "Fatigue Mat": ["Topo"],
+  "Aleris LED Desk Lamp with USB": ["Aleris"],
+  "Cooper Standing Desk Converter": ["Cooper"],
+};
+
 const fullyMappingToWix = {
   "Remi for Fully; Box 1 - V2 - Lifting Columns & Control Box - Black - Mid Range":
     "Fully Remi Standing Desk",
   "Remi for Fully; Box 2 - V2 - Frame Kit - Black - Programmable":
     "Fully Remi Standing Desk",
   'Fully Work Surface - Laminate - 46"x27" - Oak - with Grommet':
+    "Fully Remi Standing Desk",
+  "Remi for Fully; Box 2 - V2 - Frame Kit - White - Programmable":
     "Fully Remi Standing Desk",
   "Fully Desk Chair - Black/Black": "Fully Desk Chair",
   "Alani Desk Chair - White/Grey": "Fully Desk Chair",
@@ -206,6 +223,15 @@ const fullyMappingToWix = {
   'Fully Work Surface - Laminate - 46"x27" - White - with Grommet':
     "Fully Remi Standing Desk",
   "Jarvis Grommet Cover - Black": "Fully Remi Standing Desk",
+  "Jarvis Bottle Opener": "Bottle Opener for Remi Desk",
+  'Fully Work Surface - Laminate - 38"x27" - White - with Grommet':
+    "Fully Remi Standing Desk",
+  "Aleris LED Desk Lamp + USB - White": "Aleris LED Desk Lamp with USB",
+  "Cooper Small - Black Frame - Bamboo Top": "Cooper Standing Desk Converter",
+  'Fully Work Surface - Laminate - 38"x27" - Black - with Grommet':
+    "Fully Remi Standing Desk",
+  "Topo Standing Mat - Black": "Topo Anti-Fatigue Mat",
+  "Jarvis Arm - Single - White": "Jarvis Monitor Arm (EU)",
 };
 
 export {

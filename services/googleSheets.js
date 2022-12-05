@@ -164,8 +164,8 @@ async function addOrderRow(
             range: {
               sheetId: 1276989321,
               dimension: "ROWS",
-              startIndex: 2,
-              endIndex: 3,
+              startIndex: 1,
+              endIndex: 2,
             },
             inheritFromBefore: false,
           },
@@ -284,8 +284,8 @@ async function addOrderRow(
             fields: "*",
             range: {
               sheetId: 1276989321,
-              startRowIndex: 2,
-              endRowIndex: 3,
+              startRowIndex: 1,
+              endRowIndex: 2,
               startColumnIndex: 0,
               endColumnIndex: 19,
             },
@@ -295,8 +295,8 @@ async function addOrderRow(
           updateBorders: {
             range: {
               sheetId: 1276989321,
-              startRowIndex: 2,
-              endRowIndex: 3,
+              startRowIndex: 1,
+              endRowIndex: 2,
               startColumnIndex: 0,
               endColumnIndex: 19,
             },

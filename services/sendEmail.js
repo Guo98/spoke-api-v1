@@ -32,6 +32,40 @@ async function sendEmail(body) {
   }
 }
 
+async function sendAftershipCSV(content) {
+  try {
+    // console.log("Sending tracking email with body: ", body);
+    let client = new EmailClient(connectionString);
+    //send mail
+    const attachment = {
+      name: "tracking.txt",
+      attachmentType: "txt",
+      contentBytesBase64: content,
+    };
+    const emailMessage = {
+      sender: "DoNotReply@withspoke.io",
+      content: {
+        subject: "[BETA Testing] Aftership Tracking CSV",
+        plainText: "Please import the attached csv into aftership. ",
+      },
+      recipients: {
+        to: [
+          {
+            email: "andy@withspoke.com",
+          },
+        ],
+      },
+      attachments: [attachment],
+    };
+    var response = await client.send(emailMessage);
+    console.log("Sent tracking email: ", response);
+    return true;
+  } catch (e) {
+    console.error("Send tracking email error: ", e);
+    return false;
+  }
+}
+
 async function sendConfirmation(body) {
   // company, name, address
   const { company, name, email, requestor_email, type } = body;
@@ -55,7 +89,7 @@ async function sendConfirmation(body) {
       sender: "DoNotReply@withspoke.io",
       content: {
         subject: emailSubject,
-        plainText: emailBody,
+        html: emailBody,
       },
       recipients: {
         to: [
@@ -83,39 +117,17 @@ async function sendConfirmation(body) {
 }
 
 function generateReturnEmailBody(company, name, address) {
-  const emailBody = `Hi ${name},
+  const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
+    company === "Bowery" ? "Bowery Valuation" : company
+  } that you have old / faulty equipment to return. We will be handling the return of this equipment. You can expect to receive a box with a prepaid return label. When you receive the box, please ensure to complete the following:<br><br></div><div>1. Log out of all accounts on the device (especially iCloud if you have an Apple device)</div><div>2. Place the device (along with the charger) into the box<br>3. Apply the return label and mail the box back<br><br></div><div>Can you please confirm the following mailing address is accurate:</div><div>${address}</div><div><br></div><div>If you have any questions or the mailing address is incorrect, please let us know by emailing <a href="mailto:ddonhaue@withspoke.io" target="_blank">ddonhaue@withspoke.io</a>.<br clear="all"><div><div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><br><table width="500" cellspacing="0" cellpadding="0" border="0" style="color:rgb(72,101,137);font-family:Montserrat,sans-serif;font-size:17px"><tbody><tr><td style="margin:0.1px"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td valign="top" style="padding:0px 8px 0px 0px;vertical-align:top"></td><td valign="top" style="margin:0.1px;font-size:1em;padding:0px 15px 0px 8px;vertical-align:top"><br></td></tr></tbody></table></td></tr></tbody></table></div></div></div></div></div>`;
 
-  We’ve been informed by ${company} that you have old / faulty equipment to return. We will be handling the return of this equipment.
-  
-  You can expect to receive a box with a prepaid return label. All you need to do is put the device (along with the charger) into the box and mail it back.
-  
-  Can you please confirm the following mailing address is accurate:
-  ${address}
-  
-  Thanks & let us know if you have any questions!
-  `;
   return emailBody;
 }
 
 function generateOffboardingEmailBody(company, name, address) {
-  const emailBody = `Hi ${name},
-  
-  We’ve been informed by ${
+  const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
     company === "Bowery" ? "Bowery Valuation" : company
-  } that you are departing. As part of the offboarding process, we will be handling the return of your laptop.
-  You can expect to receive a box with a prepaid return label. When you receive the box, please ensure to complete the following:
-
-  1. Log out of all accounts on the device (especially iCloud if you have an Apple device)
-
-  2. Place the device (along with the charger) into the box
-
-  3. Apply the return label and mail the box back
-
-  The box will be sent to:
-  ${address}
-  
-  If you have any questions or the mailing address is incorrect, please let us know by emailing ddonhaue@withspoke.io.
-  `;
+  } that you are departing. As part of the offboarding process, we will be handling the return of your laptop. You can expect to receive a box with a prepaid return label. When you receive the box, please ensure to complete the following:<br><br></div><div>1. Log out of all accounts on the device (especially iCloud if you have an Apple device)</div><div>2. Place the device (along with the charger) into the box<br>3. Apply the return label and mail the box back<br><br></div><div>The box will be sent to:</div><div>${address}</div><div><br></div><div>If you have any questions or the mailing address is incorrect, please let us know by emailing <a href="mailto:ddonhaue@withspoke.io" target="_blank">ddonhaue@withspoke.io</a>.<br clear="all"><div><div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><br><table width="500" cellspacing="0" cellpadding="0" border="0" style="color:rgb(72,101,137);font-family:Montserrat,sans-serif;font-size:17px"><tbody><tr><td style="margin:0.1px"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td valign="top" style="padding:0px 8px 0px 0px;vertical-align:top"></td><td valign="top" style="margin:0.1px;font-size:1em;padding:0px 15px 0px 8px;vertical-align:top"><br></td></tr></tbody></table></td></tr></tbody></table></div></div></div></div></div>`;
 
   return emailBody;
 }
@@ -146,4 +158,4 @@ function generateTrackingEmailBody(name, tracking_num) {
   return emailBody;
 }
 
-export { sendEmail, sendConfirmation };
+export { sendEmail, sendConfirmation, sendAftershipCSV };

@@ -50,17 +50,17 @@ router.post("/pushTracking", async (req, res) => {
   res.send({ message: "Successful!" });
 });
 
-// router.get("/getMessage/:messageid", async (req, res) => {
-//   const messageId = req.params.messageid;
-//   // const receivedOrders = await orders.getAllReceived();
-//   const updateItems = await getEmailBody(messageId, orders);
-//   console.log("update items ::::::::: ", updateItems);
-//   if (updateItems && updateItems[0]) {
-//     await orders.updateOrder(updateItems[0], updateItems[1]);
-//   }
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  // const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, orders);
+  // console.log("update items ::::::::: ", updateItems);
+  // if (updateItems && updateItems[0]) {
+  //   await orders.updateOrder(updateItems[0], updateItems[1]);
+  // }
 
-//   res.send("Hello world email!");
-// });
+  res.send("Hello world email!");
+});
 
 /**
  * @param {string} body.customer_name

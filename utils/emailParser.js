@@ -4,6 +4,8 @@ import {
   fullyMapping,
   fullyMappingToWix,
 } from "../utils/constants.js";
+import { createAftershipCSV } from "../services/aftership.js";
+import { sendAftershipCSV } from "../services/sendEmail.js";
 import cheerio from "cheerio";
 
 /**
@@ -84,6 +86,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
 function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
   console.log("addCTSTrackingNumber() => Starting function.");
   const $ = cheerio.load(decodedMessage);
+  let aftershipArray = [];
   $("p").each((i, ptag) => {
     const text = $(ptag).text();
 
@@ -93,10 +96,22 @@ function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
       orders[index].items.forEach((item) => {
         if (item.supplier === supplier && item.tracking_number === "") {
           item.tracking_number = [trackNum];
+          const aftershipObj = {
+            tracking_number: trackNum,
+            email: orders[index].email,
+            title: orders[index].orderNo,
+            customer_name: orders[index].full_name,
+            order_number: item.name,
+          };
+          aftershipArray.push(aftershipObj);
         }
       });
     }
   });
+  const base64csv = createAftershipCSV(aftershipArray);
+
+  sendAftershipCSV(base64csv);
+  areAllShipped(orders[index]);
 }
 
 // Fully parser, handles the multiple parts of desks
@@ -105,6 +120,7 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
   const $ = cheerio.load(decodedMessage);
   let trackNum = "";
   let itemMapping = {};
+  let aftershipArray = [];
 
   $("a").each((i, link) => {
     const href = link.attribs.href;
@@ -124,20 +140,48 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
       const orderIndex = orders[index]?.items?.findIndex(
         (item) => item.name === wixItemName
       );
+      const curTrackingNumber = trackNum[counterIndex];
+      let aftershipObj = {
+        email: orders[index].email,
+        title: orders[index].orderNo,
+        customer_name: orders[index].full_name,
+        order_number: item.name,
+      };
+
       if (orders[index]?.items[orderIndex]?.tracking_number === "") {
-        orders[index].items[orderIndex].tracking_number = [
-          trackNum[counterIndex],
-        ];
+        orders[index].items[orderIndex].tracking_number = [curTrackingNumber];
+        aftershipObj.tracking_number = curTrackingNumber;
+        aftershipArray.push(aftershipObj);
       } else if (
-        orders[index]?.items[orderIndex]?.tracking_number?.length > 0
+        orders[index]?.items[orderIndex]?.tracking_number?.length > 0 &&
+        orders[index]?.items[orderIndex]?.tracking_number?.indexOf(
+          curTrackingNumber
+        ) < 0
       ) {
-        orders[index].items[orderIndex].tracking_number.push(
-          trackNum[counterIndex]
-        );
+        orders[index].items[orderIndex].tracking_number.push(curTrackingNumber);
+        aftershipObj.tracking_number = curTrackingNumber;
+        aftershipArray.push(aftershipObj);
       }
       counterIndex++;
     }
   });
+  const base64csv = createAftershipCSV(aftershipArray);
+
+  sendAftershipCSV(base64csv);
+  areAllShipped(orders[index]);
+}
+
+function areAllShipped(order) {
+  let untrackedItem = false;
+  order?.items.forEach((item) => {
+    if (item.tracking_number === "") {
+      untrackedItem = true;
+    }
+  });
+
+  if (!untrackedItem) {
+    order.shipping_status = "Complete";
+  }
 }
 
 export { getTrackingNumber };

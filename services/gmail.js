@@ -119,10 +119,15 @@ async function getEmailBody(messageId, orders) {
             receivedOrders[trackingResult[0]]?.id
           }`
         );
-        await orders.updateOrder(
-          receivedOrders[trackingResult[0]]?.id,
-          trackingResult[1]
-        );
+        if (
+          receivedOrders[trackingResult[0]]?.shipping_status === "Incomplete"
+        ) {
+          await orders.updateOrder(
+            receivedOrders[trackingResult[0]]?.id,
+            trackingResult[1]
+          );
+        } else {
+        }
       }
     }
   }
