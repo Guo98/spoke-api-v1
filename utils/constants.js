@@ -162,6 +162,7 @@ const suppliers = {
   "Razer Kiyo Streaming Webcam": "Amazon",
   "Fully Desk Chair": "Fully",
   "Fully Remi Standing Desk": "Fully",
+  "Alani Desk Chair": "Fully",
 };
 
 const fullyMapping = {

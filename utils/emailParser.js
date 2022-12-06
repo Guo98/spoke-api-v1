@@ -27,7 +27,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
     if (supplier === "CTS") {
       orderNum = parseInt(subject.replace(/\D/g, ""));
       console.log(
-        `getTrackingNumber() => Email received for order number: ${orderNum}`
+        `getTrackingNumber() =CTS email received for order number: ${orderNum}`
       );
     }
     for (let i = 0; i < orders.length; i++) {
@@ -74,7 +74,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   } else if (supplier === "CTS") {
     addCTSTrackingNumber(decodedMessage, orders, supplier, orderIndex);
   }
-  console.log("checking :::::: ", orders[orderIndex]?.items);
+  // console.log("checking :::::: ", orders[orderIndex]?.items);
   return [orderIndex, orders[orderIndex]?.items];
 }
 
@@ -111,7 +111,7 @@ function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
   const base64csv = createAftershipCSV(aftershipArray);
 
   sendAftershipCSV(base64csv);
-  areAllShipped(orders[index]);
+  // areAllShipped(orders[index]);
 }
 
 // Fully parser, handles the multiple parts of desks
@@ -168,7 +168,7 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
   const base64csv = createAftershipCSV(aftershipArray);
 
   sendAftershipCSV(base64csv);
-  areAllShipped(orders[index]);
+  // areAllShipped(orders[index]);
 }
 
 function areAllShipped(order) {

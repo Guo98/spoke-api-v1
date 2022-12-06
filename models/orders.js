@@ -41,8 +41,8 @@ class Orders {
     return doc;
   }
 
-  async updateOrder(itemId, items) {
-    const doc = await this.getItem(itemId);
+  async updateOrder(itemId, fullNameKey, items) {
+    const doc = await this.getItem(itemId, fullNameKey);
 
     doc.items = items;
 
@@ -60,8 +60,9 @@ class Orders {
     return receivedList;
   }
 
-  async getItem(itemId) {
-    const { resource } = await this.container.item(itemId, partitionKey).read();
+  async getItem(itemId, fullNameKey) {
+    const { resource } = await this.container.item(itemId, fullNameKey).read();
+
     return resource;
   }
 }
