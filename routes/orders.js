@@ -52,12 +52,12 @@ router.post("/pushTracking", async (req, res) => {
 
 // router.get("/getMessage/:messageid", async (req, res) => {
 //   const messageId = req.params.messageid;
-//   // const receivedOrders = await orders.getAllReceived();
+//   const receivedOrders = await orders.getAllReceived();
 //   const updateItems = await getEmailBody(messageId, orders);
-//   // console.log("update items ::::::::: ", updateItems);
-//   // if (updateItems && updateItems[0]) {
-//   //   await orders.updateOrder(updateItems[0], updateItems[1]);
-//   // }
+//   console.log("update items ::::::::: ", updateItems);
+//   if (updateItems && updateItems[0]) {
+//     await orders.updateOrder(updateItems[0], updateItems[1]);
+//   }
 
 //   res.send("Hello world email!");
 // });
@@ -84,28 +84,43 @@ router.post("/createOrder", async (req, res) => {
     phone,
     client,
   } = mappedInfo;
+
   console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
     console.log("/createOrder => Mapped row item: " + items[i].name);
-    const resp = await addOrderRow(
-      orderNo,
-      client,
-      firstName + " " + lastName,
-      email,
-      items[i].name,
-      items[i].price,
-      address,
-      phone,
-      note,
-      items[i].variant,
-      items[i].supplier
-    );
+    try {
+      const resp = await addOrderRow(
+        orderNo,
+        client,
+        firstName + " " + lastName,
+        email,
+        items[i].name,
+        items[i].price,
+        address,
+        phone,
+        note,
+        items[i].variant,
+        items[i].supplier
+      );
+    } catch (e) {
+      console.log(
+        "/createOrder => Error in adding row to consolidated orders sheet: ",
+        item[i].name
+      );
+    }
   }
-  // console.log("/createOrder => Adding order to airtable.");
-  //await createRecord(customerInfo);
-  console.log("/createOrder => Adding order to Orders db.");
-  await setOrders(orders, mappedInfo);
-  console.log("/createOrder => Ending route.");
+  if (items.length > 0) {
+    if (client === "FLYR") {
+      console.log("/createOrder => Adding order to airtable.");
+      await createRecord(customerInfo, client);
+    }
+    console.log("/createOrder => Adding order to Orders db.");
+    await setOrders(orders, mappedInfo);
+    console.log("/createOrder => Ending route.");
+  } else {
+    console.log("/createOrder => No items were present.");
+  }
+  console.log("/createOrder => Finished.");
   res.send("Creating order");
 });
 

@@ -53,6 +53,9 @@ async function sendAftershipCSV(content) {
           {
             email: "andy@withspoke.com",
           },
+          {
+            email: "info@withspoke.com",
+          },
         ],
       },
       attachments: [attachment],

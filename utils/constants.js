@@ -60,6 +60,12 @@ const suppliers = {
     location: "US",
     type: "laptop",
   },
+  'MacBook Pro M1 Chip 16.2": 16GB (FLYR)': {
+    supplier: "CTS",
+    company: "FLYR",
+    location: "US",
+    type: "laptop",
+  },
   'MacBook Pro M1 Chip 16.2": 16GB (FLYR - Non-Engineering)': {
     supplier: "ABT Electronics",
     company: "FLYR",
@@ -235,6 +241,36 @@ const fullyMappingToWix = {
   "Jarvis Arm - Single - White": "Jarvis Monitor Arm (EU)",
 };
 
+const euCodes = [
+  "AUT",
+  "BEL",
+  "BGR",
+  "HRV",
+  "CYP",
+  "CZE",
+  "DNK",
+  "EST",
+  "FIN",
+  "FRA",
+  "DEU",
+  "GRC",
+  "HUN",
+  "IRL",
+  "ITA",
+  "LVA",
+  "LTU",
+  "LUX",
+  "MLT",
+  "NLD",
+  "POL",
+  "PRT",
+  "ROU",
+  "SVK",
+  "SVN",
+  "ESP",
+  "SWE",
+];
+
 export {
   trackingEmails,
   trackingRegex,
@@ -242,4 +278,5 @@ export {
   suppliers,
   fullyMapping,
   fullyMappingToWix,
+  euCodes,
 };

@@ -8,7 +8,7 @@ function createAftershipCSV(customerInfo) {
     csvRows.push(csvRow);
   });
 
-  return btoa(csvRows.join("\n"));
+  return customerInfo.length > 0 ? btoa(csvRows.join("\n")) : "";
 }
 
 export { createAftershipCSV };

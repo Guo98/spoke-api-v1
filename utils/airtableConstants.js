@@ -1,5 +1,5 @@
 const baseIds = {
-  flyr: "appFWDQO3sOOBimEM",
+  flyr: "app596aeoBWMcWZZw",
   nursedash: "app8dpLfqZABe5gn9",
   bowery: "appGF9jIDpXMYHQmk",
   test: "appeCVfCNVVQOYcFI",
@@ -7,7 +7,7 @@ const baseIds = {
 
 const orderTables = {
   test: "Table 1",
-  flyr: "FLYR Labs - Orders Overview",
+  flyr: "FLYR Labs - Order Overview",
   nursedash: "NurseDash - Orders Overview",
   bowery: "Bowery - Orders Overview",
 };
@@ -24,6 +24,18 @@ const deployedTables = {
   flyr: "FLYR Labs - Deployed",
   nursedash: "NurseDash - Deployed",
   bowery: "Bowery - Deployed",
+};
+
+const inventoryOverview = {
+  flyr: "FLYR Labs - Inventory Overview",
+};
+
+const overviewRecords = {
+  flyr: {
+    'MacBook Pro M1 Chip 16.2": 16GB (FLYR)': "recnGz7P5UFfCic7t",
+    'MacBook Pro M1 Chip 16.2": 32GB (FLYR)': "recmC8dOGgSpNF3RB",
+    'MacBook Pro M1 Chip 14.2": 32GB (FLYR New Zealand)': "reciXWKWkMOfxtYSM",
+  },
 };
 
 const flyrLaptops = [
@@ -54,6 +66,16 @@ const flyrLaptops = [
   'MacBook Pro M1 Chip "14: 32GB (FLYR Other)',
   " $ -   ",
 ];
+
+const laptopMappings = {
+  flyr: {
+    'MacBook Pro M1 Chip 16.2": 16GB (FLYR)': [
+      'MacBook Pro M1 Chip 16.2": 16GB (FLYR - Stock)',
+      'MacBook Pro M1 Chip 16.2": 16GB (FLYR - Non-Engineering)',
+    ],
+    'MacBook Pro M1 Chip 16.2": 32GB (FLYR)': [],
+  },
+};
 
 const boweryLaptops = [
   'MacBook Pro M1 Chip 14.2": 32GB',
@@ -114,4 +136,6 @@ export {
   deployedTables,
   boweryLaptops,
   nursedashLaptops,
+  overviewRecords,
+  inventoryOverview,
 };
