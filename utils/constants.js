@@ -13,6 +13,7 @@ const trackingRegex = {
   logitech: /InquiryNumber1=(\w{18})/,
   bh: /<a[^>]*>(\d{12}|\d{15})<\/a>/,
   CTS: /(\d{12}|\d{15})/,
+  CTSOrder: /Order \d{5}/,
 };
 
 const devices = {

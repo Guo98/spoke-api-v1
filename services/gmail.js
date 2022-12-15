@@ -113,27 +113,32 @@ async function getEmailBody(messageId, orders) {
         subject
       );
 
-      if (receivedOrders[trackingResult[0]]?.id) {
-        console.log(
-          `getEmailBody(${messageId}) => Should update this document in the database: ${
-            receivedOrders[trackingResult[0]]?.id
-          }`
-        );
-
-        if (
-          receivedOrders[trackingResult[0]]?.shipping_status === "Incomplete"
-        ) {
-          await orders.updateOrder(
-            receivedOrders[trackingResult[0]]?.id,
-            receivedOrders[trackingResult[0]]?.full_name,
-            trackingResult[1]
-          );
-        } else {
-          console.log("reaches here instead >>>>>>>>> ", trackingResult[1]);
+      for (let i = 0; i < trackingResult.length; i++) {
+        const orderIndex = trackingResult[i].orderIndex;
+        const updatedItems = trackingResult[i].items;
+        if (receivedOrders[orderIndex]?.id) {
+          if (receivedOrders[orderIndex]?.shipping_status === "Incomplete") {
+            if (
+              JSON.stringify(receivedOrders[orderIndex]?.items) !==
+              JSON.stringify(updatedItems)
+            ) {
+              console.log(
+                `getEmailBody(${messageId}) => Should update this document in the database: ${receivedOrders[orderIndex]?.id}`
+              );
+              await orders.updateOrder(
+                receivedOrders[orderIndex]?.id,
+                receivedOrders[orderIndex]?.full_name,
+                updatedItems
+              );
+            }
+          } else {
+            console.log("reaches here instead >>>>>>>>> ");
+          }
         }
       }
     }
   }
+  console.log(`getEmailBody(${messageId}) => Ending function.`);
 }
 
 function checkFromEmail(headers) {

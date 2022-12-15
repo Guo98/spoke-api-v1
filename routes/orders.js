@@ -112,7 +112,7 @@ router.post("/createOrder", async (req, res) => {
   if (items.length > 0) {
     if (client === "FLYR") {
       console.log("/createOrder => Adding order to airtable.");
-      await createRecord(customerInfo, client);
+      await createRecord(mappedInfo, client);
     }
     console.log("/createOrder => Adding order to Orders db.");
     await setOrders(orders, mappedInfo);

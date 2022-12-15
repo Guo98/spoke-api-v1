@@ -63,6 +63,9 @@ async function createRecord(customerInfo, client) {
             console.log(
               `createRecord(${orderNo}) => Updating delpoyed table with laptop: ${item.name}`
             );
+            if (country === "USA") {
+              items[i].supplier = "CTS";
+            }
             base(deployedTables[constantField]).create(
               [
                 {

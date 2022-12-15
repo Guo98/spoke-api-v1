@@ -21,13 +21,37 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
   const $ = cheerio.load(decodedMessage);
   let orderIndex = -1;
-
+  let orderIndexList = [];
   if (orders?.length > 0) {
-    let orderNum = 0;
+    let orderNum = [];
     if (supplier === "CTS") {
-      orderNum = parseInt(subject.replace(/\D/g, ""));
+      if (subject.indexOf("entries") > -1) {
+        $("p").each((i, ptag) => {
+          const text = $(ptag).text();
+          if (text.indexOf("Order") > -1) {
+            const ctsOrders = text.split("-");
+            ctsOrders.forEach((ctsOrder) => {
+              // console.log(
+              //   "each order :::::: ",
+              //   parseInt(
+              //     trackingRegex.CTSOrder.exec(ctsOrder)[0].replace("Order ", "")
+              //   )
+              // );
+              orderNum.push(
+                parseInt(
+                  trackingRegex.CTSOrder.exec(ctsOrder)[0].replace("Order ", "")
+                )
+              );
+            });
+            // orderNum.push(parseInt(text.replace(/\D/g, "")));
+          }
+        });
+      } else {
+        orderNum.push(parseInt(subject.replace(/\D/g, "")));
+      }
+
       console.log(
-        `getTrackingNumber() =CTS email received for order number: ${orderNum}`
+        `getTrackingNumber() => CTS email received for order number: ${orderNum}`
       );
     }
     for (let i = 0; i < orders.length; i++) {
@@ -37,8 +61,17 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
         decodedMessage.indexOf(orders[i].address?.city) > -1
       ) {
         orderIndex = i;
-      } else if (supplier === "CTS" && orders[i].orderNo === orderNum) {
-        orderIndex = i;
+      } else if (
+        supplier === "CTS" &&
+        orderNum.indexOf(orders[i].orderNo) > -1 &&
+        orderNum.length !== orderIndexList.length
+      ) {
+        const numberIndex = orderNum.indexOf(orders[i].orderNo);
+        orderIndexList.push({
+          orderNo: orderNum[numberIndex],
+          orderIndex: i,
+          splitIndex: numberIndex,
+        });
       }
       // console.log("checking db order no >>>>>>>>> ", orders[i].orderNo);
       // console.log("parsed out ");
@@ -68,14 +101,30 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   //     }
   //   });
   // }
-
+  let updateResult = [];
   if (supplier === "Fully") {
     addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+    updateResult.push({
+      orderIndex: orderIndex,
+      items: orders[orderIndex]?.items,
+    });
   } else if (supplier === "CTS") {
-    addCTSTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+    orderIndexList.forEach((obj) => {
+      addCTSTrackingNumber(
+        decodedMessage,
+        orders,
+        supplier,
+        obj.orderIndex,
+        obj.splitIndex
+      );
+      updateResult.push({
+        orderIndex: obj.orderIndex,
+        items: orders[obj.orderIndex]?.items,
+      });
+    });
   }
   // console.log("checking :::::: ", orders[orderIndex]?.items);
-  return [orderIndex, orders[orderIndex]?.items];
+  return updateResult;
 }
 
 /* 
@@ -83,17 +132,25 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
 */
 
 // CTS smartsheet email parser
-function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
+function addCTSTrackingNumber(
+  decodedMessage,
+  orders,
+  supplier,
+  index,
+  lineIndex
+) {
   console.log("addCTSTrackingNumber() => Starting function.");
   const $ = cheerio.load(decodedMessage);
   let aftershipArray = [];
+
   $("p").each((i, ptag) => {
     const text = $(ptag).text();
+    const orderLines = text.split("-");
+    if (orderLines[lineIndex].indexOf("Tracking #") > -1) {
+      const splitLine = orderLines[lineIndex];
+      const trackNum = trackingRegex[supplier].exec(splitLine)[0];
 
-    if (text.indexOf("Tracking #") > -1) {
-      const trackNum = trackingRegex[supplier].exec(text)[0];
-
-      orders[index].items.forEach((item) => {
+      orders[index]?.items.forEach((item) => {
         if (item.supplier === supplier && item.tracking_number === "") {
           item.tracking_number = [trackNum];
           const aftershipObj = {
@@ -109,9 +166,9 @@ function addCTSTrackingNumber(decodedMessage, orders, supplier, index) {
     }
   });
   const base64csv = createAftershipCSV(aftershipArray);
-
   sendAftershipCSV(base64csv);
   // areAllShipped(orders[index]);
+  console.log("addCTSTrackingNumber() => Ending function.");
 }
 
 // Fully parser, handles the multiple parts of desks
