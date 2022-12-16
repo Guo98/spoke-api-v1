@@ -28,23 +28,34 @@ orders
 const router = Router();
 
 router.post("/pushTracking", async (req, res) => {
-  console.log("/pushTracking => Starting route.");
   const historyData = JSON.parse(atob(req.body.message.data));
-  console.log("/pushTracking => history data:", historyData);
+  const newHistoryId = historyData?.historyId;
+  console.log(`/pushTracking/${newHistoryId} => Starting route.`);
+  let historyRecord = await orders.getLastReadEmail();
+  const prevHistoryId = historyRecord?.historyId;
+  console.log(
+    `/pushTracking/${newHistoryId} => Got old history data: ${prevHistoryId}`
+  );
 
   if (historyData.historyId) {
+    historyRecord.historyId = newHistoryId;
     try {
       console.log(
-        "/pushTracking => Starting getEmailId() with:",
-        historyData.historyId
+        `/pushTracking/${newHistoryId} => Starting getEmailId() with: ${prevHistoryId}`
       );
-      await getEmailId(historyData.historyId, orders);
+      await getEmailId(prevHistoryId, orders);
       console.log(
-        "/pushTracking => Finishing getEmailId() with:",
-        historyData.historyId
+        `/pushTracking/${newHistoryId} => Finishing getEmailId() with: ${prevHistoryId}`
+      );
+      console.log(`/pushTracking/${newHistoryId} => Updating history id.`);
+      const updateResult = await orders.updateHistoryId(historyRecord);
+      console.log(
+        `/pushTracking/${newHistoryId} => Finished updating history id.`
       );
     } catch (e) {
-      console.log("/pushTracking => Error in getEmailId(): ", e);
+      console.log(
+        `/pushTracking/${newHistoryId} => Error in getEmailId(): ${e}`
+      );
     }
   }
   res.send({ message: "Successful!" });

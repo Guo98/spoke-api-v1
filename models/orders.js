@@ -8,6 +8,7 @@ class Orders {
 
     this.database = null;
     this.container = null;
+    this.emailContainer = null;
   }
 
   async init() {
@@ -21,6 +22,11 @@ class Orders {
       id: this.collectionId,
     });
     this.container = coResponse.container;
+
+    const emailCoResponse = await this.database.containers.createIfNotExists({
+      id: "email",
+    });
+    this.emailContainer = emailCoResponse.container;
   }
 
   async find(querySpec) {
@@ -64,6 +70,22 @@ class Orders {
     const { resource } = await this.container.item(itemId, fullNameKey).read();
 
     return resource;
+  }
+
+  async getLastReadEmail() {
+    const { resource } = await this.emailContainer
+      .item("historyid", "historyid")
+      .read();
+
+    return resource;
+  }
+
+  async updateHistoryId(updateObj) {
+    const { resource: replaced } = await this.emailContainer
+      .item("historyid", "historyid")
+      .replace(updateObj);
+
+    return replaced;
   }
 }
 export { Orders };

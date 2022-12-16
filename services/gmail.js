@@ -21,11 +21,13 @@ async function getEmailId(historyid, orders) {
 
   const res = await gmail.users.history.list({
     userId: "info@withspoke.com",
+    labelId: "Label_4974424275359511511",
     startHistoryId: historyid,
   });
   console.log(
-    `getEmailId(${historyid}) =>  gmail users history list results: 
-    ${JSON.stringify(res.data)}`
+    `getEmailId(${historyid}) =>  gmail users history list results: ${JSON.stringify(
+      res.data
+    )}`
   );
   if (res.data.history && res.data.history.length > 0) {
     const messageId = res.data.history[0].messages[0].id;
