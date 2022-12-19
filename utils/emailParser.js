@@ -4,8 +4,9 @@ import {
   fullyMapping,
   fullyMappingToWix,
 } from "../utils/constants.js";
-import { createAftershipCSV } from "../services/aftership.js";
-import { sendAftershipCSV } from "../services/sendEmail.js";
+import { addBHTrackingNumber } from "./parsers/bh.js";
+import { addFullyTrackingNumber } from "./parsers/fully.js";
+import { addCTSTrackingNumber } from "./parsers/cts.js";
 import cheerio from "cheerio";
 
 /**
@@ -31,19 +32,12 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
           if (text.indexOf("Order") > -1) {
             const ctsOrders = text.split("-");
             ctsOrders.forEach((ctsOrder) => {
-              // console.log(
-              //   "each order :::::: ",
-              //   parseInt(
-              //     trackingRegex.CTSOrder.exec(ctsOrder)[0].replace("Order ", "")
-              //   )
-              // );
               orderNum.push(
                 parseInt(
                   trackingRegex.CTSOrder.exec(ctsOrder)[0].replace("Order ", "")
                 )
               );
             });
-            // orderNum.push(parseInt(text.replace(/\D/g, "")));
           }
         });
       } else {
@@ -53,6 +47,12 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
       console.log(
         `getTrackingNumber() => CTS email received for order number: ${orderNum}`
       );
+    } else if (
+      supplier === "bh" &&
+      decodedMessage.indexOf("Critical Technology Services") > -1
+    ) {
+      console.log(`getTrackingNumber() => B&H order going to CTS.`);
+      return [];
     }
     for (let i = 0; i < orders.length; i++) {
       if (
@@ -61,6 +61,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
         decodedMessage.indexOf(orders[i].address?.city) > -1
       ) {
         orderIndex = i;
+        break;
       } else if (
         supplier === "CTS" &&
         orderNum.indexOf(orders[i].orderNo) > -1 &&
@@ -73,8 +74,6 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
           splitIndex: numberIndex,
         });
       }
-      // console.log("checking db order no >>>>>>>>> ", orders[i].orderNo);
-      // console.log("parsed out ");
     }
   }
 
@@ -102,130 +101,38 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   //   });
   // }
   let updateResult = [];
-  if (supplier === "Fully") {
-    addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
-    updateResult.push({
-      orderIndex: orderIndex,
-      items: orders[orderIndex]?.items,
-    });
-  } else if (supplier === "CTS") {
-    orderIndexList.forEach((obj) => {
-      addCTSTrackingNumber(
-        decodedMessage,
-        orders,
-        supplier,
-        obj.orderIndex,
-        obj.splitIndex
-      );
+  if (orderIndex > -1 || orderIndexList.length !== 0) {
+    if (supplier === "Fully") {
+      addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
       updateResult.push({
-        orderIndex: obj.orderIndex,
-        items: orders[obj.orderIndex]?.items,
+        orderIndex: orderIndex,
+        items: orders[orderIndex]?.items,
       });
-    });
+    } else if (supplier === "CTS") {
+      orderIndexList.forEach((obj) => {
+        addCTSTrackingNumber(
+          decodedMessage,
+          orders,
+          supplier,
+          obj.orderIndex,
+          obj.splitIndex
+        );
+        updateResult.push({
+          orderIndex: obj.orderIndex,
+          items: orders[obj.orderIndex]?.items,
+        });
+      });
+    } else if (supplier === "bh") {
+      addBHTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+      updateResult.push({
+        orderIndex: orderIndex,
+        items: orders[orderIndex]?.items,
+      });
+    }
   }
   // console.log("checking :::::: ", orders[orderIndex]?.items);
+  console.log(`getTrackingNumber(supplier: ${supplier}) => Ending function.`);
   return updateResult;
-}
-
-/* 
-  Different parsing methods for different suppliers
-*/
-
-// CTS smartsheet email parser
-function addCTSTrackingNumber(
-  decodedMessage,
-  orders,
-  supplier,
-  index,
-  lineIndex
-) {
-  console.log("addCTSTrackingNumber() => Starting function.");
-  const $ = cheerio.load(decodedMessage);
-  let aftershipArray = [];
-
-  $("p").each((i, ptag) => {
-    const text = $(ptag).text();
-    const orderLines = text.split("-");
-    if (orderLines[lineIndex].indexOf("Tracking #") > -1) {
-      const splitLine = orderLines[lineIndex];
-      const trackNum = trackingRegex[supplier].exec(splitLine)[0];
-
-      orders[index]?.items.forEach((item) => {
-        if (item.supplier === supplier && item.tracking_number === "") {
-          item.tracking_number = [trackNum];
-          const aftershipObj = {
-            tracking_number: trackNum,
-            email: orders[index].email,
-            title: orders[index].orderNo,
-            customer_name: orders[index].full_name,
-            order_number: item.name,
-          };
-          aftershipArray.push(aftershipObj);
-        }
-      });
-    }
-  });
-  const base64csv = createAftershipCSV(aftershipArray);
-  sendAftershipCSV(base64csv);
-  // areAllShipped(orders[index]);
-  console.log("addCTSTrackingNumber() => Ending function.");
-}
-
-// Fully parser, handles the multiple parts of desks
-function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
-  console.log("addFullyTrackingNumber() => Starting function");
-  const $ = cheerio.load(decodedMessage);
-  let trackNum = "";
-  let itemMapping = {};
-  let aftershipArray = [];
-
-  $("a").each((i, link) => {
-    const href = link.attribs.href;
-    if (href?.indexOf("apps/fedextrack") > -1) {
-      trackNum = trackingRegex[supplier].exec(href)[1].split("&");
-    }
-  });
-
-  $("td").each((i, row) => {
-    const colSpan = row.attribs.colspan;
-    let counterIndex = 0;
-
-    if (colSpan === "18") {
-      const itemText = $(row).text();
-      itemMapping[itemText] = trackNum[counterIndex];
-      const wixItemName = fullyMappingToWix[itemText];
-      const orderIndex = orders[index]?.items?.findIndex(
-        (item) => item.name === wixItemName
-      );
-      const curTrackingNumber = trackNum[counterIndex];
-      let aftershipObj = {
-        email: orders[index].email,
-        title: orders[index].orderNo,
-        customer_name: orders[index].full_name,
-        order_number: item.name,
-      };
-
-      if (orders[index]?.items[orderIndex]?.tracking_number === "") {
-        orders[index].items[orderIndex].tracking_number = [curTrackingNumber];
-        aftershipObj.tracking_number = curTrackingNumber;
-        aftershipArray.push(aftershipObj);
-      } else if (
-        orders[index]?.items[orderIndex]?.tracking_number?.length > 0 &&
-        orders[index]?.items[orderIndex]?.tracking_number?.indexOf(
-          curTrackingNumber
-        ) < 0
-      ) {
-        orders[index].items[orderIndex].tracking_number.push(curTrackingNumber);
-        aftershipObj.tracking_number = curTrackingNumber;
-        aftershipArray.push(aftershipObj);
-      }
-      counterIndex++;
-    }
-  });
-  const base64csv = createAftershipCSV(aftershipArray);
-
-  sendAftershipCSV(base64csv);
-  // areAllShipped(orders[index]);
 }
 
 function areAllShipped(order) {

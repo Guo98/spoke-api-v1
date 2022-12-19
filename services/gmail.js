@@ -82,10 +82,13 @@ async function getEmailBody(messageId, orders) {
         )[0].value;
         break;
       case "logitech":
-        body = res?.data?.payload.parts[0]?.body?.data;
+        body = res?.data?.payload?.parts[0]?.body?.data;
         break;
       case "bh":
-        body = res?.data?.payload.parts[0]?.parts[1]?.body?.data;
+        body = res?.data?.payload?.parts[0]?.parts[1]?.body?.data;
+        subject = res.data.payload.headers.filter(
+          (header) => header.name === "Subject"
+        )[0].value;
         break;
       case "dell":
         body = res?.data?.payload?.parts[0]?.parts[0]?.body?.data;
@@ -97,7 +100,7 @@ async function getEmailBody(messageId, orders) {
         )[0].value;
         break;
       default:
-        body = res?.data?.payload?.parts[1].body;
+        // body = res?.data?.payload?.parts[1].body;
         break;
     }
     console.log(
@@ -106,7 +109,8 @@ async function getEmailBody(messageId, orders) {
 
     if (
       (isTrackingEmail.id === "Fully" && subject.indexOf("has shipped") > -1) ||
-      (isTrackingEmail.id === "CTS" && subject.indexOf("Has Shipped") > -1)
+      (isTrackingEmail.id === "CTS" && subject.indexOf("Has Shipped") > -1) ||
+      (isTrackingEmail.id === "bh" && subject.indexOf("Shipped") > -1)
     ) {
       const trackingResult = getTrackingNumber(
         body,
@@ -120,19 +124,14 @@ async function getEmailBody(messageId, orders) {
         const updatedItems = trackingResult[i].items;
         if (receivedOrders[orderIndex]?.id) {
           if (receivedOrders[orderIndex]?.shipping_status === "Incomplete") {
-            if (
-              JSON.stringify(receivedOrders[orderIndex]?.items) !==
-              JSON.stringify(updatedItems)
-            ) {
-              console.log(
-                `getEmailBody(${messageId}) => Should update this document in the database: ${receivedOrders[orderIndex]?.id}`
-              );
-              await orders.updateOrder(
-                receivedOrders[orderIndex]?.id,
-                receivedOrders[orderIndex]?.full_name,
-                updatedItems
-              );
-            }
+            console.log(
+              `getEmailBody(${messageId}) => Should update this document in the database: ${receivedOrders[orderIndex]?.id}`
+            );
+            await orders.updateOrder(
+              receivedOrders[orderIndex]?.id,
+              receivedOrders[orderIndex]?.full_name,
+              updatedItems
+            );
           } else {
             console.log("reaches here instead >>>>>>>>> ");
           }
