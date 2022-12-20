@@ -3,7 +3,7 @@ import path from "path";
 import { trackingEmails } from "../utils/constants.js";
 import { getTrackingNumber } from "../utils/emailParser.js";
 
-async function getEmailId(historyid, orders) {
+async function getEmailId(historyid, orders, prevMessageId) {
   console.log(`getEmailId(${historyid}) => Starting function.`);
   const JWT = google.auth.JWT;
   const authClient = new JWT({
@@ -34,8 +34,13 @@ async function getEmailId(historyid, orders) {
     console.log(
       `getEmailId(${historyid}) => Has message id, checking email body with: ${messageId}`
     );
-    await getEmailBody(messageId, orders);
+    if (messageId !== prevMessageId) {
+      await getEmailBody(messageId, orders);
+      return messageId;
+    }
   }
+
+  return "";
 }
 
 async function getEmailBody(messageId, orders) {

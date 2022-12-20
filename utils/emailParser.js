@@ -57,7 +57,9 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
     for (let i = 0; i < orders.length; i++) {
       if (
         supplier !== "CTS" &&
-        decodedMessage.indexOf(orders[i].firstName) > -1 &&
+        decodedMessage
+          .toLowerCase()
+          .indexOf(orders[i].firstName.toLowerCase()) > -1 &&
         decodedMessage.indexOf(orders[i].address?.city) > -1
       ) {
         orderIndex = i;

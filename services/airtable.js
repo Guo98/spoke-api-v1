@@ -43,7 +43,11 @@ async function createRecord(customerInfo, client) {
     if (items.length > 0) {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        workplaceList.push(item.name);
+
+        workplaceList.push(
+          item.quantity > 1 ? `${item.name} x ${item.quantity}` : item.name
+        );
+
         if (item.type === "laptop") {
           console.log(
             `createRecord(${orderNo}) => Adding laptop record: ${item.name} and starting updateInventory function.`
@@ -131,6 +135,7 @@ async function addOrders(base, customerInfo, items, status, tableCode) {
     address: { country } = "",
   } = customerInfo;
   console.log(`addOrders(${orderNo}) => Starting function.`);
+
   base(orderTables[tableCode]).create(
     [
       {
@@ -167,6 +172,7 @@ async function updateInventory(base, laptop, tableCode, country) {
     .select({ view: "Grid view" })
     .firstPage();
   let recordId = "";
+  let inventoryLaptopName = "";
 
   for (let i = 0; i < records.length; i++) {
     const recLocation = records[i].fields.Location;
@@ -185,6 +191,7 @@ async function updateInventory(base, laptop, tableCode, country) {
         `updateInventory(${laptop.name}) => Found a match in existing inventory.`
       );
       recordId = records[i].id;
+      inventoryLaptopName = records[i].fields.Item;
       break;
     }
   }
@@ -194,20 +201,20 @@ async function updateInventory(base, laptop, tableCode, country) {
       `updateInventory(${laptop.name}) => No match was found in existing inventory.`
     );
   }
-
-  if (recordId !== "") {
+  // update invenotry
+  if (recordId !== "" && inventoryLaptopName !== "") {
     const updateLaptopList = records.filter(
-      (record) => record.fields.Item === laptop.name
+      (record) => record.fields.Item === inventoryLaptopName
     );
 
-    if (overviewRecords[tableCode][laptop.name]) {
+    if (overviewRecords[tableCode][inventoryLaptopName]) {
       console.log(
         `updateInventory(${laptop.name}) => Updating inventory overview table.`
       );
       base(inventoryOverview[tableCode]).update(
         [
           {
-            id: overviewRecords[tableCode][laptop.name],
+            id: overviewRecords[tableCode][inventoryLaptopName],
             fields: {
               Quantity: updateLaptopList.length - 1,
             },
@@ -262,6 +269,8 @@ function getCountryCode(wixCountryCode) {
     result = "US";
   } else if (wixCountryCode === "GBR") {
     result = "UK";
+  } else if (wixCountryCode === "POL") {
+    result = "POL";
   } else if (euCodes.indexOf(wixCountryCode) > -1) {
     result = "EU";
   }

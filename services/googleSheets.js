@@ -141,7 +141,8 @@ async function addOrderRow(
   phone,
   note,
   variant,
-  supplier
+  supplier,
+  quantity
 ) {
   const auth = new GoogleAuth({
     keyFile: "keys.json",
@@ -199,6 +200,11 @@ async function addOrderRow(
                 {
                   userEnteredValue: {
                     stringValue: item,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    numberValue: quantity,
                   },
                 },
                 {
