@@ -87,5 +87,22 @@ class Orders {
 
     return replaced;
   }
+
+  async removeFromReceived(id, name) {
+    const item = this.container.item(id, name);
+    await item.delete();
+  }
+
+  async completeOrder(client, obj) {
+    const clientCoResponse = await this.database.containers.createIfNotExists({
+      id: client,
+    });
+
+    let clientContainer = clientCoResponse.container;
+
+    const { resource: doc } = await clientContainer.items.create(obj);
+
+    return doc;
+  }
 }
 export { Orders };

@@ -2,6 +2,7 @@ import cheerio from "cheerio";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
 import { createAftershipCSV } from "../../services/aftership.js";
 import { trackingRegex } from "../constants.js";
+import { areAllShipped } from "../utility.js";
 
 function addCTSTrackingNumber(
   decodedMessage,
@@ -36,9 +37,21 @@ function addCTSTrackingNumber(
       });
     }
   });
-  const base64csv = createAftershipCSV(aftershipArray);
-  sendAftershipCSV(base64csv);
-  // areAllShipped(orders[index]);
+
+  if (aftershipArray.length > 0) {
+    const base64csv = createAftershipCSV(aftershipArray);
+    try {
+      sendAftershipCSV(base64csv);
+      console.log(
+        `addCTSTrackingNumber() => Successfully finished sendAftershipCSV().`
+      );
+    } catch (e) {
+      console.log(
+        `addCTSTrackingNumber() => Error in sendAftershipCSV() function: ${e}`
+      );
+    }
+  }
+  areAllShipped(orders[index]);
   console.log("addCTSTrackingNumber() => Ending function.");
 }
 

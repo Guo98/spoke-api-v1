@@ -128,17 +128,58 @@ async function getEmailBody(messageId, orders) {
         const orderIndex = trackingResult[i].orderIndex;
         const updatedItems = trackingResult[i].items;
         if (receivedOrders[orderIndex]?.id) {
+          const receivedId = receivedOrders[orderIndex].id;
           if (receivedOrders[orderIndex]?.shipping_status === "Incomplete") {
             console.log(
               `getEmailBody(${messageId}) => Should update this document in the database: ${receivedOrders[orderIndex]?.id}`
             );
-            await orders.updateOrder(
-              receivedOrders[orderIndex]?.id,
-              receivedOrders[orderIndex]?.full_name,
-              updatedItems
-            );
+            try {
+              await orders.updateOrder(
+                receivedId,
+                receivedOrders[orderIndex]?.full_name,
+                updatedItems
+              );
+              console.log(
+                `getEmailBody(${messageId}) => Successfully updated ${receivedId} in Received container.`
+              );
+            } catch (e) {
+              console.log(
+                `getEmailBody(${messageId}) => Error in updating ${receivedId} in Received container. Error: ${e}`
+              );
+            }
           } else {
-            console.log("reaches here instead >>>>>>>>> ");
+            const orderClient = receivedOrders[orderIndex]?.client;
+            console.log(
+              `getEmailBody(${messageId}) => Should move order from Received container to ${orderClient}.`
+            );
+
+            let updateOrderObj = receivedOrders[orderIndex];
+            updateOrderObj.items = updatedItems;
+            try {
+              await orders.removeFromReceived(
+                receivedId,
+                receivedOrders[orderIndex]?.full_name
+              );
+              console.log(
+                `getEmailBody(${messageId}) => Successfully removed ${receivedId} from Received container.`
+              );
+            } catch (e) {
+              console.log(
+                `getEmailBody(${messageId}) => Error in removing ${receivedId}. Error: ${e}`
+              );
+            }
+            if (orderClient) {
+              try {
+                await orders.completeOrder(orderClient, updateOrderObj);
+                console.log(
+                  `getEmailBody(${messageId}) => Successfully finished moving ${receivedId} to ${orderClient}`
+                );
+              } catch (e) {
+                console.log(
+                  `getEmailBody(${messageId}) => Error in adding order to client: ${orderClient}. Error: $(e)`
+                );
+              }
+            }
           }
         }
       }

@@ -3,9 +3,10 @@ import { sendAftershipCSV } from "../../services/sendEmail.js";
 import { fullyMappingToWix } from "../constants.js";
 import { trackingRegex } from "../constants.js";
 import { createAftershipCSV } from "../../services/aftership.js";
+import { areAllShipped } from "../utility.js";
 
 function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
-  console.log("addFullyTrackingNumber() => Starting function");
+  console.log("addFullyTrackingNumber() => Starting function.");
   const $ = cheerio.load(decodedMessage);
   let trackNum = "";
   let itemMapping = {};
@@ -54,10 +55,22 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
       counterIndex++;
     }
   });
-  const base64csv = createAftershipCSV(aftershipArray);
 
-  sendAftershipCSV(base64csv);
-  // areAllShipped(orders[index]);
+  if (aftershipArray.length > 0) {
+    const base64csv = createAftershipCSV(aftershipArray);
+    try {
+      sendAftershipCSV(base64csv);
+      console.log(
+        `addFullyTrackingNumber() => Successfully finished sendAftershipCSV().`
+      );
+    } catch (e) {
+      console.log(
+        `addFullyTrackingNumber() => Error in sendAftershipCSV() function: ${e}`
+      );
+    }
+  }
+  areAllShipped(orders[index]);
+  console.log("addFullyTrackingNumber() => Ending function.");
 }
 
 export { addFullyTrackingNumber };

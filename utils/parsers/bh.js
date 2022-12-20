@@ -2,6 +2,7 @@ import cheerio from "cheerio";
 import { bhMappings } from "./bhConstants.js";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
 import { createAftershipCSV } from "../../services/aftership.js";
+import { areAllShipped } from "../utility.js";
 
 function addBHTrackingNumber(decodedMessage, orders, supplier, index) {
   console.log("addBHTrackingNumber() => Starting function.");
@@ -32,9 +33,21 @@ function addBHTrackingNumber(decodedMessage, orders, supplier, index) {
       }
     }
   });
-  console.log("addBHTrackingNumber() => Sending Aftership CSV file.");
-  const base64csv = createAftershipCSV(aftershipArray);
-  sendAftershipCSV(base64csv);
+  if (aftershipArray.length > 0) {
+    console.log("addBHTrackingNumber() => Sending Aftership CSV file.");
+    const base64csv = createAftershipCSV(aftershipArray);
+    try {
+      sendAftershipCSV(base64csv);
+      console.log(
+        `addBHTrackingNumber() => Successfully finished sendAftershipCSV().`
+      );
+    } catch (e) {
+      console.log(
+        `addBHTrackingNumber() => Error in sendAftershipCSV() function: ${e}`
+      );
+    }
+  }
+  areAllShipped(orders[index]);
   console.log("addBHTrackingNumber() => Ending function.");
 }
 

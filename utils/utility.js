@@ -2,11 +2,22 @@ function utcDateToSerial(date) {
   const dateSansTime = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
-  //   const intPart = Math.round(
-  //     (dateSansTime.getTime() - Date.UTC(1899, 11, 30)) / DAY_TO_MS
-  //   );
+
   const fracPart = (date.getTime() - dateSansTime.getTime()) / DAY_TO_MS;
   return intPart + fracPart;
 }
 
-export { utcDateToSerial };
+function areAllShipped(order) {
+  let untrackedItem = false;
+  order?.items.forEach((item) => {
+    if (item.tracking_number === "") {
+      untrackedItem = true;
+    }
+  });
+
+  if (!untrackedItem) {
+    order.shipping_status = "Complete";
+  }
+}
+
+export { utcDateToSerial, areAllShipped };

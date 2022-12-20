@@ -137,17 +137,4 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
   return updateResult;
 }
 
-function areAllShipped(order) {
-  let untrackedItem = false;
-  order?.items.forEach((item) => {
-    if (item.tracking_number === "") {
-      untrackedItem = true;
-    }
-  });
-
-  if (!untrackedItem) {
-    order.shipping_status = "Complete";
-  }
-}
-
 export { getTrackingNumber };
