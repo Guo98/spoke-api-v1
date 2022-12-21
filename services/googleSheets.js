@@ -155,7 +155,7 @@ async function addOrderRow(
     auth: authClient,
   });
   const todayDate = new Date();
-
+  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
   const insertData = await sheets.spreadsheets.batchUpdate({
     spreadsheetId: "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
     resource: {
