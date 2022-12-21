@@ -11,7 +11,8 @@ function addCTSTrackingNumber(
   index,
   lineIndex
 ) {
-  console.log("addCTSTrackingNumber() => Starting function.");
+  const orderNum = orders[index];
+  console.log(`addCTSTrackingNumber(${orderNum}) => Starting function.`);
   const $ = cheerio.load(decodedMessage);
   let aftershipArray = [];
 
@@ -33,6 +34,9 @@ function addCTSTrackingNumber(
             order_number: item.name,
           };
           aftershipArray.push(aftershipObj);
+          console.log(
+            `addCTSTrackingNumber(${orderNum}) => Adding tracking number: ${trackNum} to item: ${item.name}`
+          );
         }
       });
     }
@@ -43,16 +47,16 @@ function addCTSTrackingNumber(
     try {
       sendAftershipCSV(base64csv);
       console.log(
-        `addCTSTrackingNumber() => Successfully finished sendAftershipCSV().`
+        `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );
     } catch (e) {
       console.log(
-        `addCTSTrackingNumber() => Error in sendAftershipCSV() function: ${e}`
+        `addCTSTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
       );
     }
   }
   areAllShipped(orders[index]);
-  console.log("addCTSTrackingNumber() => Ending function.");
+  console.log(`addCTSTrackingNumber(${orderNum}) => Ending function.`);
 }
 
 export { addCTSTrackingNumber };

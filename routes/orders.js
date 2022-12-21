@@ -112,35 +112,35 @@ router.post("/createOrder", async (req, res) => {
   console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
     console.log("/createOrder => Mapped row item: " + items[i].name);
-    // try {
-    //   const resp = await addOrderRow(
-    //     orderNo,
-    //     client,
-    //     firstName + " " + lastName,
-    //     email,
-    //     items[i].name,
-    //     items[i].price,
-    //     address,
-    //     phone,
-    //     note,
-    //     items[i].variant,
-    //     items[i].supplier,
-    //     items[i].quantity
-    //   );
-    // } catch (e) {
-    //   console.log(
-    //     "/createOrder => Error in adding row to consolidated orders sheet: ",
-    //     item[i].name
-    //   );
-    // }
+    try {
+      const resp = await addOrderRow(
+        orderNo,
+        client,
+        firstName + " " + lastName,
+        email,
+        items[i].name,
+        items[i].price,
+        address,
+        phone,
+        note,
+        items[i].variant,
+        items[i].supplier,
+        items[i].quantity
+      );
+    } catch (e) {
+      console.log(
+        "/createOrder => Error in adding row to consolidated orders sheet: ",
+        item[i].name
+      );
+    }
   }
   if (items.length > 0) {
     if (client === "FLYR") {
       console.log("/createOrder => Adding order to airtable.");
       await createRecord(mappedInfo, client);
     }
-    // console.log("/createOrder => Adding order to Orders db.");
-    // await setOrders(orders, mappedInfo);
+    console.log("/createOrder => Adding order to Orders db.");
+    await setOrders(orders, mappedInfo);
     console.log("/createOrder => Ending route.");
   } else {
     console.log("/createOrder => No items were present.");

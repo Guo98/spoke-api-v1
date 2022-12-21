@@ -17,7 +17,7 @@ import cheerio from "cheerio";
  * @param {string} subject
  */
 function getTrackingNumber(emailBody, supplier, orders, subject) {
-  console.log(`getTrackingNumber(supplier: ${supplier}) => Starting function.`);
+  console.log(`getTrackingNumber(${supplier}) => Starting function.`);
   let trackNum = "";
   const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
   const $ = cheerio.load(decodedMessage);
@@ -45,13 +45,13 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
       }
 
       console.log(
-        `getTrackingNumber() => CTS email received for order number: ${orderNum}`
+        `getTrackingNumber(${supplier}) => CTS email received for order number(s): ${orderNum}`
       );
     } else if (
       supplier === "bh" &&
       decodedMessage.indexOf("Critical Technology Services") > -1
     ) {
-      console.log(`getTrackingNumber() => B&H order going to CTS.`);
+      console.log(`getTrackingNumber(${supplier}) => B&H order going to CTS.`);
       return [];
     }
     for (let i = 0; i < orders.length; i++) {
@@ -62,6 +62,9 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
           .indexOf(orders[i].firstName.toLowerCase()) > -1 &&
         decodedMessage.indexOf(orders[i].address?.city) > -1
       ) {
+        console.log(
+          `getTrackingNumber(${supplier}) => Matched shipment to order: ${orders[i].orderNo}`
+        );
         orderIndex = i;
         break;
       } else if (
@@ -75,42 +78,28 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
           orderIndex: i,
           splitIndex: numberIndex,
         });
+        console.log(
+          `getTrackingNumber(${supplier}) => Matched shipment to order(s): ${orderIndexList}`
+        );
       }
     }
   }
 
-  // if (supplier === "dell") {
-  //   $("span").each((i, span) => {
-  //     const spanId = span.attribs.id;
-  //     if (spanId?.indexOf("CARRIER_TRACKING_NO_0_0_0") > -1) {
-  //       trackNum = $(span).text();
-  //     }
-  //   });
-  // }
-  // if (supplier !== "dell") {
-  //   $("a").each((i, link) => {
-  //     const href = link.attribs.href;
-  //     if (href?.indexOf("Package_Detail") > -1 && supplier === "bh") {
-  //       if ($(link).text() !== "Track Package") {
-  //         trackNum = $(link).text().trim();
-  //       }
-  //     } else if (
-  //       supplier === "logitech" &&
-  //       $(link).text().indexOf("TRACK YOUR ORDER") > -1
-  //     ) {
-  //       trackNum = trackingRegex[supplier].exec(href)[0].split("=")[1];
-  //     }
-  //   });
-  // }
   let updateResult = [];
   if (orderIndex > -1 || orderIndexList.length !== 0) {
     if (supplier === "Fully") {
+      console.log(
+        `getTrackingNumber(${supplier}) => Adding Fully tracking number.`
+      );
       addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
       updateResult.push({
         orderIndex: orderIndex,
         items: orders[orderIndex]?.items,
       });
     } else if (supplier === "CTS") {
+      console.log(
+        `getTrackingNumber(${supplier}) => Adding CTS tracking number.`
+      );
       orderIndexList.forEach((obj) => {
         addCTSTrackingNumber(
           decodedMessage,
@@ -125,6 +114,9 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
         });
       });
     } else if (supplier === "bh") {
+      console.log(
+        `getTrackingNumber(${supplier}) => Adding B&H tracking number.`
+      );
       addBHTrackingNumber(decodedMessage, orders, supplier, orderIndex);
       updateResult.push({
         orderIndex: orderIndex,
@@ -132,7 +124,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
       });
     }
   }
-  // console.log("checking :::::: ", orders[orderIndex]?.items);
+
   console.log(`getTrackingNumber(supplier: ${supplier}) => Ending function.`);
   return updateResult;
 }
