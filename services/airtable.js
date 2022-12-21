@@ -1,59 +1,281 @@
 import Airtable from "airtable";
-import { baseIds } from "../utils/airtableConstants.js";
+import {
+  baseIds,
+  deployedTables,
+  inventoryOverview,
+  inventoryTables,
+  orderTables,
+  overviewRecords,
+} from "../utils/airtableConstants.js";
+import { euCodes } from "../utils/constants.js";
 
-async function createRecord(customerInfo, item) {
-  let base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-    baseIds.test
-  );
-  console.log("customer info :::::::: ", customerInfo);
-  await retrieveRecord(base);
-  base("Table 1").create(
+// on hold status -> send email to info email of out of stock
+async function createRecord(customerInfo, client) {
+  const {
+    items,
+    address: { country } = "",
+    orderNo,
+    firstName,
+    lastName,
+  } = customerInfo;
+  console.log(`createRecord(${orderNo}) => Starting function.`);
+  let constantField = "";
+  switch (client) {
+    case "FLYR":
+      constantField = "flyr";
+      break;
+    case "NurseDash":
+      constantField = "nursedash";
+      break;
+    case "Bowery":
+      constantField = "bowery";
+      break;
+    default:
+      constantField = "";
+      break;
+  }
+  if (constantField !== "") {
+    let base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
+      baseIds[constantField]
+    );
+    let workplaceList = [];
+    let status = "";
+    if (items.length > 0) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        workplaceList.push(
+          item.quantity > 1 ? `${item.name} x ${item.quantity}` : item.name
+        );
+
+        if (item.type === "laptop") {
+          console.log(
+            `createRecord(${orderNo}) => Adding laptop record: ${item.name} and starting updateInventory function.`
+          );
+          const recordId = await updateInventory(
+            base,
+            item,
+            constantField,
+            country
+          );
+          console.log(
+            `createRecord(${orderNo}) => Finished updateInventory function with result: ${recordId}`
+          );
+          if (recordId === "") {
+            status = "On Hold";
+          } else {
+            console.log(
+              `createRecord(${orderNo}) => Updating delpoyed table with laptop: ${item.name}`
+            );
+            if (country === "USA") {
+              items[i].supplier = "CTS";
+            }
+            base(deployedTables[constantField]).create(
+              [
+                {
+                  fields: {
+                    "Order No.": orderNo,
+                    "Order Date": new Date().toISOString().slice(0, 10),
+                    Recipient: firstName + " " + lastName,
+                    Item: item.name,
+                    Status: "Processing",
+                    Location: getCountryCode(country),
+                  },
+                },
+              ],
+              { typecast: true },
+              (err, records) => {
+                if (err) {
+                  console.log(
+                    `createRecord(${orderNo}) => error in updating deployed table: ${err}`
+                  );
+                  return;
+                }
+
+                records.forEach((record) => {
+                  console.log(
+                    `createRecord(${orderNo}) => Successfully updated deployed table: ${record.getId()}`
+                  );
+                });
+              }
+            );
+            console.log(
+              `createRecord(${orderNo}) => Finished updating deployed table.`
+            );
+          }
+        }
+      }
+
+      try {
+        console.log(`createRecord(${orderNo}) => Starting addOrders function.`);
+        await addOrders(
+          base,
+          customerInfo,
+          workplaceList,
+          status,
+          constantField
+        );
+        console.log(`createOrders(${orderNo}) => Finished addOrders function.`);
+      } catch (err) {
+        console.log(
+          `createRecord(${orderNo}) => Error in addOrders function: ${err}`
+        );
+      }
+    }
+
+    console.log(`createRecord(${orderNo}) => Ending function.`);
+  }
+}
+
+async function addOrders(base, customerInfo, items, status, tableCode) {
+  const {
+    orderNo,
+    firstName,
+    lastName,
+    address: { country } = "",
+  } = customerInfo;
+  console.log(`addOrders(${orderNo}) => Starting function.`);
+
+  base(orderTables[tableCode]).create(
     [
       {
         fields: {
-          "Order No": customerInfo.orderNo,
+          "Order No": orderNo,
           "Order Date": new Date().toISOString().slice(0, 10),
-          Recipient: customerInfo.firstName + " " + customerInfo.lastName,
-          Laptop: item.name,
-          "Workplace Stipend": 0,
-          "Laptop Status": "Shipped",
-          Location: item.location,
+          Recipient: firstName + " " + lastName,
+          Items: items,
+          Status: status || "Order Received",
+          Location: getCountryCode(country),
         },
       },
     ],
+    { typecast: true },
     (err, records) => {
       if (err) {
-        console.error(err);
+        console.log(
+          `addOrders(${orderNo}) => Error in adding record to order overview table: ${err}`
+        );
         return;
       }
       records.forEach((record) => {
-        console.log(record.getId());
+        console.log(
+          `addOrders(${orderNo}) => Successfully added record to order overivew table: ${record.getId()}`
+        );
       });
     }
   );
-
-  // take one from inventory, add one to deployed, subtract from inventory overview
 }
 
-async function retrieveRecord(base) {
-  let inStockLaptops = [];
-  await base("Inventory")
+async function updateInventory(base, laptop, tableCode, country) {
+  console.log(`updateInventory(${laptop.name}) => Starting function.`);
+  const records = await base(inventoryTables[tableCode])
     .select({ view: "Grid view" })
-    .firstPage((err, records) => {
+    .firstPage();
+  let recordId = "";
+  let inventoryLaptopName = "";
+
+  for (let i = 0; i < records.length; i++) {
+    const recLocation = records[i].fields.Location;
+    if (
+      records[i].fields.Item.split("(")[0] === laptop.name.split("(")[0] &&
+      records[i].fields.Status === "In Stock" &&
+      ((recLocation === "US" && country === "USA") ||
+        (euCodes.indexOf(country) > -1 && recLocation === "EU") ||
+        (country === "GBR" && recLocation === "UK") ||
+        (recLocation === "Other" &&
+          country !== "GBR" &&
+          country !== "USA" &&
+          euCodes.indexOf(country) < 0))
+    ) {
+      console.log(
+        `updateInventory(${laptop.name}) => Found a match in existing inventory.`
+      );
+      recordId = records[i].id;
+      inventoryLaptopName = records[i].fields.Item;
+      break;
+    }
+  }
+
+  if (recordId === "") {
+    console.log(
+      `updateInventory(${laptop.name}) => No match was found in existing inventory.`
+    );
+  }
+  // update invenotry
+  if (recordId !== "" && inventoryLaptopName !== "") {
+    const updateLaptopList = records.filter(
+      (record) => record.fields.Item === inventoryLaptopName
+    );
+
+    if (overviewRecords[tableCode][inventoryLaptopName]) {
+      console.log(
+        `updateInventory(${laptop.name}) => Updating inventory overview table.`
+      );
+      base(inventoryOverview[tableCode]).update(
+        [
+          {
+            id: overviewRecords[tableCode][inventoryLaptopName],
+            fields: {
+              Quantity: updateLaptopList.length - 1,
+            },
+          },
+        ],
+        (err, records) => {
+          if (err) {
+            console.log(
+              `updateInventory(${laptop.name}) => Error in updating Inventory Overview Table: ${err}`
+            );
+            return;
+          }
+          records.forEach((record) => {
+            console.log(
+              `updateInventory(${
+                laptop.name
+              }) => Successfully updated record in Inventory Overview table: ${record.getId()}`
+            );
+          });
+        }
+      );
+    }
+  }
+  // delete
+  if (recordId !== "") {
+    console.log(
+      `updateInventory(${laptop.name}) => Deleting laptop from inventory table.`
+    );
+    base(inventoryTables[tableCode]).destroy([recordId], (err, records) => {
       if (err) {
-        console.error("err :::: ", err);
+        console.log(
+          `updateInventory(${laptop.name}) => Error in deleting laptop record: ${err}`
+        );
         return;
       }
-
-      records.forEach(function (record) {
-        console.log("Retrieved ::::::: ", record.get("Item"));
-        if (inStockLaptops.indexOf(record.get("Item")) < -1) {
-          inStockLaptops.push(record.get("Item"));
-        }
+      records.forEach((record) => {
+        console.log(
+          `updateInventory(${
+            laptop.name
+          }) => Successfully deleted laptop record: ${record.getId()}`
+        );
       });
     });
+  }
 
-  console.log("in stock laptops :::::: ", inStockLaptops);
+  return recordId;
 }
 
-export { createRecord, retrieveRecord };
+function getCountryCode(wixCountryCode) {
+  let result = "Other";
+  if (wixCountryCode === "USA") {
+    result = "US";
+  } else if (wixCountryCode === "GBR") {
+    result = "UK";
+  } else if (wixCountryCode === "POL") {
+    result = "POL";
+  } else if (euCodes.indexOf(wixCountryCode) > -1) {
+    result = "EU";
+  }
+
+  return result;
+}
+
+export { createRecord };

@@ -12,6 +12,7 @@ async function addOffboardRow(req) {
     shipping_address,
     phone_num,
     requestor_email,
+    note,
   } = req;
   const auth = new GoogleAuth({
     keyFile: "keys.json",
@@ -55,6 +56,7 @@ async function addOffboardRow(req) {
           "",
           "",
           requestor_email,
+          note,
         ],
       ],
     },
@@ -138,7 +140,9 @@ async function addOrderRow(
   address,
   phone,
   note,
-  variant
+  variant,
+  supplier,
+  quantity
 ) {
   const auth = new GoogleAuth({
     keyFile: "keys.json",
@@ -161,8 +165,8 @@ async function addOrderRow(
             range: {
               sheetId: 1276989321,
               dimension: "ROWS",
-              startIndex: 2,
-              endIndex: 3,
+              startIndex: 1,
+              endIndex: 2,
             },
             inheritFromBefore: false,
           },
@@ -196,6 +200,11 @@ async function addOrderRow(
                 {
                   userEnteredValue: {
                     stringValue: item,
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    numberValue: quantity,
                   },
                 },
                 {
@@ -267,7 +276,13 @@ async function addOrderRow(
                 },
                 {
                   userEnteredValue: {
-                    stringValue: variant,
+                    stringValue:
+                      variant?.length > 0 ? JSON.stringify(variant) : "",
+                  },
+                },
+                {
+                  userEnteredValue: {
+                    stringValue: supplier,
                   },
                 },
               ],
@@ -275,10 +290,10 @@ async function addOrderRow(
             fields: "*",
             range: {
               sheetId: 1276989321,
-              startRowIndex: 2,
-              endRowIndex: 3,
+              startRowIndex: 1,
+              endRowIndex: 2,
               startColumnIndex: 0,
-              endColumnIndex: 18,
+              endColumnIndex: 19,
             },
           },
         },
@@ -286,10 +301,10 @@ async function addOrderRow(
           updateBorders: {
             range: {
               sheetId: 1276989321,
-              startRowIndex: 2,
-              endRowIndex: 3,
+              startRowIndex: 1,
+              endRowIndex: 2,
               startColumnIndex: 0,
-              endColumnIndex: 18,
+              endColumnIndex: 19,
             },
             top: {
               style: "SOLID",

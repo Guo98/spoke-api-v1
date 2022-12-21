@@ -2,10 +2,18 @@ const trackingEmails = [
   { email: "shipment-tracking@amazon.com", id: "amazon" },
   { email: "ord-status@bhphotovideo.com", id: "bh" },
   { email: "outfordelivery@order.dell.com", id: "dell" },
+  { email: "donotreply@fully.com", id: "Fully" },
+  { email: "donotreply@buy.logitech.com", id: "logitech" },
+  { email: "automation@app.smartsheet.com", id: "CTS" },
 ];
 
 const trackingRegex = {
   dell: /trknbr=(\d{12}|\d{15})/,
+  Fully: /tracknumbers=(.*)/,
+  logitech: /InquiryNumber1=(\w{18})/,
+  bh: /<a[^>]*>(\d{12}|\d{15})<\/a>/,
+  CTS: /(\d{12}|\d{15})/,
+  CTSOrder: /Order \d{5}/,
 };
 
 const devices = {
@@ -49,6 +57,12 @@ const suppliers = {
   Redeployment: "CTS",
   'MacBook Pro M1 Chip 16.2": 16GB (FLYR - Stock)': {
     supplier: "ABT Electronics",
+    company: "FLYR",
+    location: "US",
+    type: "laptop",
+  },
+  'MacBook Pro M1 Chip 16.2": 16GB (FLYR)': {
+    supplier: "CTS",
     company: "FLYR",
     location: "US",
     type: "laptop",
@@ -154,6 +168,116 @@ const suppliers = {
   "Vari Task Chair": "Vari",
   "Razer Kiyo Streaming Webcam": "Amazon",
   "Fully Desk Chair": "Fully",
+  "Fully Remi Standing Desk": "Fully",
+  "Alani Desk Chair": "Fully",
 };
 
-export { trackingEmails, trackingRegex, devices, suppliers };
+const fullyMapping = {
+  "Fully Remi Standing Desk": {
+    Oak: 'Fully Work Surface - Laminate - 46"x27" - Oak - with Grommet',
+    default: [
+      "Remi for Fully; Box 1 - V2 - Lifting Columns & Control Box - Black - Mid Range",
+      "Remi for Fully; Box 2 - V2 - Frame Kit - Black - Programmable",
+    ],
+  },
+  "Fully Desk Chair": {
+    Black: "Fully Desk Chair - Black/Black",
+    "White/Gray": "Alani Desk Chair - White/Grey",
+  },
+  "Jarvis Monitor Arm": {
+    Black: "Jarvis Arm - Single - Black",
+    Gray: "Jarvis Arm - Single - Silver",
+  },
+  "Clamp-Mounted Surge Protector": {
+    Black: "Clamp-Mounted Surge Protector - Black",
+  },
+  "Anti Fatigue Mat": {
+    Black: "Topo Mini Standing Mat - Black",
+  },
+};
+
+const looseFullyMappings = {
+  "Fully Remi Standing Desk": [
+    "Remi for Fully",
+    "Fully Work Surface",
+    "Jarvis Grommet Cover",
+  ],
+  "Jarvis Monitor Arm": ["Jarvis Arm"],
+  "Clamp-Mounted Surge Protector": ["Surge Protector"],
+  "Bottle Opener for Remi Desk": ["Bottle Opener"],
+  "Alani Desk Chair": ["Alani Desk Chair"],
+  "Fatigue Mat": ["Topo"],
+  "Aleris LED Desk Lamp with USB": ["Aleris"],
+  "Cooper Standing Desk Converter": ["Cooper"],
+};
+
+const fullyMappingToWix = {
+  "Remi for Fully; Box 1 - V2 - Lifting Columns & Control Box - Black - Mid Range":
+    "Fully Remi Standing Desk",
+  "Remi for Fully; Box 2 - V2 - Frame Kit - Black - Programmable":
+    "Fully Remi Standing Desk",
+  'Fully Work Surface - Laminate - 46"x27" - Oak - with Grommet':
+    "Fully Remi Standing Desk",
+  "Remi for Fully; Box 2 - V2 - Frame Kit - White - Programmable":
+    "Fully Remi Standing Desk",
+  "Fully Desk Chair - Black/Black": "Fully Desk Chair",
+  "Alani Desk Chair - White/Grey": "Fully Desk Chair",
+  "Jarvis Arm - Single - Black": "Jarvis Monitor Arm",
+  "Jarvis Arm - Single - Silver": "Jarvis Monitor Arm",
+  "Clamp-Mounted Surge Protector - Black": "Clamp-Mounted Surge Protector",
+  "Topo Mini Standing Mat - Black": "Anti Fatigue Mat",
+  "Remi for Fully; Box 1 - Lifting Columns & Control Box - White - Mid Range":
+    "Fully Remi Standing Desk",
+  'Fully Work Surface - Laminate - 46"x27" - White - with Grommet':
+    "Fully Remi Standing Desk",
+  "Jarvis Grommet Cover - Black": "Fully Remi Standing Desk",
+  "Jarvis Bottle Opener": "Bottle Opener for Remi Desk",
+  'Fully Work Surface - Laminate - 38"x27" - White - with Grommet':
+    "Fully Remi Standing Desk",
+  "Aleris LED Desk Lamp + USB - White": "Aleris LED Desk Lamp with USB",
+  "Cooper Small - Black Frame - Bamboo Top": "Cooper Standing Desk Converter",
+  'Fully Work Surface - Laminate - 38"x27" - Black - with Grommet':
+    "Fully Remi Standing Desk",
+  "Topo Standing Mat - Black": "Topo Anti-Fatigue Mat",
+  "Jarvis Arm - Single - White": "Jarvis Monitor Arm (EU)",
+};
+
+const euCodes = [
+  "AUT",
+  "BEL",
+  "BGR",
+  "HRV",
+  "CYP",
+  "CZE",
+  "DNK",
+  "EST",
+  "FIN",
+  "FRA",
+  "DEU",
+  "GRC",
+  "HUN",
+  "IRL",
+  "ITA",
+  "LVA",
+  "LTU",
+  "LUX",
+  "MLT",
+  "NLD",
+  "POL",
+  "PRT",
+  "ROU",
+  "SVK",
+  "SVN",
+  "ESP",
+  "SWE",
+];
+
+export {
+  trackingEmails,
+  trackingRegex,
+  devices,
+  suppliers,
+  fullyMapping,
+  fullyMappingToWix,
+  euCodes,
+};

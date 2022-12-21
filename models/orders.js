@@ -8,6 +8,7 @@ class Orders {
 
     this.database = null;
     this.container = null;
+    this.emailContainer = null;
   }
 
   async init() {
@@ -21,6 +22,11 @@ class Orders {
       id: this.collectionId,
     });
     this.container = coResponse.container;
+
+    const emailCoResponse = await this.database.containers.createIfNotExists({
+      id: "email",
+    });
+    this.emailContainer = emailCoResponse.container;
   }
 
   async find(querySpec) {
@@ -41,10 +47,10 @@ class Orders {
     return doc;
   }
 
-  async updateItem(itemId) {
-    const doc = this.getItem(itemId);
+  async updateOrder(itemId, fullNameKey, items) {
+    const doc = await this.getItem(itemId, fullNameKey);
 
-    doc.completed = true;
+    doc.items = items;
 
     const { resource: replaced } = await this.container
       .item(itemId, partitionKey)
@@ -53,9 +59,50 @@ class Orders {
     return replaced;
   }
 
-  async getItem(itemId) {
-    const { resource } = await this.container.item(itemId, partitionKey).read();
+  async getAllReceived() {
+    const { resources: receivedList } = await this.container.items
+      .readAll()
+      .fetchAll();
+    return receivedList;
+  }
+
+  async getItem(itemId, fullNameKey) {
+    const { resource } = await this.container.item(itemId, fullNameKey).read();
+
     return resource;
+  }
+
+  async getLastReadEmail() {
+    const { resource } = await this.emailContainer
+      .item("historyid", "historyid")
+      .read();
+
+    return resource;
+  }
+
+  async updateHistoryId(updateObj) {
+    const { resource: replaced } = await this.emailContainer
+      .item("historyid", "historyid")
+      .replace(updateObj);
+
+    return replaced;
+  }
+
+  async removeFromReceived(id, name) {
+    const item = this.container.item(id, name);
+    await item.delete();
+  }
+
+  async completeOrder(client, obj) {
+    const clientCoResponse = await this.database.containers.createIfNotExists({
+      id: client,
+    });
+
+    let clientContainer = clientCoResponse.container;
+
+    const { resource: doc } = await clientContainer.items.create(obj);
+
+    return doc;
   }
 }
 export { Orders };

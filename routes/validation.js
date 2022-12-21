@@ -17,14 +17,14 @@ router.post("/validateAddress2", async (req, res) => {
 
     if (isAuthenticated) {
       validateAddress(req.body)
-        .then(data => {
+        .then((data) => {
           if (data.status && data.status === 200) {
             res.send({ message: "Successful!" });
           } else {
             throw new Error("Undefined");
           }
         })
-        .catch(err => {
+        .catch((err) => {
           res.status(500).json({ message: "Error validating address" });
         });
     } else {
@@ -48,14 +48,14 @@ router.post("/autocompleteAddress", async (req, res) => {
 
     if (isAuthenticated) {
       autocompleteAddress(req.body.address)
-        .then(data => {
+        .then((data) => {
           if (data.status && data.status === 200) {
             res.send({ message: "Successful!", data: data.data.results });
           } else {
             throw new Error("Undefined");
           }
         })
-        .catch(err => {
+        .catch((err) => {
           res.status(500).json({ message: "Error validating address" });
         });
     } else {
@@ -79,14 +79,15 @@ router.post("/validateAddress", async (req, res) => {
 
     if (isAuthenticated) {
       validateAddress(req.body.address)
-        .then(data => {
+        .then((data) => {
+          // console.log("address data ::::: ", data);
           if (data.status && data.status === 200) {
             res.send({ message: "Successful!", data: data.data });
           } else {
             throw new Error(data.data);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.message === "not in the united states") {
             res.status(500).json({ message: "Country not supported" });
           } else {

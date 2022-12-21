@@ -1,19 +1,20 @@
 import { Router } from "express";
 import { CosmosClient } from "@azure/cosmos";
 import { getTrackingNumber } from "../utils/emailParser.js";
-import { getEmailId } from "../services/gmail.js";
+import { getEmailId, getEmailBody } from "../services/gmail.js";
 import { config } from "../utils/config.js";
 import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
+import { createRecord } from "../services/airtable.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
   key: config.key,
 });
 
-const orders = new Orders(cosmosClient, "Spoke", "Orders");
+const orders = new Orders(cosmosClient, "Orders", "Received");
 
 orders
   .init((err) => {
@@ -28,11 +29,61 @@ const router = Router();
 
 router.post("/pushTracking", async (req, res) => {
   const historyData = JSON.parse(atob(req.body.message.data));
-  console.log("reaches this here :::: ", historyData);
+  const newHistoryId = historyData?.historyId;
+  console.log(`/pushTracking/${newHistoryId} => Starting route.`);
+  let historyRecord = await orders.getLastReadEmail();
+  const prevHistoryId = historyRecord?.historyId;
+  const prevEmailId = historyRecord?.messageId;
 
-  if (historyData.historyId) await getEmailId(historyData.historyId);
-  getTrackingNumber();
-  res.send("Hello World!");
+  console.log(
+    `/pushTracking/${newHistoryId} => Got old history data: ${prevHistoryId}`
+  );
+
+  if (historyData.historyId) {
+    historyRecord.historyId = newHistoryId;
+    try {
+      console.log(
+        `/pushTracking/${newHistoryId} => Starting getEmailId() with: ${prevHistoryId}`
+      );
+      const msgId = await getEmailId(prevHistoryId, orders, prevEmailId);
+      if (msgId !== "") {
+        historyRecord.messageId = msgId;
+      }
+
+      console.log(
+        `/pushTracking/${newHistoryId} => Finishing getEmailId() with: ${prevHistoryId}`
+      );
+    } catch (e) {
+      console.log(
+        `/pushTracking/${newHistoryId} => Error in getEmailId(): ${e}`
+      );
+    }
+
+    try {
+      console.log(`/pushTracking/${newHistoryId} => Updating history id.`);
+      const updateResult = await orders.updateHistoryId(historyRecord);
+      console.log(
+        `/pushTracking/${newHistoryId} => Finished updating history id.`
+      );
+    } catch (e) {
+      console.log(
+        `/pushTracking/${newHistoryId} => Error updating history id.`
+      );
+    }
+  }
+  res.send({ message: "Successful!" });
+});
+
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, orders);
+  console.log("update items ::::::::: ", updateItems);
+  if (updateItems && updateItems[0]) {
+    await orders.updateOrder(updateItems[0], updateItems[1]);
+  }
+
+  res.send("Hello world email!");
 });
 
 /**
@@ -42,34 +93,62 @@ router.post("/pushTracking", async (req, res) => {
  * @param {Number} body.order_no
  */
 router.post("/createOrder", async (req, res) => {
-  console.log("/createOrder => Starting route. ");
+  console.log("/createOrder => Starting route.");
   const { customerInfo } = req.body;
   const mappedInfo = mapLineItems(customerInfo);
 
-  const { orderNo, firstName, lastName, address, note, items, email, phone } =
-    mappedInfo;
+  const {
+    orderNo,
+    firstName,
+    lastName,
+    address,
+    note,
+    items,
+    email,
+    phone,
+    client,
+  } = mappedInfo;
+
   console.log("/createOrder => Adding order to consolidated order sheet.");
   for (let i = 0; i < items.length; i++) {
     console.log("/createOrder => Mapped row item: " + items[i].name);
-    const resp = await addOrderRow(
-      orderNo,
-      mappedInfo.client,
-      firstName + " " + lastName,
-      email,
-      items[i].name,
-      items[i].price,
-      address,
-      phone,
-      note,
-      items[i].variant
-    );
+    try {
+      const resp = await addOrderRow(
+        orderNo,
+        client,
+        firstName + " " + lastName,
+        email,
+        items[i].name,
+        items[i].price,
+        address,
+        phone,
+        note,
+        items[i].variant,
+        items[i].supplier,
+        items[i].quantity
+      );
+    } catch (e) {
+      console.log(
+        "/createOrder => Error in adding row to consolidated orders sheet: ",
+        item[i].name
+      );
+    }
   }
-  console.log("/createOrder => Adding order to Orders db.");
-  await setOrders(orders, mappedInfo);
-  console.log("/createOrder => Ending route.");
+  if (items.length > 0) {
+    if (client === "FLYR") {
+      console.log("/createOrder => Adding order to airtable.");
+      await createRecord(mappedInfo, client);
+    }
+    console.log("/createOrder => Adding order to Orders db.");
+    await setOrders(orders, mappedInfo);
+    console.log("/createOrder => Ending route.");
+  } else {
+    console.log("/createOrder => No items were present.");
+  }
+  console.log("/createOrder => Finished.");
   res.send("Creating order");
 });
 
-router.post("/updateOrder", async (req, res) => {});
+// router.post("/updateOrder", async (req, res) => {});
 
 export default router;

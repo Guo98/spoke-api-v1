@@ -1,5 +1,5 @@
 import { suppliers } from "./constants.js";
-import { createRecord } from "../services/airtable.js";
+// import { createRecord } from "../services/airtable.js";
 
 function mapLineItems(customerInfo) {
   if (customerInfo?.discount?.appliedCoupon) {
@@ -26,22 +26,28 @@ function mapLineItems(customerInfo) {
   if (customerInfo?.items.length > 0) {
     customerInfo.items.forEach((item) => {
       if (suppliers[item.name]) {
-        if (
+        if (item.name === "Offboarding") {
+          item.supplier = suppliers[item.name];
+          customerInfo.client = customerInfo.note;
+        } else if (
           typeof suppliers[item.name] === "object" &&
           suppliers[item.name] !== null
         ) {
           Object.assign(item, suppliers[item.name]);
           if (!customerInfo.client)
             customerInfo.client = suppliers[item.name].company;
-          // createRecord(customerInfo, item);
         } else {
           item.supplier = suppliers[item.name];
         }
       } else {
         item.supplier = "unknown";
       }
+      item.tracking_number = "";
+      item.delivery_company = "";
     });
   }
+  customerInfo.full_name =
+    customerInfo?.firstName + " " + customerInfo?.lastName;
   return customerInfo;
 }
 
