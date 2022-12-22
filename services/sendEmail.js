@@ -32,13 +32,13 @@ async function sendEmail(body) {
   }
 }
 
-async function sendAftershipCSV(content) {
+async function sendAftershipCSV(content, order_no) {
   try {
     // console.log("Sending tracking email with body: ", body);
     let client = new EmailClient(connectionString);
     //send mail
     const attachment = {
-      name: "tracking.txt",
+      name: `${order_no}_tracking.txt`,
       attachmentType: "txt",
       contentBytesBase64: content,
     };

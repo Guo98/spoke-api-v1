@@ -49,7 +49,7 @@ function addBHTrackingNumber(decodedMessage, orders, supplier, index) {
     );
     const base64csv = createAftershipCSV(aftershipArray);
     try {
-      sendAftershipCSV(base64csv);
+      sendAftershipCSV(base64csv, orderNum);
       console.log(
         `addBHTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );

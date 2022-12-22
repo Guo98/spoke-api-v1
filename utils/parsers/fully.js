@@ -67,7 +67,7 @@ function addFullyTrackingNumber(decodedMessage, orders, supplier, index) {
   if (aftershipArray.length > 0) {
     const base64csv = createAftershipCSV(aftershipArray);
     try {
-      sendAftershipCSV(base64csv);
+      sendAftershipCSV(base64csv, orderNum);
       console.log(
         `addFullyTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );
