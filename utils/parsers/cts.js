@@ -11,7 +11,7 @@ function addCTSTrackingNumber(
   index,
   lineIndex
 ) {
-  const orderNum = orders[index];
+  const orderNum = orders[index].orderNo;
   console.log(`addCTSTrackingNumber(${orderNum}) => Starting function.`);
   const $ = cheerio.load(decodedMessage);
   let aftershipArray = [];
@@ -31,7 +31,8 @@ function addCTSTrackingNumber(
             email: orders[index].email,
             title: orders[index].orderNo,
             customer_name: orders[index].full_name,
-            order_number: item.name,
+            order_number:
+              item.name.indexOf('"') > 0 ? item.name.split('"')[0] : item.name,
           };
           aftershipArray.push(aftershipObj);
           console.log(
