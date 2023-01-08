@@ -32,7 +32,7 @@ function addCTSTrackingNumber(
             title: orders[index].orderNo,
             customer_name: orders[index].full_name,
             order_number:
-              item.name.indexOf('"') > 0 ? item.name.split('"')[0] : item.name,
+              item.name.indexOf('"') > -1 ? item.name.split('"')[0] : item.name,
           };
           aftershipArray.push(aftershipObj);
           console.log(

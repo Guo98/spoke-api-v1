@@ -5,6 +5,7 @@ const bhMappings = {
   'U2722D 27" 16:9 IPS Monitor': "monitor",
   "C922 Pro Stream Webcam": "webcam",
   "mStand Laptop Stand (Space Gray)": "stand",
+  "Magic Keyboard with Touch ID and Numeric Keypad (White Keys)": "keyboard",
 };
 
 export { bhMappings };
