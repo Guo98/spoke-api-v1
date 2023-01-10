@@ -164,6 +164,35 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
+router.get("/getAllOrders/:company", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
+  const company = req.params.company;
+  let dbContainer = "";
+
+  switch (company) {
+    case "public":
+      dbContainer = "Mock";
+      break;
+    default:
+      break;
+  }
+
+  if (dbContainer !== "") {
+    const ordersRes = await orders.getAllOrders(dbContainer);
+    ordersRes.forEach((order) => {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    });
+    res.json({ data: { in_progress: [], completed: ordersRes } });
+  } else {
+    res.send("Hello World");
+  }
+});
+
 // router.post("/updateOrder", async (req, res) => {});
 
 export default router;

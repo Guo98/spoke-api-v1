@@ -1,6 +1,6 @@
 const partitionKey = undefined;
 
-class Orders {
+class Inventory {
   constructor(cosmosClient, databaseId, containerId) {
     this.client = cosmosClient;
     this.databaseId = databaseId;
@@ -8,7 +8,6 @@ class Orders {
 
     this.database = null;
     this.container = null;
-    this.emailContainer = null;
   }
 
   async init() {
@@ -22,11 +21,6 @@ class Orders {
       id: this.collectionId,
     });
     this.container = coResponse.container;
-
-    const emailCoResponse = await this.database.containers.createIfNotExists({
-      id: "email",
-    });
-    this.emailContainer = emailCoResponse.container;
   }
 
   async find(querySpec) {
@@ -59,18 +53,10 @@ class Orders {
     return replaced;
   }
 
-  async getAllReceived() {
-    const { resources: receivedList } = await this.container.items
-      .readAll()
-      .fetchAll();
-    return receivedList;
-  }
-
-  async getAllOrders(company) {
+  async getAll(containerId) {
     const coResponse = await this.database.containers.createIfNotExists({
-      id: company,
+      id: containerId,
     });
-
     const { resources: receivedList } = await coResponse.container.items
       .readAll()
       .fetchAll();
@@ -82,38 +68,5 @@ class Orders {
 
     return resource;
   }
-
-  async getLastReadEmail() {
-    const { resource } = await this.emailContainer
-      .item("historyid", "historyid")
-      .read();
-
-    return resource;
-  }
-
-  async updateHistoryId(updateObj) {
-    const { resource: replaced } = await this.emailContainer
-      .item("historyid", "historyid")
-      .replace(updateObj);
-
-    return replaced;
-  }
-
-  async removeFromReceived(id, name) {
-    const item = this.container.item(id, name);
-    await item.delete();
-  }
-
-  async completeOrder(client, obj) {
-    const clientCoResponse = await this.database.containers.createIfNotExists({
-      id: client,
-    });
-
-    let clientContainer = clientCoResponse.container;
-
-    const { resource: doc } = await clientContainer.items.create(obj);
-
-    return doc;
-  }
 }
-export { Orders };
+export { Inventory };
