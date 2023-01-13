@@ -1,9 +1,5 @@
 // import mockData from "./mock.json" assert { type: "json" };
-import {
-  trackingRegex,
-  fullyMapping,
-  fullyMappingToWix,
-} from "../utils/constants.js";
+import { trackingRegex } from "../utils/constants.js";
 import { addBHTrackingNumber } from "./parsers/bh.js";
 import { addFullyTrackingNumber } from "./parsers/fully.js";
 import { addCTSTrackingNumber } from "./parsers/cts.js";

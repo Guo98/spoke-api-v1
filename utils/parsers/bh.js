@@ -28,18 +28,24 @@ function addBHTrackingNumber(decodedMessage, orders, supplier, index) {
         const itemIndex = orders[index].items.findIndex(
           (item) => item.name.toLowerCase().indexOf(productKeyword) > -1
         );
-        orders[index].items[itemIndex].tracking_number = [trackNum];
-        let aftershipObj = {
-          email: orders[index].email,
-          title: orderNum,
-          customer_name: orders[index].full_name,
-          order_number: orders[index].items[itemIndex].name,
-          tracking_number: trackNum,
-        };
-        aftershipArray.push(aftershipObj);
-        console.log(
-          `addBHTrackingNumber(${orderNum}) => Adding tracking number: ${trackNum} to item: ${orders[index].items[itemIndex]}`
-        );
+        if (itemIndex > -1) {
+          orders[index].items[itemIndex].tracking_number = [trackNum];
+          let aftershipObj = {
+            email: orders[index].email,
+            title: orderNum,
+            customer_name: orders[index].full_name,
+            order_number: orders[index].items[itemIndex].name,
+            tracking_number: trackNum,
+          };
+          aftershipArray.push(aftershipObj);
+          console.log(
+            `addBHTrackingNumber(${orderNum}) => Adding tracking number: ${trackNum} to item: ${orders[index].items[itemIndex]}`
+          );
+        } else {
+          console.log(
+            `addBHTrackingNumber(${orderNum}) => Item: ${productDesc} has not been mapped.`
+          );
+        }
       }
     }
   });

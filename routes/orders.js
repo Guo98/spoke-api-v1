@@ -8,6 +8,7 @@ import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
 import { createRecord } from "../services/airtable.js";
 import { basicAuth } from "../services/basicAuth.js";
+import { checkJwt } from "../services/auth0.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -164,7 +165,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company", async (req, res) => {
+router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;

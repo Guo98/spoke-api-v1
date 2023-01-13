@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andyWithSpoke/offboarding-api.git"
+    "url": "git+https://github.com/andyWithSpoke/spoke-api.git"
   },
   "author": "Andy Guo",
   "license": "ISC",

@@ -6,6 +6,7 @@ const bhMappings = {
   "C922 Pro Stream Webcam": "webcam",
   "mStand Laptop Stand (Space Gray)": "stand",
   "Magic Keyboard with Touch ID and Numeric Keypad (White Keys)": "keyboard",
+  "MX Keys Wireless Keyboard for Mac": "keys",
 };
 
 export { bhMappings };
