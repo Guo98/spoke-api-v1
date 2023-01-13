@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'spoke-api'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1A9113E65A0A4446BFB43B513752D191 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_44B6F30F3F994A1AB2152C2F896CA97A }}
           package: .
