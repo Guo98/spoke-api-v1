@@ -4,6 +4,7 @@ import { config } from "../utils/config.js";
 import { Inventory } from "../models/inventory.js";
 import { checkJwt } from "../services/auth0.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
+import { validateAddress } from "../services/address.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -81,6 +82,12 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     (device) => device.sn === serial_number
   );
 
+  const parsedAddress = await validateAddress(address);
+
+  if (parsedAddress.status !== 200) {
+    res.status(500).send("Bad address");
+  }
+
   if (specificLaptopIndex > -1) {
     let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
     if (specificLaptop.status === "In Stock") {
@@ -89,17 +96,31 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       specificLaptop.last_name = last_name;
       specificLaptop.email = email;
 
-      await inventory.updateDevice(
-        deviceId,
-        specificLaptop,
-        containerId,
-        specificLaptopIndex
-      );
+      const addressObj = {
+        al1: parsedAddress.data.address_line1,
+        al2: parsedAddress.data.address_line2,
+        city: parsedAddress.data.city,
+        state: parsedAddress.data.state,
+        postal_code: parsedAddress.data.zipCode,
+        country_code: parsedAddress.data.country,
+      };
+
+      specificLaptop.address = addressObj;
+      try {
+        await inventory.updateDevice(
+          deviceId,
+          specificLaptop,
+          containerId,
+          specificLaptopIndex
+        );
+      } catch (e) {
+        res.status(500).send("error updating db");
+      }
     }
   }
 
   // console.log("specific laptop :::::::::: ", specificLaptop);
-  res.send("Hello World!");
+  res.send("Success");
 });
 
 const determineContainer = (client) => {
