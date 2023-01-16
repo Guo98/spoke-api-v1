@@ -3,6 +3,7 @@ import { CosmosClient } from "@azure/cosmos";
 import { config } from "../utils/config.js";
 import { Inventory } from "../models/inventory.js";
 import { checkJwt } from "../services/auth0.js";
+import { inventoryDBMapping } from "../utils/mappings/inventory.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -24,14 +25,8 @@ const router = Router();
 
 router.get("/getInventory/:company", checkJwt, async (req, res) => {
   const company = req.params.company;
-  let dbContainer = "";
-  switch (company) {
-    case "public":
-      dbContainer = "Mock";
-      break;
-    default:
-      break;
-  }
+  const dbContainer = determineContainer(company);
+
   if (dbContainer !== "") {
     const inventoryRes = await inventory.getAll(dbContainer);
 
@@ -75,6 +70,45 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     serial_number,
     device_location,
   } = req.body;
+
+  const containerId = determineContainer(client);
+
+  const deviceId = inventoryDBMapping[device_name][device_location];
+
+  let inventoryRes = await inventory.getItem(containerId, deviceId);
+
+  let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+    (device) => device.sn === serial_number
+  );
+
+  if (specificLaptopIndex > -1) {
+    let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
+    if (specificLaptop.status === "In Stock") {
+      specificLaptop.status = "Deployed";
+      specificLaptop.first_name = first_name;
+      specificLaptop.last_name = last_name;
+      specificLaptop.email = email;
+
+      await inventory.updateDevice(
+        deviceId,
+        specificLaptop,
+        containerId,
+        specificLaptopIndex
+      );
+    }
+  }
+
+  // console.log("specific laptop :::::::::: ", specificLaptop);
+  res.send("Hello World!");
 });
+
+const determineContainer = (client) => {
+  switch (client) {
+    case "public":
+      return "Mock";
+    default:
+      return "";
+  }
+};
 
 export default router;
