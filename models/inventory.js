@@ -53,6 +53,24 @@ class Inventory {
     return replaced;
   }
 
+  async updateDevice(deviceId, device, containerId, deviceIndex) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
+
+    const { resource } = await coResponse.container
+      .item(deviceId, deviceId)
+      .read();
+
+    resource.serial_numbers[deviceIndex] = device;
+
+    const { resource: replaced } = await coResponse.container
+      .item(deviceId, deviceId)
+      .replace(resource);
+
+    return replaced;
+  }
+
   async getAll(containerId) {
     const coResponse = await this.database.containers.createIfNotExists({
       id: containerId,
@@ -63,8 +81,12 @@ class Inventory {
     return receivedList;
   }
 
-  async getItem(itemId, fullNameKey) {
-    const { resource } = await this.container.item(itemId, fullNameKey).read();
+  async getItem(containerId, itemId) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
+
+    const { resource } = await coResponse.container.item(itemId, itemId).read();
 
     return resource;
   }

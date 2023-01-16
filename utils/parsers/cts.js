@@ -22,9 +22,11 @@ function addCTSTrackingNumber(
     if (orderLines[lineIndex].indexOf("Tracking #") > -1) {
       const splitLine = orderLines[lineIndex];
       const trackNum = trackingRegex[supplier].exec(splitLine)[0];
-
       orders[index]?.items.forEach((item) => {
-        if (item.supplier === supplier && item.tracking_number === "") {
+        if (
+          (item.supplier === supplier || item.type === "laptop") &&
+          item.tracking_number === ""
+        ) {
           item.tracking_number = [trackNum];
           const aftershipObj = {
             tracking_number: trackNum,
