@@ -82,12 +82,6 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     (device) => device.sn === serial_number
   );
 
-  const parsedAddress = await validateAddress(address);
-
-  if (parsedAddress.status !== 200) {
-    res.status(500).send("Bad address");
-  }
-
   if (specificLaptopIndex > -1) {
     let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
     if (specificLaptop.status === "In Stock") {
@@ -95,17 +89,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       specificLaptop.first_name = first_name;
       specificLaptop.last_name = last_name;
       specificLaptop.email = email;
-
-      const addressObj = {
-        al1: parsedAddress.data.address_line1,
-        al2: parsedAddress.data.address_line2,
-        city: parsedAddress.data.city,
-        state: parsedAddress.data.state,
-        postal_code: parsedAddress.data.zipCode,
-        country_code: parsedAddress.data.country,
-      };
-
-      specificLaptop.address = addressObj;
+      specificLaptop.address = address;
       try {
         await inventory.updateDevice(
           deviceId,
