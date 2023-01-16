@@ -1,6 +1,5 @@
 import axios from "axios";
 import parser from "parse-address";
-import { parse } from "dotenv";
 
 async function autocompleteAddress(address) {
   const validateUrl =
@@ -43,7 +42,7 @@ async function validateAddress(address) {
     url: validateUrl,
   };
   const parsed = parser.parseLocation(address);
-  console.log("parsed address :::::: ", parsed);
+
   const result = await axios(options)
     .then((data) => {
       // console.log("address data :::::::: ", data.data.features[0]);
