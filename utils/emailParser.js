@@ -75,7 +75,9 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
           splitIndex: numberIndex,
         });
         console.log(
-          `getTrackingNumber(${supplier}) => Matched shipment to order(s): ${orderIndexList}`
+          `getTrackingNumber(${supplier}) => Matched shipment to order(s): ${JSON.stringify(
+            orderIndexList
+          )}`
         );
       }
     }
