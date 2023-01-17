@@ -4,7 +4,8 @@ import { config } from "../utils/config.js";
 import { Inventory } from "../models/inventory.js";
 import { checkJwt } from "../services/auth0.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
-import { validateAddress } from "../services/address.js";
+import { determineContainer } from "../utils/utility.js";
+import { addOffboardRow } from "../services/googleSheets.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -104,16 +105,49 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
   }
 
   // console.log("specific laptop :::::::::: ", specificLaptop);
-  res.send("Success");
+  res.send({ status: "Success" });
 });
 
-const determineContainer = (client) => {
-  switch (client) {
-    case "public":
-      return "Mock";
-    default:
-      return "";
+router.post("/offboarding", checkJwt, async (req, res) => {
+  const { serial_number, client, device_name, device_location, type } =
+    req.body;
+  // try {
+  //   const sheetsResp = await addOffboardRow(req.body);
+  // } catch (e) {
+  //   console.log("/offboarding => error in google sheets update");
+  // }
+  const containerId = determineContainer(client);
+
+  const deviceId = inventoryDBMapping[device_name][device_location];
+
+  let inventoryRes = await inventory.getItem(containerId, deviceId);
+
+  let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+    (device) => device.sn === serial_number
+  );
+
+  if (specificLaptopIndex > -1) {
+    let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
+    if (specificLaptop.status === "Deployed") {
+      specificLaptop.status = type;
+      delete specificLaptop.first_name;
+      delete specificLaptop.last_name;
+      delete specificLaptop.email;
+      delete specificLaptop.address;
+      try {
+        await inventory.updateDevice(
+          deviceId,
+          specificLaptop,
+          containerId,
+          specificLaptopIndex
+        );
+      } catch (e) {
+        res.status(500).send("error updating db");
+      }
+    }
   }
-};
+
+  res.send({ status: "Success" });
+});
 
 export default router;
