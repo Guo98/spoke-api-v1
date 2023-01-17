@@ -20,4 +20,13 @@ function areAllShipped(order) {
   }
 }
 
-export { utcDateToSerial, areAllShipped };
+const determineContainer = (client) => {
+  switch (client) {
+    case "public":
+      return "Mock";
+    default:
+      return "";
+  }
+};
+
+export { utcDateToSerial, areAllShipped, determineContainer };
