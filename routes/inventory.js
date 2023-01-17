@@ -91,6 +91,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       specificLaptop.last_name = last_name;
       specificLaptop.email = email;
       specificLaptop.address = address;
+      specificLaptop.phone_number = phone_number;
       try {
         await inventory.updateDevice(
           deviceId,
@@ -134,6 +135,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
       delete specificLaptop.last_name;
       delete specificLaptop.email;
       delete specificLaptop.address;
+      delete specificLaptop.phone_number;
       try {
         await inventory.updateDevice(
           deviceId,
