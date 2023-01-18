@@ -6,6 +6,8 @@ import { checkJwt } from "../services/auth0.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
 import { determineContainer } from "../utils/utility.js";
 import { addOffboardRow } from "../services/googleSheets.js";
+import { createAdminDeploy } from "../utils/googleSheetsRows.js";
+import { addOrderRow } from "../services/googleSheets.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -102,10 +104,32 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       } catch (e) {
         res.status(500).send("error updating db");
       }
+
+      const deployValues = createAdminDeploy(
+        client,
+        first_name + " " + last_name,
+        device_name,
+        serial_number,
+        address,
+        shipping,
+        email,
+        phone_number,
+        note
+      );
+
+      try {
+        const resp = addOrderRow(
+          deployValues,
+          "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+          1579665041,
+          11
+        );
+      } catch (e) {
+        console.log("error adding to spreadsheet");
+      }
     }
   }
 
-  // console.log("specific laptop :::::::::: ", specificLaptop);
   res.send({ status: "Success" });
 });
 
