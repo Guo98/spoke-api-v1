@@ -177,14 +177,26 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
   let dbContainer = "";
+  let client = "";
 
   switch (company) {
     case "public":
       dbContainer = "Mock";
+      client = "Public";
       break;
     default:
       break;
   }
+
+  const querySpec = {
+    query: "SELECT * FROM Received r WHERE r.client = @client",
+    parameters: [
+      {
+        name: "@client",
+        value: client,
+      },
+    ],
+  };
 
   if (dbContainer !== "") {
     const ordersRes = await orders.getAllOrders(dbContainer);
@@ -195,7 +207,17 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       delete order._attachments;
       delete order._ts;
     });
-    res.json({ data: { in_progress: [], completed: ordersRes } });
+
+    const inProgRes = await orders.find(querySpec);
+    inProgRes.forEach((order) => {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    });
+
+    res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
   } else {
     res.send("Hello World");
   }
