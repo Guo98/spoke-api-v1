@@ -10,6 +10,7 @@ import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
+import { sendSupportEmail } from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -223,6 +224,15 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   }
 });
 
-// router.post("/updateOrder", async (req, res) => {});
+router.post("/supportEmail", checkJwt, async (req, res) => {
+  try {
+    const emailRes = await sendSupportEmail(req.body);
+    console.log("/supportEmail => Sent support email successfully.");
+  } catch (e) {
+    console.log("/supportEmail => Error in sending support email.");
+    res.status(500).json({ message: "Not successful" });
+  }
+  res.json({ message: "Successful" });
+});
 
 export default router;
