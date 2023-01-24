@@ -202,7 +202,10 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
     const emailResp = await sendSupportEmail(inventoryObj);
   } catch (e) {
     console.log("/requestInventory => sendSupportEmail error");
+    res.status(500).json({ status: "Error in sending email" });
   }
+
+  res.json({ status: "Successful" });
 });
 
 export default router;
