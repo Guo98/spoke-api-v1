@@ -8,6 +8,7 @@ import { determineContainer } from "../utils/utility.js";
 import { addOffboardRow } from "../services/googleSheets.js";
 import { createAdminDeploy } from "../utils/googleSheetsRows.js";
 import { addOrderRow } from "../services/googleSheets.js";
+import { sendSupportEmail } from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -174,6 +175,34 @@ router.post("/offboarding", checkJwt, async (req, res) => {
   }
 
   res.send({ status: "Success" });
+});
+
+/**
+ * @param {string} client
+ * @param {string} requestor_name
+ * @param {string} requestor_email
+ * @param {string} request_type
+ * @param {object} devices
+ * @param {string} notes
+ */
+router.post("/requestInventory", checkJwt, async (req, res) => {
+  const {
+    client,
+    requestor_name,
+    requestor_email,
+    request_type,
+    devices,
+    notes,
+  } = req.body;
+  try {
+    const inventoryObj = {
+      type: "inventory",
+      ...req.body,
+    };
+    const emailResp = await sendSupportEmail(inventoryObj);
+  } catch (e) {
+    console.log("/requestInventory => sendSupportEmail error");
+  }
 });
 
 export default router;

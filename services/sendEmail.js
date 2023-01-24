@@ -33,13 +33,7 @@ async function sendEmail(body) {
 }
 
 async function sendSupportEmail(body) {
-  const {
-    orderNo,
-    customer_name,
-    requestor_email,
-    support_message,
-    support_subject,
-  } = body;
+  const { type } = body;
   try {
     console.log("Sending tracking email with body: ", body);
     let client = new EmailClient(connectionString);
@@ -47,13 +41,14 @@ async function sendSupportEmail(body) {
     const emailMessage = {
       sender: "DoNotReply@withspoke.io",
       content: {
-        subject: `Order #${orderNo} Support Email`,
-        html: generateSupportEmailBody(
-          requestor_email,
-          customer_name,
-          support_subject,
-          support_message
-        ),
+        subject:
+          type === "support"
+            ? `Order #${body.orderNo} Support Email`
+            : `New Inventory Request for ${body.client}`,
+        html:
+          type === "support"
+            ? generateSupportEmailBody(body)
+            : generateInventoryEmailBody(body),
       },
       recipients: {
         to: [
@@ -175,14 +170,19 @@ function generateOffboardingEmailBody(company, name, address) {
   return emailBody;
 }
 
-function generateSupportEmailBody(
-  requestor_email,
-  customer_name,
-  subject,
-  message
-) {
-  const emailBody = `<div dir="ltr">"Requestor Email: "<a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div><div>Customer Name: ${customer_name}</div><div><br></div><div>Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
+function generateSupportEmailBody(body) {
+  const { requestor_email, customer_name, subject, message } = body;
+  const emailBody = `<div dir="ltr">Requestor Email: <a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div><div>Customer Name: ${customer_name}</div><div><br></div><div>Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
 
+  return emailBody;
+}
+
+function generateInventoryEmailBody(body) {
+  const { client, name, items, notes, requestor_email, request_type } = body;
+  const emailBody = `<div dir="ltr">${name} from ${client} has requested ${request_type}<div>${items.map(
+    (item) =>
+      `<div>Device: ${item.name}, Quantity: ${item.quantity}, Location: ${item.location}</div><div><br></div>`
+  )}</div><div>Notes: ${notes}</div><div><br></div><div>Requestor Email: ${requestor_email}</div></div>`;
   return emailBody;
 }
 
