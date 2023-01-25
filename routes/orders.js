@@ -226,7 +226,7 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
 
 router.post("/supportEmail", checkJwt, async (req, res) => {
   try {
-    const emailRes = await sendSupportEmail(req.body);
+    const emailRes = await sendSupportEmail({ ...req.body, type: "support" });
     console.log("/supportEmail => Sent support email successfully.");
   } catch (e) {
     console.log("/supportEmail => Error in sending support email.");

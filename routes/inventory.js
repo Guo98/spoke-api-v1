@@ -186,14 +186,8 @@ router.post("/offboarding", checkJwt, async (req, res) => {
  * @param {string} notes
  */
 router.post("/requestInventory", checkJwt, async (req, res) => {
-  const {
-    client,
-    requestor_name,
-    requestor_email,
-    request_type,
-    devices,
-    notes,
-  } = req.body;
+  const { client, name, requestor_email, request_type, items, notes } =
+    req.body;
   try {
     const inventoryObj = {
       type: "inventory",

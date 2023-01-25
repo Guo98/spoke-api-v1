@@ -181,7 +181,18 @@ function generateInventoryEmailBody(body) {
   const { client, name, items, notes, requestor_email, request_type } = body;
   const emailBody = `<div dir="ltr">${name} from ${client} has requested ${request_type}<div>${items.map(
     (item) =>
-      `<div>Device: ${item.name}, Quantity: ${item.quantity}, Location: ${item.location}</div><div><br></div>`
+      `<div>Device: ${item.name}, Quantity: ${item.quantity}, Location: ${
+        item.location
+      } ${
+        request_type === "a new device"
+          ? ", Specifications: " +
+            item.specifications +
+            ", Color: " +
+            item.color +
+            ", reference url: " +
+            item.refurl
+          : ""
+      }</div><div><br></div>`
   )}</div><div>Notes: ${notes}</div><div><br></div><div>Requestor Email: ${requestor_email}</div></div>`;
   return emailBody;
 }
