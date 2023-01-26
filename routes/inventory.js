@@ -200,6 +200,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
   }
   const containerId = determineContainer(client);
   if (request_type === "a top up") {
+    console.log("/requestInventory => Starting top up DB function.");
     for (let i = 0; i < items.length; i++) {
       const deviceId = inventoryDBMapping[items[i].name][items[i].location];
       try {
@@ -214,6 +215,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
       }
     }
   } else if (request_type === "to send a device to Spoke") {
+    console.log("/requestInventory => Starting send to Spoke DB function.");
     const deviceId = inventoryDBMapping[items[0].name][items[0].location];
     if (deviceId) {
       try {
@@ -242,6 +244,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
       }
     }
   } else {
+    console.log("/requestInventory => Starting new device DB function.");
     const newItem = createLaptopObj(items[0]);
     try {
       let inventoryRes = await inventory.addItem(containerId, newItem);
