@@ -198,8 +198,71 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
     console.log("/requestInventory => sendSupportEmail error");
     res.status(500).json({ status: "Error in sending email" });
   }
+  const containerId = determineContainer(client);
+  if (request_type === "a top up") {
+    for (let i = 0; i < items.length; i++) {
+      const deviceId = inventoryDBMapping[items[i].name][items[i].location];
+      try {
+        let inventoryRes = await inventory.updateLaptopInventory(
+          containerId,
+          deviceId,
+          items[i].quantity
+        );
+      } catch (e) {
+        console.log("/requestInventory => Error in updating inventory in DB.");
+        res.status(500).json({ status: "Error updating DB" });
+      }
+    }
+  } else if (request_type === "to send a device to Spoke") {
+    const deviceId = inventoryDBMapping[items[0].name][items[0].location];
+    if (deviceId) {
+      try {
+        let inventoryRes = await inventory.updateLaptopInventory(
+          containerId,
+          deviceId,
+          items[0].quantity
+        );
+      } catch (e) {
+        console.log(
+          "/requestInventory => Error in updating inventory (send to spoke) in DB."
+        );
+        res.status(500).json({ status: "Error updating DB" });
+      }
+    } else {
+      const newItem = createLaptopObj(items[0]);
+      try {
+        let inventoryRes = await inventory.addItem(containerId, newItem);
+      } catch (e) {
+        console.log(
+          "/requestInventory => Error adding new item (send to spoke) DB."
+        );
+        res
+          .status(500)
+          .json({ status: "Error adding new item (send to spoke) DB" });
+      }
+    }
+  } else {
+    const newItem = createLaptopObj(items[0]);
+    try {
+      let inventoryRes = await inventory.addItem(containerId, newItem);
+    } catch (e) {
+      console.log("/requestInventory => Error adding new item DB.");
+      res.status(500).json({ status: "Error adding new item DB" });
+    }
+  }
 
   res.json({ status: "Successful" });
 });
+
+function createLaptopObj(item) {
+  const randoId = (Math.random() + 1).toString(36).substring(7);
+  const newItem = {
+    name: item.name,
+    location: item.location,
+    id: randoId,
+    adding_stock: item.quantity,
+  };
+  return newItem;
+}
 
 export default router;
