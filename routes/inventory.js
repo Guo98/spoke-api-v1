@@ -216,7 +216,11 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
     }
   } else if (request_type === "to send a device to Spoke") {
     console.log("/requestInventory => Starting send to Spoke DB function.");
-    const deviceId = inventoryDBMapping[items[0].name][items[0].location];
+    let deviceId = undefined;
+    if (inventoryDBMapping[items[0].name]) {
+      deviceId = inventoryDBMapping[items[0].name][items[0].location];
+    }
+
     if (deviceId) {
       try {
         let inventoryRes = await inventory.updateLaptopInventory(
