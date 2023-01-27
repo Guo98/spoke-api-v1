@@ -268,6 +268,7 @@ function createLaptopObj(item) {
     location: item.location,
     id: randoId,
     adding_stock: item.quantity,
+    serial_numbers: [],
   };
   return newItem;
 }
