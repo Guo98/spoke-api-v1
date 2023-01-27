@@ -5,8 +5,10 @@ import { Inventory } from "../models/inventory.js";
 import { checkJwt } from "../services/auth0.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
 import { determineContainer } from "../utils/utility.js";
-import { addOffboardRow } from "../services/googleSheets.js";
-import { createAdminDeploy } from "../utils/googleSheetsRows.js";
+import {
+  createAdminDeploy,
+  createOffboardRow,
+} from "../utils/googleSheetsRows.js";
 import { addOrderRow } from "../services/googleSheets.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
 
@@ -135,13 +137,41 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { serial_number, client, device_name, device_location, type } =
-    req.body;
-  // try {
-  //   const sheetsResp = await addOffboardRow(req.body);
-  // } catch (e) {
-  //   console.log("/offboarding => error in google sheets update");
-  // }
+  const {
+    serial_number,
+    client,
+    device_name,
+    device_location,
+    type,
+    recipient_name,
+    recipient_email,
+    shipping_address,
+    phone_num,
+    requestor_email,
+    note,
+  } = req.body;
+  try {
+    const offboardValues = createOffboardRow(
+      1,
+      client,
+      recipient_name,
+      recipient_email,
+      device_name,
+      shipping_address,
+      phone_num,
+      requestor_email,
+      note
+    );
+
+    const resp = addOrderRow(
+      offboardValues,
+      "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+      1831291341,
+      25
+    );
+  } catch (e) {
+    console.log("/offboarding => error in google sheets update");
+  }
   const containerId = determineContainer(client);
 
   const deviceId = inventoryDBMapping[device_name][device_location];
