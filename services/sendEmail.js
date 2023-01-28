@@ -43,7 +43,7 @@ async function sendSupportEmail(body) {
       content: {
         subject:
           type === "support"
-            ? `Order #${body.orderNo} Support Email`
+            ? `${body.orderNo && `Order #${body.orderNo} `}Support Email`
             : `New Inventory Request for ${body.client}`,
         html:
           type === "support"
@@ -172,7 +172,10 @@ function generateOffboardingEmailBody(company, name, address) {
 
 function generateSupportEmailBody(body) {
   const { requestor_email, customer_name, subject, message } = body;
-  const emailBody = `<div dir="ltr">Requestor Email: <a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div><div>Customer Name: ${customer_name}</div><div><br></div><div>Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
+  const emailBody = `<div dir="ltr">Requestor Email: <a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div>${
+    customer_name &&
+    `<div>Customer Name: ${customer_name}</div><div><br></div><div>`
+  }Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
 
   return emailBody;
 }
