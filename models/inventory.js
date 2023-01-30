@@ -43,7 +43,7 @@ class Inventory {
     return doc;
   }
 
-  async updateLaptopInventory(containerId, deviceId, topupNum) {
+  async updateLaptopInventory(containerId, deviceId, type, topupNum) {
     const coResponse = await this.database.containers.createIfNotExists({
       id: containerId,
     });
@@ -52,7 +52,11 @@ class Inventory {
       .item(deviceId, deviceId)
       .read();
 
-    resource.adding_stock = topupNum;
+    resource.serial_numbers.push({
+      sn: type,
+      status: "In Progress",
+      quantity: topupNum,
+    });
 
     const { resource: replaced } = await coResponse.container
       .item(deviceId, deviceId)

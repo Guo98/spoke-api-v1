@@ -248,6 +248,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
         let inventoryRes = await inventory.updateLaptopInventory(
           containerId,
           deviceId,
+          "Top Up",
           items[i].quantity
         );
       } catch (e) {
@@ -267,6 +268,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
         let inventoryRes = await inventory.updateLaptopInventory(
           containerId,
           deviceId,
+          "Send to Spoke",
           items[0].quantity
         );
       } catch (e) {
@@ -276,7 +278,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
         res.status(500).json({ status: "Error updating DB" });
       }
     } else {
-      const newItem = createLaptopObj(items[0]);
+      const newItem = createLaptopObj(items[0], "Send to Spoke");
       try {
         let inventoryRes = await inventory.addItem(containerId, newItem);
       } catch (e) {
@@ -290,7 +292,7 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
     }
   } else {
     console.log("/requestInventory => Starting new device DB function.");
-    const newItem = createLaptopObj(items[0]);
+    const newItem = createLaptopObj(items[0], "New Device");
     try {
       let inventoryRes = await inventory.addItem(containerId, newItem);
     } catch (e) {
@@ -302,14 +304,16 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
   res.json({ status: "Successful" });
 });
 
-function createLaptopObj(item) {
+function createLaptopObj(item, type) {
   const randoId = (Math.random() + 1).toString(36).substring(7);
   const newItem = {
     name: item.name,
     location: item.location,
     id: randoId,
-    adding_stock: item.quantity,
-    serial_numbers: [],
+    new_device: true,
+    serial_numbers: [
+      { sn: type, status: "In Progress", quantity: item.quantity },
+    ],
   };
   return newItem;
 }
