@@ -314,6 +314,8 @@ function createLaptopObj(item, type) {
     serial_numbers: [
       { sn: type, status: "In Progress", quantity: item.quantity },
     ],
+    image_source:
+      "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
   };
   return newItem;
 }
