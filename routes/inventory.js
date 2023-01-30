@@ -90,6 +90,16 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 
   if (specificLaptopIndex > -1) {
     let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
+    const todayDate = new Date();
+    todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+    const formattedDate =
+      todayDate.getMonth() +
+      1 +
+      "/" +
+      todayDate.getDate() +
+      "/" +
+      todayDate.getFullYear();
+
     if (specificLaptop.status === "In Stock") {
       specificLaptop.status = "Deployed";
       specificLaptop.first_name = first_name;
@@ -97,6 +107,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       specificLaptop.email = email;
       specificLaptop.address = address;
       specificLaptop.phone_number = phone_number;
+      specificLaptop.date_deployed = formattedDate;
       try {
         await inventory.updateDevice(
           deviceId,
