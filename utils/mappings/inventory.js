@@ -9,6 +9,12 @@ const inventoryDBMapping = {
   'Lenovo Chromebook Duet 5 13"': {
     "Georgia, USA": "lenovo_duet_usa",
   },
+  "Razer Blade 14": {
+    "Georgia, USA": "razer_14_usa",
+  },
+  "iPad Pro": {
+    "Georgia, USA": "ipad_usa",
+  },
 };
 
 export { inventoryDBMapping };

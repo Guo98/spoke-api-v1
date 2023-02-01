@@ -32,6 +32,41 @@ async function sendEmail(body) {
   }
 }
 
+async function sendSupportEmail(body) {
+  const { type } = body;
+  try {
+    console.log("Sending tracking email with body: ", body);
+    let client = new EmailClient(connectionString);
+    //send mail
+    const emailMessage = {
+      sender: "DoNotReply@withspoke.io",
+      content: {
+        subject:
+          type === "support"
+            ? `${body.orderNo && `Order #${body.orderNo} `}Support Email`
+            : `New Inventory Request for ${body.client}`,
+        html:
+          type === "support"
+            ? generateSupportEmailBody(body)
+            : generateInventoryEmailBody(body),
+      },
+      recipients: {
+        to: [
+          {
+            email: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    var response = await client.send(emailMessage);
+    console.log("Sent tracking email: ", response);
+    return true;
+  } catch (e) {
+    console.error("Send tracking email error: ", e);
+    return false;
+  }
+}
+
 async function sendAftershipCSV(content, order_no) {
   try {
     // console.log("Sending tracking email with body: ", body);
@@ -135,6 +170,36 @@ function generateOffboardingEmailBody(company, name, address) {
   return emailBody;
 }
 
+function generateSupportEmailBody(body) {
+  const { requestor_email, customer_name, subject, message } = body;
+  const emailBody = `<div dir="ltr">Requestor Email: <a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div>${
+    customer_name &&
+    `<div>Customer Name: ${customer_name}</div><div><br></div><div>`
+  }Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
+
+  return emailBody;
+}
+
+function generateInventoryEmailBody(body) {
+  const { client, name, items, notes, requestor_email, request_type } = body;
+  const emailBody = `<div dir="ltr">${name} from ${client} has requested ${request_type}<div>${items.map(
+    (item) =>
+      `<div>Device: ${item.name}, Quantity: ${item.quantity}, Location: ${
+        item.location
+      } ${
+        request_type === "a new device"
+          ? ", Specifications: " +
+            item.specifications +
+            ", Color: " +
+            item.color +
+            ", reference url: " +
+            item.refurl
+          : ""
+      }</div><div><br></div>`
+  )}</div><div>Notes: ${notes}</div><div><br></div><div>Requestor Email: ${requestor_email}</div></div>`;
+  return emailBody;
+}
+
 function generateRedeploymentEmailBody(company, name, item) {
   const emailBody = `Hi ${name},
 
@@ -161,4 +226,4 @@ function generateTrackingEmailBody(name, tracking_num) {
   return emailBody;
 }
 
-export { sendEmail, sendConfirmation, sendAftershipCSV };
+export { sendEmail, sendConfirmation, sendAftershipCSV, sendSupportEmail };

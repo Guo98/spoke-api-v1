@@ -7,8 +7,10 @@ import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
 import { createRecord } from "../services/airtable.js";
+import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
+import { sendSupportEmail } from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -125,7 +127,7 @@ router.post("/createOrder", async (req, res) => {
     for (let i = 0; i < items.length; i++) {
       console.log("/createOrder => Mapped row item: " + items[i].name);
       try {
-        const resp = await addOrderRow(
+        const orderValues = createConsolidatedRow(
           orderNo,
           client,
           firstName + " " + lastName,
@@ -138,6 +140,12 @@ router.post("/createOrder", async (req, res) => {
           items[i].variant,
           items[i].supplier,
           items[i].quantity
+        );
+        const resp = await addOrderRow(
+          orderValues,
+          "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+          1276989321,
+          19
         );
       } catch (e) {
         console.log(
@@ -170,14 +178,26 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
   let dbContainer = "";
+  let client = "";
 
   switch (company) {
     case "public":
       dbContainer = "Mock";
+      client = "Public";
       break;
     default:
       break;
   }
+
+  const querySpec = {
+    query: "SELECT * FROM Received r WHERE r.client = @client",
+    parameters: [
+      {
+        name: "@client",
+        value: client,
+      },
+    ],
+  };
 
   if (dbContainer !== "") {
     const ordersRes = await orders.getAllOrders(dbContainer);
@@ -188,12 +208,31 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       delete order._attachments;
       delete order._ts;
     });
-    res.json({ data: { in_progress: [], completed: ordersRes } });
+
+    const inProgRes = await orders.find(querySpec);
+    inProgRes.forEach((order) => {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    });
+
+    res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
   } else {
     res.send("Hello World");
   }
 });
 
-// router.post("/updateOrder", async (req, res) => {});
+router.post("/supportEmail", checkJwt, async (req, res) => {
+  try {
+    const emailRes = await sendSupportEmail({ ...req.body, type: "support" });
+    console.log("/supportEmail => Sent support email successfully.");
+  } catch (e) {
+    console.log("/supportEmail => Error in sending support email.");
+    res.status(500).json({ message: "Not successful" });
+  }
+  res.json({ message: "Successful" });
+});
 
 export default router;

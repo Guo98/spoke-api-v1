@@ -130,20 +130,15 @@ async function readRow() {
   return readData;
 }
 
-async function addOrderRow(
-  orderNo,
-  client,
-  name,
-  email,
-  item,
-  price,
-  address,
-  phone,
-  note,
-  variant,
-  supplier,
-  quantity
-) {
+/**
+ *
+ * @param {Array} values
+ * @param {string} spreadsheetId
+ * @param {number} sheetId
+ * @param {number} endColumnIndex
+ * @returns {void}
+ */
+async function addOrderRow(values, spreadsheetId, sheetId, endColumnIndex) {
   const auth = new GoogleAuth({
     keyFile: "keys.json",
     scopes: "https://www.googleapis.com/auth/spreadsheets",
@@ -154,16 +149,16 @@ async function addOrderRow(
     version: "v4",
     auth: authClient,
   });
-  const todayDate = new Date();
-  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+  // const todayDate = new Date();
+  // todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
   const insertData = await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+    spreadsheetId: spreadsheetId,
     resource: {
       requests: [
         {
           insertDimension: {
             range: {
-              sheetId: 1276989321,
+              sheetId: sheetId,
               dimension: "ROWS",
               startIndex: 1,
               endIndex: 2,
@@ -174,137 +169,26 @@ async function addOrderRow(
         {
           updateCells: {
             rows: {
-              values: [
-                {
-                  userEnteredValue: {
-                    numberValue: orderNo,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    formulaValue: `=DATE(${todayDate.getFullYear()}, ${
-                      todayDate.getMonth() + 1
-                    }, ${todayDate.getDate()})`,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: client,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: name,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: item,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    numberValue: quantity,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    numberValue: price,
-                  },
-                  userEnteredFormat: {
-                    numberFormat: { type: "CURRENCY" },
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue:
-                      address.addressLine +
-                      ", " +
-                      address.city +
-                      ", " +
-                      address.subdivision +
-                      " " +
-                      address.postalCode +
-                      ", " +
-                      address.country,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: email,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: phone,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: note,
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: "Order Received",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue:
-                      variant?.length > 0 ? JSON.stringify(variant) : "",
-                  },
-                },
-                {
-                  userEnteredValue: {
-                    stringValue: supplier,
-                  },
-                },
-              ],
+              values: values,
             },
             fields: "*",
             range: {
-              sheetId: 1276989321,
+              sheetId: sheetId,
               startRowIndex: 1,
               endRowIndex: 2,
               startColumnIndex: 0,
-              endColumnIndex: 19,
+              endColumnIndex: endColumnIndex,
             },
           },
         },
         {
           updateBorders: {
             range: {
-              sheetId: 1276989321,
+              sheetId: sheetId,
               startRowIndex: 1,
               endRowIndex: 2,
               startColumnIndex: 0,
-              endColumnIndex: 19,
+              endColumnIndex: endColumnIndex,
             },
             top: {
               style: "SOLID",

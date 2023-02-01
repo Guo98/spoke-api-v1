@@ -34,21 +34,33 @@ class Inventory {
     return resources;
   }
 
-  async addItem(item) {
-    item.date = Date.now();
+  async addItem(containerId, item) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
     // item.completed = false;
-    const { resource: doc } = await this.container.items.create(item);
+    const { resource: doc } = await coResponse.container.items.create(item);
     return doc;
   }
 
-  async updateOrder(itemId, fullNameKey, items) {
-    const doc = await this.getItem(itemId, fullNameKey);
+  async updateLaptopInventory(containerId, deviceId, type, topupNum) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
 
-    doc.items = items;
+    const { resource } = await coResponse.container
+      .item(deviceId, deviceId)
+      .read();
 
-    const { resource: replaced } = await this.container
-      .item(itemId, partitionKey)
-      .replace(doc);
+    resource.serial_numbers.push({
+      sn: type,
+      status: "In Progress",
+      quantity: topupNum,
+    });
+
+    const { resource: replaced } = await coResponse.container
+      .item(deviceId, deviceId)
+      .replace(resource);
 
     return replaced;
   }

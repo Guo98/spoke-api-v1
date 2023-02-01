@@ -41,7 +41,7 @@ class Orders {
   }
 
   async addItem(item) {
-    item.date = Date.now();
+    item.date = new Date().toLocaleDateString("en-US");
     // item.completed = false;
     const { resource: doc } = await this.container.items.create(item);
     return doc;
