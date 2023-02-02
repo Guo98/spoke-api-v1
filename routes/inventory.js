@@ -259,7 +259,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
       delete specificLaptop.phone_number;
       try {
         console.log(
-          `/offboarding/${client} => Updating container: ${containerId} with updated obj: ${JSOn.stringify(
+          `/offboarding/${client} => Updating container: ${containerId} with updated obj: ${JSON.stringify(
             specificLaptop
           )}`
         );
