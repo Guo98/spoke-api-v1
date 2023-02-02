@@ -274,7 +274,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
         );
       } catch (e) {
         console.log(
-          `/offboarding/${client} => Error in updating container: ${containerId} for laptop: ${specificLaptop.sn}`
+          `/offboarding/${client} => Error in updating container: ${containerId} for laptop: ${specificLaptop.sn}. Error: ${e}`
         );
         res.status(500).send({ status: "Error" });
       }
