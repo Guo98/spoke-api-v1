@@ -394,6 +394,68 @@ router.post("/requestInventory", checkJwt, async (req, res) => {
   res.json({ status: "Successful" });
 });
 
+router.get("/resetdata", checkJwt, async (req, res) => {
+  console.log("/resetdata => Starting route.");
+  const resetSN = [
+    "XO3KUPTPCP4L",
+    "L6PNGBPWRLSE",
+    "YVWGL4PSGQX4",
+    "R2LNMFJ",
+    "248QKCY",
+    "2FU9BYDBT985",
+  ];
+  try {
+    console.log(`/resetdata => Getting all inventory to reset.`);
+    const inventoryRes = await inventory.getAll("Mock");
+    for (let i = 0; i < inventoryRes.length; i++) {
+      let changed = false;
+      if (inventoryRes[i].serial_numbers.length > 0) {
+        for (let j = 0; j < inventoryRes[i].serial_numbers.length; j++) {
+          if (resetSN.indexOf(inventoryRes[i].serial_numbers[j].sn) > -1) {
+            changed = true;
+            inventoryRes[i].serial_numbers[j] = resetDevice(
+              inventoryRes[i].serial_numbers[j]
+            );
+          }
+        }
+      }
+
+      if (changed) {
+        try {
+          console.log(`/resetdata => Resetting laptop: ${inventoryRes[i].id}`);
+          const updateRes = await inventory.updateLaptop(
+            "Mock",
+            inventoryRes[i].id,
+            inventoryRes[i]
+          );
+        } catch (err) {
+          console.log(
+            `/resetdata => Error in resetting laptop: ${inventoryRes[i].id}. Error: ${err}`
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.log(
+      `/resetdata => Error getting all inventory to reset. Error: ${e}`
+    );
+  }
+  console.log("/resetdata => Ending route.");
+  res.json({ status: "Success" });
+});
+
+function resetDevice(item) {
+  let resetItem = {
+    sn: item.sn,
+    status: "In Stock",
+    condition: item.condition,
+  };
+  if (item.grade) {
+    resetItem.grade = item.grade;
+  }
+  return resetItem;
+}
+
 function createLaptopObj(item, type) {
   const randoId = (Math.random() + 1).toString(36).substring(7);
   const newItem = {

@@ -65,6 +65,18 @@ class Inventory {
     return replaced;
   }
 
+  async updateLaptop(containerId, deviceId, newDevice) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
+
+    const { resource: replaced } = await coResponse.container
+      .item(deviceId, deviceId)
+      .replace(newDevice);
+
+    return replaced;
+  }
+
   async updateDevice(deviceId, device, containerId, deviceIndex) {
     const coResponse = await this.database.containers.createIfNotExists({
       id: containerId,
