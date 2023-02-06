@@ -4,7 +4,6 @@ import { Blob } from "node:buffer";
 async function exportInventory(res, devices) {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("Inventory");
-  const path = "./Downloads";
 
   worksheet.columns = [
     { header: "Device Name", key: "name", width: 10 },
@@ -17,32 +16,37 @@ async function exportInventory(res, devices) {
   devices.forEach((device) => {
     worksheet.addRow(device);
   });
-  // console.log("in here ::::::::: ", devices);
+
   try {
-    // const data = await workbook.xlsx
-    //   .writeFile(`${path}/inventory.xlsx`)
-    //   .then(() => {
-    //     console.log("should be successful >>>>>>>>>>>");
-    //     res.send({
-    //       status: "Success",
-    //       path: `${path}/inventory.xlsx`,
-    //     });
-    //   });
     const respdata = await workbook.xlsx.writeBuffer();
-    // console.log("test date :::::::::::: ", testdata);
-    // const respdata = await workbook.xlsx.writeBuffer().then((resp) => {
-    //   //   const blob = new Blob([resp], {
-    //   //     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    //   //   });
-    //   //   console.log("buffer ::::::::: ", blob);
-    //   //   saveAs(blob, "inventory.xlsx");
-    //   res.send({ status: "Success", data: resp });
-    // });
+
     res.send({ status: "Success", data: respdata });
   } catch (e) {
-    console.log("error ::::::::: ", e);
     res.send({ status: "Error" });
   }
 }
 
-export { exportInventory };
+async function exportOrders(res, orders) {
+  const workbook = new excelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Inventory");
+
+  worksheet.columns = [
+    { header: "Order Number", key: "orderNo", width: 10 },
+    { header: "Name", key: "name", width: 10 },
+    { header: "Items", key: "items", width: 10 },
+  ];
+
+  orders.forEach((order) => {
+    worksheet.addRow(order);
+  });
+
+  try {
+    const respdata = await workbook.xlsx.writeBuffer();
+
+    res.send({ status: "Success", data: respdata });
+  } catch (e) {
+    res.send({ status: "Error" });
+  }
+}
+
+export { exportInventory, exportOrders };

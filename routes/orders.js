@@ -11,6 +11,8 @@ import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
+import { determineContainer } from "../utils/utility.js";
+import { exportOrders } from "../services/excel.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -233,6 +235,74 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
     res.status(500).json({ message: "Not successful" });
   }
   res.json({ message: "Successful" });
+});
+
+router.get("/downloadorders/:client", checkJwt, async (req, res) => {
+  let containerId = determineContainer(req.params.client);
+  console.log(`/downloadorders/${req.params.client} => Starting route.`);
+  try {
+    console.log(`/downloadorders/${req.params.client} => Getting all orders.`);
+
+    const querySpec = {
+      query: "SELECT * FROM Received r WHERE r.client = @client",
+      parameters: [
+        {
+          name: "@client",
+          value: client,
+        },
+      ],
+    };
+
+    if (containerId !== "") {
+      const ordersRes = await orders.getAllOrders(containerId);
+      ordersRes.forEach((order) => {
+        delete order._rid;
+        delete order._self;
+        delete order._etag;
+        delete order._attachments;
+        delete order._ts;
+      });
+
+      const inProgRes = await orders.find(querySpec);
+      inProgRes.forEach((order) => {
+        delete order._rid;
+        delete order._self;
+        delete order._etag;
+        delete order._attachments;
+        delete order._ts;
+      });
+
+      let allOrders = [];
+
+      ordersRes.forEach((order) => {
+        const items = order.items.map((item) => item.name);
+        allOrders.push({
+          orderNo: order.orderNo,
+          name: order.firstName + " " + order.lastName,
+          items: items.length > 1 ? items.join(", ") : items[0],
+        });
+      });
+
+      inProgRes.forEach((order) => {
+        const items = order.items.map((item) => item.name);
+        allOrders.push({
+          orderNo: order.orderNo,
+          name: order.firstName + " " + order.lastName,
+          items: items.length > 1 ? items.join(", ") : items[0],
+        });
+      });
+
+      console.log(
+        `/downloadorders/${req.params.client} => Got list of all orders.`
+      );
+
+      await exportOrders(res, allOrders);
+    }
+  } catch (e) {
+    res.status(500).send({ status: "Error in here" });
+  }
+  // res.send("Hello World!");
+  console.log(`/downloadorders/${req.params.client} => Ending route.`);
 });
 
 export default router;

@@ -445,7 +445,7 @@ router.get("/resetdata", checkJwt, async (req, res) => {
   res.json({ status: "Success" });
 });
 
-router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
+router.get("/downloadinventory/:client", async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadinventory/${req.params.client} => Starting route.`);
   try {
