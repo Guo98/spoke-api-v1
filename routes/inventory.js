@@ -462,6 +462,7 @@ router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
           ...item,
           name: device.name,
           location: device.location,
+          grade: item.grade ? item.grade : "",
         });
       });
     });
