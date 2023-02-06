@@ -248,7 +248,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
       parameters: [
         {
           name: "@client",
-          value: client,
+          value: req.params.client,
         },
       ],
     };
