@@ -189,6 +189,8 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const {
     serial_number,
     client,
