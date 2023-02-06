@@ -11,6 +11,7 @@ import {
 } from "../utils/googleSheetsRows.js";
 import { addOrderRow } from "../services/googleSheets.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
+import { exportInventory } from "../services/excel.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -442,6 +443,38 @@ router.get("/resetdata", checkJwt, async (req, res) => {
   }
   console.log("/resetdata => Ending route.");
   res.json({ status: "Success" });
+});
+
+router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
+  let containerId = determineContainer(req.params.client);
+  console.log(`/downloadinventory/${req.params.client} => Starting route.`);
+  try {
+    console.log(
+      `/downloadinventory/${req.params.client} => Getting all inventory.`
+    );
+    const inventoryRes = await inventory.getAll(containerId);
+
+    let allDevices = [];
+
+    inventoryRes.forEach((device) => {
+      device.serial_numbers.forEach((item) => {
+        allDevices.push({
+          ...item,
+          name: device.name,
+          location: device.location,
+        });
+      });
+    });
+    console.log(
+      `/downloadinventory/${req.params.client} => Got list of of devices.`
+    );
+
+    await exportInventory(res, allDevices);
+  } catch (e) {
+    res.status(500).send({ status: "Error in here" });
+  }
+  // res.send("Hello World!");
+  console.log(`/downloadinventory/${req.params.client} => Ending route.`);
 });
 
 function resetDevice(item) {
