@@ -28,14 +28,17 @@ async function exportInventory(res, devices) {
     //       path: `${path}/inventory.xlsx`,
     //     });
     //   });
-    const respdata = await workbook.xlsx.writeBuffer().then((resp) => {
-      //   const blob = new Blob([resp], {
-      //     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      //   });
-      //   console.log("buffer ::::::::: ", blob);
-      //   saveAs(blob, "inventory.xlsx");
-      res.send({ status: "Success", data: resp });
-    });
+    const respdata = await workbook.xlsx.writeBuffer();
+    // console.log("test date :::::::::::: ", testdata);
+    // const respdata = await workbook.xlsx.writeBuffer().then((resp) => {
+    //   //   const blob = new Blob([resp], {
+    //   //     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //   //   });
+    //   //   console.log("buffer ::::::::: ", blob);
+    //   //   saveAs(blob, "inventory.xlsx");
+    //   res.send({ status: "Success", data: resp });
+    // });
+    res.send({ status: "Success", data: respdata });
   } catch (e) {
     console.log("error ::::::::: ", e);
     res.send({ status: "Error" });
