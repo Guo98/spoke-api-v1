@@ -189,8 +189,6 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const {
     serial_number,
     client,
@@ -238,48 +236,52 @@ router.post("/offboarding", checkJwt, async (req, res) => {
   }
   const containerId = determineContainer(client);
 
-  const deviceId = inventoryDBMapping[device_name][device_location];
+  let deviceId = "";
+  if (inventoryDBMapping[device_name] && device_location) {
+    deviceId = inventoryDBMapping[device_name][device_location];
+  }
+  if (deviceId !== "") {
+    let inventoryRes = await inventory.getItem(containerId, deviceId);
 
-  let inventoryRes = await inventory.getItem(containerId, deviceId);
-
-  let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
-    (device) => device.sn === serial_number
-  );
-
-  if (specificLaptopIndex > -1) {
-    let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
-    console.log(
-      `/offboarding/${client} => Got laptop index to update in db: ${JSON.stringify(
-        specificLaptop
-      )}`
+    let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+      (device) => device.sn === serial_number
     );
-    if (specificLaptop.status === "Deployed") {
-      specificLaptop.status = type;
-      delete specificLaptop.first_name;
-      delete specificLaptop.last_name;
-      delete specificLaptop.email;
-      delete specificLaptop.address;
-      delete specificLaptop.phone_number;
-      try {
-        console.log(
-          `/offboarding/${client} => Updating container: ${containerId} with updated obj: ${JSON.stringify(
-            specificLaptop
-          )}`
-        );
-        await inventory.updateDevice(
-          deviceId,
-          specificLaptop,
-          containerId,
-          specificLaptopIndex
-        );
-        console.log(
-          `/offboarding/${client} => Finished updating container: ${containerId} for laptop: ${specificLaptop.sn}`
-        );
-      } catch (e) {
-        console.log(
-          `/offboarding/${client} => Error in updating container: ${containerId} for laptop: ${specificLaptop.sn}. Error: ${e}`
-        );
-        res.status(500).send({ status: "Error" });
+
+    if (specificLaptopIndex > -1) {
+      let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
+      console.log(
+        `/offboarding/${client} => Got laptop index to update in db: ${JSON.stringify(
+          specificLaptop
+        )}`
+      );
+      if (specificLaptop.status === "Deployed") {
+        specificLaptop.status = type;
+        delete specificLaptop.first_name;
+        delete specificLaptop.last_name;
+        delete specificLaptop.email;
+        delete specificLaptop.address;
+        delete specificLaptop.phone_number;
+        try {
+          console.log(
+            `/offboarding/${client} => Updating container: ${containerId} with updated obj: ${JSON.stringify(
+              specificLaptop
+            )}`
+          );
+          await inventory.updateDevice(
+            deviceId,
+            specificLaptop,
+            containerId,
+            specificLaptopIndex
+          );
+          console.log(
+            `/offboarding/${client} => Finished updating container: ${containerId} for laptop: ${specificLaptop.sn}`
+          );
+        } catch (e) {
+          console.log(
+            `/offboarding/${client} => Error in updating container: ${containerId} for laptop: ${specificLaptop.sn}. Error: ${e}`
+          );
+          res.status(500).send({ status: "Error" });
+        }
       }
     }
   }
