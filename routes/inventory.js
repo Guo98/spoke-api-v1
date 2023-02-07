@@ -208,20 +208,4 @@ function resetDevice(item) {
   return resetItem;
 }
 
-function createLaptopObj(item, type) {
-  const randoId = (Math.random() + 1).toString(36).substring(7);
-  const newItem = {
-    name: item.name,
-    location: item.location,
-    id: randoId,
-    new_device: true,
-    serial_numbers: [
-      { sn: type, status: "In Progress", quantity: item.quantity },
-    ],
-    image_source:
-      "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
-  };
-  return newItem;
-}
-
 export default router;

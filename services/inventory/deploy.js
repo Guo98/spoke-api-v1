@@ -51,6 +51,7 @@ async function deployLaptop(res, body, inventoryDB) {
           specificLaptop.status = "Deployed";
           specificLaptop.first_name = first_name;
           specificLaptop.last_name = last_name;
+          specificLaptop.full_name = first_name + " " + last_name;
           specificLaptop.email = email;
           specificLaptop.address = address;
           specificLaptop.phone_number = phone_number;
