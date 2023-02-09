@@ -11,6 +11,8 @@ import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
+import { determineContainer } from "../utils/utility.js";
+import { exportOrders } from "../services/excel.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -189,6 +191,8 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       break;
   }
 
+  console.log(`/getAllOrders/${company} => Starting route.`);
+
   const querySpec = {
     query: "SELECT * FROM Received r WHERE r.client = @client",
     parameters: [
@@ -200,39 +204,144 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   };
 
   if (dbContainer !== "") {
-    const ordersRes = await orders.getAllOrders(dbContainer);
-    ordersRes.forEach((order) => {
-      delete order._rid;
-      delete order._self;
-      delete order._etag;
-      delete order._attachments;
-      delete order._ts;
-    });
+    try {
+      console.log(
+        `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
+      );
+      const ordersRes = await orders.getAllOrders(dbContainer);
+      ordersRes.forEach((order) => {
+        delete order._rid;
+        delete order._self;
+        delete order._etag;
+        delete order._attachments;
+        delete order._ts;
+      });
+      console.log(
+        `/getAllOrders/${company} => Finished getting all orders from container: ${dbContainer}`
+      );
 
-    const inProgRes = await orders.find(querySpec);
-    inProgRes.forEach((order) => {
-      delete order._rid;
-      delete order._self;
-      delete order._etag;
-      delete order._attachments;
-      delete order._ts;
-    });
-
-    res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
+      console.log(
+        `/getAllOrders/${company} => Getting all in progress orders for company: ${client}`
+      );
+      const inProgRes = await orders.find(querySpec);
+      inProgRes.forEach((order) => {
+        delete order._rid;
+        delete order._self;
+        delete order._etag;
+        delete order._attachments;
+        delete order._ts;
+      });
+      console.log(
+        `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
+      );
+      res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
+    } catch (e) {
+      console.log(
+        `/getAllOrders/${company} => Error in getting all orders: ${e}`
+      );
+      res.status(500).json({ status: "Error in getting info" });
+    }
   } else {
-    res.send("Hello World");
+    console.log(`/getAllOrders/${company} => Company doesn't exist in DB.`);
+    res.status(500).json({ status: "Error in DB" });
   }
+  console.log(`/getAllOrders/${company} => Ending route.`);
 });
 
 router.post("/supportEmail", checkJwt, async (req, res) => {
+  console.log("/supportEmail => Starting route.");
   try {
+    console.log("/supportEmail => Sending support email.");
     const emailRes = await sendSupportEmail({ ...req.body, type: "support" });
     console.log("/supportEmail => Sent support email successfully.");
   } catch (e) {
     console.log("/supportEmail => Error in sending support email.");
     res.status(500).json({ message: "Not successful" });
   }
-  res.json({ message: "Successful" });
+
+  if (!res.headersSent) res.json({ message: "Successful" });
+
+  console.log("/supportEmail => Ending route.");
+});
+
+router.get("/downloadorders/:client", async (req, res) => {
+  let containerId = determineContainer(req.params.client);
+  console.log(`/downloadorders/${req.params.client} => Starting route.`);
+  try {
+    console.log(`/downloadorders/${req.params.client} => Getting all orders.`);
+    let client = "";
+    switch (req.params.client) {
+      case "public":
+        client = "Public";
+        break;
+      default:
+        break;
+    }
+
+    const querySpec = {
+      query: "SELECT * FROM Received r WHERE r.client = @client",
+      parameters: [
+        {
+          name: "@client",
+          value: client,
+        },
+      ],
+    };
+
+    if (containerId !== "") {
+      const ordersRes = await orders.getAllOrders(containerId);
+
+      let allOrders = [];
+
+      if (client !== "") {
+        const inProgRes = await orders.find(querySpec);
+        if (inProgRes.length > 0) {
+          inProgRes.reverse().forEach((order) => {
+            order.items.forEach((item) => {
+              allOrders.push({
+                orderNo: order.orderNo,
+                name: order.firstName + " " + order.lastName,
+                item: item.name,
+                price: item.price,
+                date: order.date,
+                location:
+                  order.address.subdivision + ", " + order.address.country,
+              });
+            });
+          });
+        }
+      }
+
+      if (ordersRes.length > 0) {
+        ordersRes.reverse().forEach((order) => {
+          order.items.forEach((item) => {
+            allOrders.push({
+              orderNo: order.orderNo,
+              name: order.firstName + " " + order.lastName,
+              item: item.name,
+              price: item.price,
+              date: order.date,
+              location:
+                order.address.subdivision + ", " + order.address.country,
+            });
+          });
+        });
+      }
+
+      console.log(
+        `/downloadorders/${req.params.client} => Got list of all orders.`
+      );
+
+      await exportOrders(res, allOrders, req.params.client);
+    }
+  } catch (e) {
+    console.log(
+      `/downloadorders/${req.params.client} => Error in getting all orders. Error: ${e}`
+    );
+    if (!res.headersSent) res.status(500).send({ status: "Error in here" });
+  }
+  // res.send("Hello World!");
+  console.log(`/downloadorders/${req.params.client} => Ending route.`);
 });
 
 export default router;
