@@ -31,7 +31,7 @@ async function exportInventory(res, devices) {
 
 async function exportOrders(res, orders, client) {
   const workbook = new excelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Inventory");
+  const worksheet = workbook.addWorksheet("Orders");
 
   worksheet.columns = [
     { header: "Order Number", key: "orderNo", width: 10 },
