@@ -295,7 +295,25 @@ router.get("/downloadorders/:client", async (req, res) => {
 
       if (client !== "") {
         const inProgRes = await orders.find(querySpec);
-        inProgRes.forEach((order) => {
+        if (inProgRes.length > 0) {
+          inProgRes.reverse().forEach((order) => {
+            order.items.forEach((item) => {
+              allOrders.push({
+                orderNo: order.orderNo,
+                name: order.firstName + " " + order.lastName,
+                item: item.name,
+                price: item.price,
+                date: order.date,
+                location:
+                  order.address.subdivision + ", " + order.address.country,
+              });
+            });
+          });
+        }
+      }
+
+      if (ordersRes.length > 0) {
+        ordersRes.reverse().forEach((order) => {
           order.items.forEach((item) => {
             allOrders.push({
               orderNo: order.orderNo,
@@ -309,19 +327,6 @@ router.get("/downloadorders/:client", async (req, res) => {
           });
         });
       }
-
-      ordersRes.forEach((order) => {
-        order.items.forEach((item) => {
-          allOrders.push({
-            orderNo: order.orderNo,
-            name: order.firstName + " " + order.lastName,
-            item: item.name,
-            price: item.price,
-            date: order.date,
-            location: order.address.subdivision + ", " + order.address.country,
-          });
-        });
-      });
 
       console.log(
         `/downloadorders/${req.params.client} => Got list of all orders.`
