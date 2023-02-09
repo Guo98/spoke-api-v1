@@ -264,58 +264,62 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", checkJwt, async (req, res) => {
+router.get("/downloadorders/:client", async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
     console.log(`/downloadorders/${req.params.client} => Getting all orders.`);
+    let client = "";
+    switch (req.params.client) {
+      case "public":
+        client = "Public";
+        break;
+      default:
+        break;
+    }
 
     const querySpec = {
       query: "SELECT * FROM Received r WHERE r.client = @client",
       parameters: [
         {
           name: "@client",
-          value: req.params.client,
+          value: client,
         },
       ],
     };
 
     if (containerId !== "") {
       const ordersRes = await orders.getAllOrders(containerId);
-      ordersRes.forEach((order) => {
-        delete order._rid;
-        delete order._self;
-        delete order._etag;
-        delete order._attachments;
-        delete order._ts;
-      });
-
-      const inProgRes = await orders.find(querySpec);
-      inProgRes.forEach((order) => {
-        delete order._rid;
-        delete order._self;
-        delete order._etag;
-        delete order._attachments;
-        delete order._ts;
-      });
 
       let allOrders = [];
 
-      ordersRes.forEach((order) => {
-        const items = order.items.map((item) => item.name);
-        allOrders.push({
-          orderNo: order.orderNo,
-          name: order.firstName + " " + order.lastName,
-          items: items.length > 1 ? items.join(", ") : items[0],
+      if (client !== "") {
+        const inProgRes = await orders.find(querySpec);
+        inProgRes.forEach((order) => {
+          order.items.forEach((item) => {
+            allOrders.push({
+              orderNo: order.orderNo,
+              name: order.firstName + " " + order.lastName,
+              item: item.name,
+              price: item.price,
+              date: order.date,
+              location:
+                order.address.subdivision + ", " + order.address.country,
+            });
+          });
         });
-      });
+      }
 
-      inProgRes.forEach((order) => {
-        const items = order.items.map((item) => item.name);
-        allOrders.push({
-          orderNo: order.orderNo,
-          name: order.firstName + " " + order.lastName,
-          items: items.length > 1 ? items.join(", ") : items[0],
+      ordersRes.forEach((order) => {
+        order.items.forEach((item) => {
+          allOrders.push({
+            orderNo: order.orderNo,
+            name: order.firstName + " " + order.lastName,
+            item: item.name,
+            price: item.price,
+            date: order.date,
+            location: order.address.subdivision + ", " + order.address.country,
+          });
         });
       });
 
@@ -327,7 +331,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     }
   } catch (e) {
     console.log(
-      `/downloadorders/${req.params.client} => Error in getting all orders.`
+      `/downloadorders/${req.params.client} => Error in getting all orders. Error: ${e}`
     );
     if (!res.headersSent) res.status(500).send({ status: "Error in here" });
   }
