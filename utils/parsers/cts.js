@@ -21,7 +21,11 @@ function addCTSTrackingNumber(
     const orderLines = text.split("-");
     if (orderLines[lineIndex].indexOf("Tracking #") > -1) {
       const splitLine = orderLines[lineIndex];
+
       const trackNum = trackingRegex[supplier].exec(splitLine)[0];
+      if (trackNum.indexOf(" ") > -1) {
+        trackNum.replace(" ", "");
+      }
       orders[index]?.items.forEach((item) => {
         if (
           (item.supplier === supplier || item.type === "laptop") &&
@@ -48,7 +52,7 @@ function addCTSTrackingNumber(
   if (aftershipArray.length > 0) {
     const base64csv = createAftershipCSV(aftershipArray);
     try {
-      sendAftershipCSV(base64csv, orderNum);
+      // sendAftershipCSV(base64csv, orderNum);
       console.log(
         `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );

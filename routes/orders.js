@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CosmosClient } from "@azure/cosmos";
-import { getEmailId } from "../services/gmail.js";
+import { getEmailId, getEmailBody } from "../services/gmail.js";
 import { config } from "../utils/config.js";
 import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
