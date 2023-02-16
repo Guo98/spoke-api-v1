@@ -351,4 +351,41 @@ router.get("/downloadorders/:client", async (req, res) => {
   console.log(`/downloadorders/${req.params.client} => Ending route.`);
 });
 
+router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
+  const { client, status } = req.body;
+  console.log(`/updateTrackingNumber/${client} => Starting route.`);
+  if (status === "Complete") {
+    try {
+      const dbResp = await orders.updateOrderByContainer(
+        client,
+        order_id,
+        full_name,
+        items
+      );
+    } catch (e) {
+      console.log(
+        `/updateTrackingNumber/${client} => Error in updating ${client} db with tracking number: ${e}`
+      );
+      res.status(500).json({ status: "Error in updating db: " + e });
+    }
+  } else {
+    try {
+      const dbResp = await orders.updateOrderByContainer(
+        "Received",
+        order_id,
+        full_name,
+        items
+      );
+    } catch (e) {
+      console.log(
+        `/updateTrackingNumber/${client} => Error in updating Received db with tracking number: ${e}`
+      );
+      res.status(500).json({ status: "Error in updating db: " + e });
+    }
+  }
+
+  if (!res.headersSent) res.json({ status: "Success" });
+  console.log(`/updateTrackingNumber/${client} => Ending route.`);
+});
+
 export default router;
