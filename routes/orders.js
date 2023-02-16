@@ -354,7 +354,7 @@ router.get("/downloadorders/:client", async (req, res) => {
 router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
   const { client, status } = req.body;
   console.log(`/updateTrackingNumber/${client} => Starting route.`);
-  if (status === "Complete") {
+  if (status === "Completed") {
     try {
       const dbResp = await orders.updateOrderByContainer(
         client,
