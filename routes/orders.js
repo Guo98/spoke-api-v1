@@ -352,7 +352,7 @@ router.get("/downloadorders/:client", async (req, res) => {
 });
 
 router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
-  const { client, status } = req.body;
+  const { client, status, order_id, items, full_name } = req.body;
   console.log(`/updateTrackingNumber/${client} => Starting route.`);
   if (status === "Completed") {
     try {
