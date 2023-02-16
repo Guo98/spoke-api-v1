@@ -187,6 +187,10 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       dbContainer = "Mock";
       client = "Public";
       break;
+    case "FLYR":
+      dbContainer = "FLYR";
+      client = "FLYR";
+      break;
     default:
       break;
   }
@@ -273,6 +277,9 @@ router.get("/downloadorders/:client", async (req, res) => {
     switch (req.params.client) {
       case "public":
         client = "Public";
+        break;
+      case "FLYR":
+        client = "FLYR";
         break;
       default:
         break;

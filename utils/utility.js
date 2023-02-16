@@ -24,6 +24,8 @@ const determineContainer = (client) => {
   switch (client) {
     case "public":
       return "Mock";
+    case "FLYR":
+      return "FLYR";
     default:
       return "";
   }
