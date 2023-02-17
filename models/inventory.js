@@ -56,6 +56,7 @@ class Inventory {
       sn: type,
       status: "In Progress",
       quantity: topupNum,
+      date_requested: new Date().toLocaleDateString("en-US"),
     });
 
     const { resource: replaced } = await coResponse.container
