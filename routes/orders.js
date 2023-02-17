@@ -407,20 +407,22 @@ router.post("/completeOrder", async (req, res) => {
       .status(500)
       .json({ status: "Error in removing from Received container." });
   }
-
-  try {
-    console.log(
-      `/completeOrder/${client} => Adding order to ${client} container.`
-    );
-    const updateResp = await orders.completeOrder(client, req.body);
-    console.log(
-      `/completeOrder/${client} => Finished adding order to ${client} container`
-    );
-  } catch (e) {
-    console.log(
-      `/completeOrder/${client} => Error in adding order to ${client} container`
-    );
-    res.status(500).json({ status: "Error in moving to container" });
+  if (!res.headersSent) {
+    try {
+      console.log(
+        `/completeOrder/${client} => Adding order to ${client} container.`
+      );
+      req.body.shipping_status = "Completed";
+      const updateResp = await orders.completeOrder(client, req.body);
+      console.log(
+        `/completeOrder/${client} => Finished adding order to ${client} container`
+      );
+    } catch (e) {
+      console.log(
+        `/completeOrder/${client} => Error in adding order to ${client} container`
+      );
+      res.status(500).json({ status: "Error in moving to container" });
+    }
   }
   console.log(`/completeOrder/${client} => Ending route.`);
   if (!res.headersSent) res.json({ status: "Success" });
