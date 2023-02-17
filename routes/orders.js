@@ -388,4 +388,42 @@ router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
   console.log(`/updateTrackingNumber/${client} => Ending route.`);
 });
 
+router.post("/completeOrder", async (req, res) => {
+  const { client, id, full_name } = req.body;
+  console.log(`/completeOrder/${client} => Starting route.`);
+  try {
+    console.log(
+      `/completeOrder/${client} => Removing id: ${id} from Received container.`
+    );
+    await orders.removeFromReceived(id, full_name);
+    console.log(
+      `/completeOrder/${client} => Finished removing id: ${id} from Received container.`
+    );
+  } catch (e) {
+    console.log(
+      `/completeOrder/${client} => Error removing id: ${id} from Received container. Error: ${e}`
+    );
+    res
+      .status(500)
+      .json({ status: "Error in removing from Received container." });
+  }
+
+  try {
+    console.log(
+      `/completeOrder/${client} => Adding order to ${client} container.`
+    );
+    const updateResp = await orders.completeOrder(client, req.body);
+    console.log(
+      `/completeOrder/${client} => Finished adding order to ${client} container`
+    );
+  } catch (e) {
+    console.log(
+      `/completeOrder/${client} => Error in adding order to ${client} container`
+    );
+    res.status(500).json({ status: "Error in moving to container" });
+  }
+  console.log(`/completeOrder/${client} => Ending route.`);
+  if (!res.headersSent) res.json({ status: "Success" });
+});
+
 export default router;
