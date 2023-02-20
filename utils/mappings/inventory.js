@@ -15,6 +15,23 @@ const inventoryDBMapping = {
   "iPad Pro": {
     "Georgia, USA": "ipad_usa",
   },
+  'MacBook Pro 14"': {
+    Netherlands: "macbook_pro_14_nld",
+  },
+  'MacBook Pro 14", 8-core Apple M1 Pro': {
+    Poland: "macbook_pro_14_pol",
+  },
+  'MacBook Pro 14", 10-core Apple M1 Pro': {
+    Poland: "macbook_pro_14_10_pol",
+    Netherlands: "macbook_pro_14_10_nld",
+  },
+  'MacBook Pro 16", 10-core Apple M1 Pro': {
+    Poland: "macbook_pro_16_10_pol",
+    Netherlands: "macbook_pro_16_10_nld",
+  },
+  'MacBook Pro 16", 10-core Apple M1 Pro, 1TB': {
+    Poland: "macbook_pro_16_10_1tb_pol",
+  },
 };
 
 export { inventoryDBMapping };
