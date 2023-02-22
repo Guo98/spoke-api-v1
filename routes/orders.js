@@ -175,7 +175,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
+router.get("/getAllOrders/:company", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
@@ -198,11 +198,16 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Starting route.`);
 
   const querySpec = {
-    query: "SELECT * FROM Received r WHERE r.client = @client",
+    query:
+      "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
     parameters: [
       {
         name: "@client",
         value: client,
+      },
+      {
+        name: "@country",
+        value: "USA",
       },
     ],
   };
@@ -213,7 +218,10 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
         `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
       );
       const ordersRes = await orders.getAllOrders(dbContainer);
-      ordersRes.forEach((order) => {
+      const filteredRes = ordersRes.filter(
+        (order) => order.address.country === "USA"
+      );
+      filteredRes.forEach((order) => {
         delete order._rid;
         delete order._self;
         delete order._etag;
@@ -238,7 +246,7 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
       );
-      res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
+      res.json({ data: { in_progress: inProgRes, completed: filteredRes } });
     } catch (e) {
       console.log(
         `/getAllOrders/${company} => Error in getting all orders: ${e}`
