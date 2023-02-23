@@ -32,6 +32,24 @@ const inventoryDBMapping = {
   'MacBook Pro 16", 10-core Apple M1 Pro, 1TB': {
     Poland: "macbook_pro_16_10_1tb_pol",
   },
+  'MacBook Pro 14" M1: 16GB, 512GB': {
+    "Georgia, USA": "macbook_pro_14_16_usa",
+  },
+  'MacBook Pro 14" M1: 32GB, 1TB': {
+    "Georgia, USA": "macbook_pro_14_32_usa",
+  },
+  'MacBook Pro 16" M1: 16GB, 512GB': {
+    "Georgia, USA": "macbook_pro_16_16_usa",
+  },
+  'MacBook Pro 16" M1: 16GB, 1TB': {
+    "Georgia, USA": "macbook_pro_16_16_1_usa",
+  },
+  'MacBook Pro 16" M1: 32GB, 1TB': {
+    "Georgia, USA": "macbook_pro_16_32_1_usa",
+  },
+  'MacBook Pro 16" M1: 32GB, 512GB': {
+    "Georgia, USA": "macbook_pro_16_32_usa",
+  },
 };
 
 export { inventoryDBMapping };
