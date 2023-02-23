@@ -7,6 +7,10 @@ const bhMappings = {
   "mStand Laptop Stand (Space Gray)": "stand",
   "Magic Keyboard with Touch ID and Numeric Keypad (White Keys)": "keyboard",
   "MX Keys Wireless Keyboard for Mac": "keys",
+  "Magic Mouse (White)": "mouse",
+  "Modern Webcam": "webcam",
+  "WH-1000XM4 Wireless Noise-Canceling Over-Ear Headphones (Black)":
+    "headphone",
 };
 
 export { bhMappings };

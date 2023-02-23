@@ -75,6 +75,9 @@ async function inventoryOffboard(res, body, inventoryDB) {
           delete specificLaptop.address;
           delete specificLaptop.phone_number;
           specificLaptop.condition = "Used";
+          specificLaptop.date_requested = new Date().toLocaleDateString(
+            "en-US"
+          );
           try {
             console.log(
               `/offboarding/${client} => Updating container: ${containerId} with updated obj: ${JSON.stringify(

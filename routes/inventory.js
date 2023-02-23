@@ -8,6 +8,7 @@ import inventoryOffboard from "../services/inventory/offboarding.js";
 import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
+import { inventoryDBMapping } from "../utils/mappings/inventory.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -37,8 +38,10 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
     );
     try {
       const inventoryRes = await inventory.getAll(dbContainer);
-
-      inventoryRes.forEach((device) => {
+      const filteredRes = inventoryRes.filter(
+        (inv) => inv.location.indexOf("USA") > -1
+      );
+      filteredRes.forEach((device) => {
         delete device._rid;
         delete device._self;
         delete device._etag;
@@ -46,7 +49,7 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
         delete device._ts;
       });
       console.log(`/getInventory/${company} => Ending route. Successful.`);
-      res.json({ data: inventoryRes });
+      res.json({ data: filteredRes });
     } catch (e) {
       console.log(
         `/getInventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
@@ -194,6 +197,87 @@ router.get("/downloadinventory/:client", async (req, res) => {
   }
   // res.send("Hello World!");
   console.log(`/downloadinventory/${req.params.client} => Ending route.`);
+});
+
+// add to stock
+router.post("/addtostock", checkJwt, async (req, res) => {
+  const {
+    client,
+    device_name,
+    device_location,
+    status,
+    date_requested,
+    serial_numbers,
+  } = req.body;
+  const containerId = determineContainer(client);
+  console.log(`/addtostock/${client} => Starting route.`);
+  if (containerId !== "") {
+    const deviceId = inventoryDBMapping[device_name]?.[device_location];
+    if (deviceId) {
+      try {
+        console.log(
+          `/addtostock/${client} => Getting device info for ${device_name}`
+        );
+        const laptopRes = await inventory.getItem(containerId, deviceId);
+        console.log(
+          `/addtostock/${client} => Finished getting device info for ${device_name}`
+        );
+      } catch (e) {
+        console.log(
+          `/addtostock/${client} => Error getting document for device: ${device_name}`
+        );
+        res.status(500).json({ status: "Error getting device" });
+      }
+
+      const replaceIndex = laptopRes.serial_numbers.findIndex(
+        (laptop) =>
+          laptop.status === "In Progress" &&
+          laptop.sn === status &&
+          laptop.date_requested === date_requested &&
+          laptop.quantity === serial_numbers.length
+      );
+
+      if (replaceIndex > -1) {
+        laptopRes.serial_numbers.splice(replaceIndex, 1);
+      }
+
+      serial_numbers.forEach((newDevice) => {
+        laptopRes.serial_numbers.push({
+          status: "In Stock",
+          condition: "New",
+          sn: newDevice,
+        });
+      });
+      try {
+        console.log(
+          `/addtostock/${client} => Adding stock to laptop: ${device_name}`
+        );
+        const replaceRes = await inventory.updateLaptop(
+          containerId,
+          deviceId,
+          laptopRes
+        );
+        console.log(
+          `/addtostock/${client} => Finish adding stock to laptop: ${device_name}`
+        );
+      } catch (e) {
+        console.log(
+          `/addtostock/${client} => Error updating stock of laptop ${device_name}. Error: ${e}`
+        );
+        res.status(500).json({ status: "Error adding stock" });
+      }
+    } else {
+      console.log(
+        `/addtostock/${client} => No matching device id found for ${device_name}`
+      );
+      res.status(500).json({ status: "Error getting device id" });
+    }
+  } else {
+    console.log(`/addtostock/${client} => Couldn't find container for client.`);
+    res.status(500).json({ status: "Error no conatiner" });
+  }
+  console.log(`/addtostock/${client} => Ending route.`);
+  if (!res.headersSent) res.json({ status: "Success" });
 });
 
 function resetDevice(item) {

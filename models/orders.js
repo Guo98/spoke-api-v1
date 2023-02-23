@@ -59,6 +59,24 @@ class Orders {
     return replaced;
   }
 
+  async updateOrderByContainer(containerId, itemId, fullNameKey, items) {
+    const coResponse = await this.database.containers.createIfNotExists({
+      id: containerId,
+    });
+
+    const { resource } = await coResponse.container
+      .item(itemId, fullNameKey)
+      .read();
+
+    resource.items = items;
+
+    const { resource: replaced } = await coResponse.container
+      .item(itemId, fullNameKey)
+      .replace(resource);
+
+    return replaced;
+  }
+
   async getAllReceived() {
     const { resources: receivedList } = await this.container.items
       .readAll()

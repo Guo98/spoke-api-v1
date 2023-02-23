@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CosmosClient } from "@azure/cosmos";
-import { getEmailId } from "../services/gmail.js";
+import { getEmailId, getEmailBody } from "../services/gmail.js";
 import { config } from "../utils/config.js";
 import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
@@ -187,6 +187,10 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       dbContainer = "Mock";
       client = "Public";
       break;
+    case "FLYR":
+      dbContainer = "FLYR";
+      client = "FLYR";
+      break;
     default:
       break;
   }
@@ -194,11 +198,16 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Starting route.`);
 
   const querySpec = {
-    query: "SELECT * FROM Received r WHERE r.client = @client",
+    query:
+      "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
     parameters: [
       {
         name: "@client",
         value: client,
+      },
+      {
+        name: "@country",
+        value: "USA",
       },
     ],
   };
@@ -209,7 +218,10 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
         `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
       );
       const ordersRes = await orders.getAllOrders(dbContainer);
-      ordersRes.forEach((order) => {
+      const filteredRes = ordersRes.filter(
+        (order) => order.address.country === "USA"
+      );
+      filteredRes.forEach((order) => {
         delete order._rid;
         delete order._self;
         delete order._etag;
@@ -234,7 +246,7 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
       );
-      res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
+      res.json({ data: { in_progress: inProgRes, completed: filteredRes } });
     } catch (e) {
       console.log(
         `/getAllOrders/${company} => Error in getting all orders: ${e}`
@@ -273,6 +285,9 @@ router.get("/downloadorders/:client", async (req, res) => {
     switch (req.params.client) {
       case "public":
         client = "Public";
+        break;
+      case "FLYR":
+        client = "FLYR";
         break;
       default:
         break;
@@ -342,6 +357,83 @@ router.get("/downloadorders/:client", async (req, res) => {
   }
   // res.send("Hello World!");
   console.log(`/downloadorders/${req.params.client} => Ending route.`);
+});
+
+router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
+  const { client, status, order_id, items, full_name } = req.body;
+  console.log(`/updateTrackingNumber/${client} => Starting route.`);
+  if (status === "Completed") {
+    try {
+      const dbResp = await orders.updateOrderByContainer(
+        client,
+        order_id,
+        full_name,
+        items
+      );
+    } catch (e) {
+      console.log(
+        `/updateTrackingNumber/${client} => Error in updating ${client} db with tracking number: ${e}`
+      );
+      res.status(500).json({ status: "Error in updating db: " + e });
+    }
+  } else {
+    try {
+      const dbResp = await orders.updateOrderByContainer(
+        "Received",
+        order_id,
+        full_name,
+        items
+      );
+    } catch (e) {
+      console.log(
+        `/updateTrackingNumber/${client} => Error in updating Received db with tracking number: ${e}`
+      );
+      res.status(500).json({ status: "Error in updating db: " + e });
+    }
+  }
+
+  if (!res.headersSent) res.json({ status: "Success" });
+  console.log(`/updateTrackingNumber/${client} => Ending route.`);
+});
+
+router.post("/completeOrder", async (req, res) => {
+  const { client, id, full_name } = req.body;
+  console.log(`/completeOrder/${client} => Starting route.`);
+  try {
+    console.log(
+      `/completeOrder/${client} => Removing id: ${id} from Received container.`
+    );
+    await orders.removeFromReceived(id, full_name);
+    console.log(
+      `/completeOrder/${client} => Finished removing id: ${id} from Received container.`
+    );
+  } catch (e) {
+    console.log(
+      `/completeOrder/${client} => Error removing id: ${id} from Received container. Error: ${e}`
+    );
+    res
+      .status(500)
+      .json({ status: "Error in removing from Received container." });
+  }
+  if (!res.headersSent) {
+    try {
+      console.log(
+        `/completeOrder/${client} => Adding order to ${client} container.`
+      );
+      req.body.shipping_status = "Completed";
+      const updateResp = await orders.completeOrder(client, req.body);
+      console.log(
+        `/completeOrder/${client} => Finished adding order to ${client} container`
+      );
+    } catch (e) {
+      console.log(
+        `/completeOrder/${client} => Error in adding order to ${client} container`
+      );
+      res.status(500).json({ status: "Error in moving to container" });
+    }
+  }
+  console.log(`/completeOrder/${client} => Ending route.`);
+  if (!res.headersSent) res.json({ status: "Success" });
 });
 
 export default router;

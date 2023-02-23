@@ -12,7 +12,7 @@ const trackingRegex = {
   Fully: /tracknumbers=(.*)/,
   logitech: /InquiryNumber1=(\w{18})/,
   bh: /<a[^>]*>(\d{12}|\d{15})<\/a>/,
-  CTS: /(\d{12}|\d{15})/,
+  CTS: /(\d{12}|\d{15}|[\d ]+)/,
   CTSOrder: /Order \d{5}/,
 };
 
@@ -170,6 +170,11 @@ const suppliers = {
   "Fully Desk Chair": "Fully",
   "Fully Remi Standing Desk": "Fully",
   "Alani Desk Chair": "Fully",
+  'Lenovo thinkPad X1 Gen 9 14" (Bowery)': {
+    type: "laptop",
+    location: "US",
+    company: "Bowery",
+  },
 };
 
 const fullyMapping = {
