@@ -10,7 +10,12 @@ function createLaptopObj(item, type) {
     id: randoId,
     new_device: true,
     serial_numbers: [
-      { sn: type, status: "In Progress", quantity: item.quantity },
+      {
+        sn: type,
+        status: "In Progress",
+        quantity: item.quantity,
+        date_requested: new Date().toLocaleDateString("en-US"),
+      },
     ],
     image_source:
       "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
