@@ -276,7 +276,7 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", async (req, res) => {
+router.get("/downloadorders/:client", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
@@ -294,11 +294,17 @@ router.get("/downloadorders/:client", async (req, res) => {
     }
 
     const querySpec = {
-      query: "SELECT * FROM Received r WHERE r.client = @client",
+      query:
+        "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
       parameters: [
         {
           name: "@client",
           value: client,
+        },
+        ,
+        {
+          name: "@country",
+          value: "USA",
         },
       ],
     };
@@ -329,17 +335,19 @@ router.get("/downloadorders/:client", async (req, res) => {
 
       if (ordersRes.length > 0) {
         ordersRes.reverse().forEach((order) => {
-          order.items.forEach((item) => {
-            allOrders.push({
-              orderNo: order.orderNo,
-              name: order.firstName + " " + order.lastName,
-              item: item.name,
-              price: item.price,
-              date: order.date,
-              location:
-                order.address.subdivision + ", " + order.address.country,
+          if (order.address.country === "USA") {
+            order.items.forEach((item) => {
+              allOrders.push({
+                orderNo: order.orderNo,
+                name: order.firstName + " " + order.lastName,
+                item: item.name,
+                price: item.price,
+                date: order.date,
+                location:
+                  order.address.subdivision + ", " + order.address.country,
+              });
             });
-          });
+          }
         });
       }
 

@@ -166,7 +166,7 @@ router.get("/resetdata", checkJwt, async (req, res) => {
   res.json({ status: "Success" });
 });
 
-router.get("/downloadinventory/:client", async (req, res) => {
+router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadinventory/${req.params.client} => Starting route.`);
   try {
@@ -178,14 +178,16 @@ router.get("/downloadinventory/:client", async (req, res) => {
     let allDevices = [];
 
     inventoryRes.forEach((device) => {
-      device.serial_numbers.forEach((item) => {
-        allDevices.push({
-          ...item,
-          name: device.name,
-          location: device.location,
-          grade: item.grade ? item.grade : "",
+      if (device.location.indexOf("USA") > -1) {
+        device.serial_numbers.forEach((item) => {
+          allDevices.push({
+            ...item,
+            name: device.name,
+            location: device.location,
+            grade: item.grade ? item.grade : "",
+          });
         });
-      });
+      }
     });
     console.log(
       `/downloadinventory/${req.params.client} => Got list of of devices.`
