@@ -192,6 +192,8 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       client = "FLYR";
       break;
     default:
+      dbContainer = company;
+      client = company;
       break;
   }
 
