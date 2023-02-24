@@ -11,6 +11,8 @@ const bhMappings = {
   "Modern Webcam": "webcam",
   "WH-1000XM4 Wireless Noise-Canceling Over-Ear Headphones (Black)":
     "headphone",
+  "AirPods with Charging Case (2nd Generation)": "airpods",
+  "Magic Keyboard with Touch ID": "keyboard",
 };
 
 export { bhMappings };
