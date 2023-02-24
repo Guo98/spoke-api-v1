@@ -290,6 +290,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
         client = "FLYR";
         break;
       default:
+        client = req.params.client;
         break;
     }
 
