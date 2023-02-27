@@ -56,6 +56,12 @@ const inventoryDBMapping = {
   'MacBook Pro 16" M2: 32GB, 1TB': {
     "Georgia, USA": "macbook_16_32_m2_usa",
   },
+  'MacBook Pro 16" Intel i7: 16GB, 512GB': {
+    "Georgia, USA": "macbook_pro_16_16_i7_usa",
+  },
+  'MacBook Pro 13" M1: 16GB, 512GB': {
+    "Georgia, USA": "macbook_pro_13_16_usa",
+  },
 };
 
 export { inventoryDBMapping };
