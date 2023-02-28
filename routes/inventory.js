@@ -203,6 +203,8 @@ router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
 
 // add to stock
 router.post("/addtostock", checkJwt, async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const {
     client,
     device_name,
