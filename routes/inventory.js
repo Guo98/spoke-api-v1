@@ -202,9 +202,7 @@ router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
 });
 
 // add to stock
-router.post("/addtostock", checkJwt, async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
+router.post("/addtostock", async (req, res) => {
   const {
     client,
     device_name,
@@ -226,49 +224,52 @@ router.post("/addtostock", checkJwt, async (req, res) => {
         console.log(
           `/addtostock/${client} => Finished getting device info for ${device_name}`
         );
+        const replaceIndex = laptopRes.serial_numbers.findIndex(
+          (laptop) =>
+            laptop.status === "In Progress" &&
+            laptop.sn === status &&
+            laptop.date_requested === date_requested &&
+            laptop.quantity === serial_numbers.length
+        );
+
+        if (replaceIndex > -1) {
+          laptopRes.serial_numbers.splice(replaceIndex, 1);
+        }
+
+        serial_numbers.forEach((newDevice) => {
+          laptopRes.serial_numbers.push({
+            status: "In Stock",
+            condition: "New",
+            sn: newDevice,
+          });
+        });
+
+        if (laptopRes.new_device) {
+          laptopRes.new_device = false;
+        }
+        try {
+          console.log(
+            `/addtostock/${client} => Adding stock to laptop: ${device_name}`
+          );
+          const replaceRes = await inventory.updateLaptop(
+            containerId,
+            deviceId,
+            laptopRes
+          );
+          console.log(
+            `/addtostock/${client} => Finish adding stock to laptop: ${device_name}`
+          );
+        } catch (e) {
+          console.log(
+            `/addtostock/${client} => Error updating stock of laptop ${device_name}. Error: ${e}`
+          );
+          res.status(500).json({ status: "Error adding stock" });
+        }
       } catch (e) {
         console.log(
           `/addtostock/${client} => Error getting document for device: ${device_name}`
         );
         res.status(500).json({ status: "Error getting device" });
-      }
-
-      const replaceIndex = laptopRes.serial_numbers.findIndex(
-        (laptop) =>
-          laptop.status === "In Progress" &&
-          laptop.sn === status &&
-          laptop.date_requested === date_requested &&
-          laptop.quantity === serial_numbers.length
-      );
-
-      if (replaceIndex > -1) {
-        laptopRes.serial_numbers.splice(replaceIndex, 1);
-      }
-
-      serial_numbers.forEach((newDevice) => {
-        laptopRes.serial_numbers.push({
-          status: "In Stock",
-          condition: "New",
-          sn: newDevice,
-        });
-      });
-      try {
-        console.log(
-          `/addtostock/${client} => Adding stock to laptop: ${device_name}`
-        );
-        const replaceRes = await inventory.updateLaptop(
-          containerId,
-          deviceId,
-          laptopRes
-        );
-        console.log(
-          `/addtostock/${client} => Finish adding stock to laptop: ${device_name}`
-        );
-      } catch (e) {
-        console.log(
-          `/addtostock/${client} => Error updating stock of laptop ${device_name}. Error: ${e}`
-        );
-        res.status(500).json({ status: "Error adding stock" });
       }
     } else {
       console.log(
