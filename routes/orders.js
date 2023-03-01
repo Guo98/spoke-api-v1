@@ -407,7 +407,7 @@ router.post("/updateTrackingNumber", checkJwt, async (req, res) => {
   console.log(`/updateTrackingNumber/${client} => Ending route.`);
 });
 
-router.post("/completeOrder", async (req, res) => {
+router.post("/completeOrder", checkJwt, async (req, res) => {
   const { client, id, full_name } = req.body;
   console.log(`/completeOrder/${client} => Starting route.`);
   try {
