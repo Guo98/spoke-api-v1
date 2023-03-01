@@ -202,7 +202,7 @@ router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
 });
 
 // add to stock
-router.post("/addtostock", async (req, res) => {
+router.post("/addtostock", checkJwt, async (req, res) => {
   const {
     client,
     device_name,
