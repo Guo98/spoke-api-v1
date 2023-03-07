@@ -246,6 +246,7 @@ router.post("/addtostock", checkJwt, async (req, res) => {
 
         if (laptopRes.new_device) {
           laptopRes.new_device = false;
+          laptopRes.specs = req.body.specs;
         }
         try {
           console.log(

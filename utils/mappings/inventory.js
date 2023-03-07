@@ -62,6 +62,9 @@ const inventoryDBMapping = {
   'MacBook Pro 13" M1: 16GB, 512GB': {
     "Georgia, USA": "macbook_pro_13_16_usa",
   },
+  "HP Omen 16": {
+    "Georgia, USA": "mb5na",
+  },
 };
 
 export { inventoryDBMapping };
