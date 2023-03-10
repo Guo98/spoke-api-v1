@@ -28,7 +28,9 @@ function addCTSTrackingNumber(
       }
       orders[index]?.items.forEach((item) => {
         if (
-          (item.supplier === supplier || item.type === "laptop") &&
+          (item.supplier === supplier ||
+            item.type === "laptop" ||
+            item.name.toLowerCase().indexOf("macbook") > -1) &&
           item.tracking_number === ""
         ) {
           item.tracking_number = [trackNum];
