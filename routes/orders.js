@@ -460,7 +460,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
           );
         } catch (e) {
           console.log(
-            `/completeOrder/${client} => Error in adding order to ${client} container`
+            `/completeOrder/${client} => Error in adding order to ${client} container. Error: ${e}`
           );
           res.status(500).json({ status: "Error in moving to container" });
         }
@@ -482,7 +482,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
         );
       } catch (e) {
         console.log(
-          `/completeOrder/${client} => Error in updating order status in ${client} container. ${e}`
+          `/completeOrder/${client} => Error in updating order status in ${client} container. Error: ${e}`
         );
         res
           .status(500)
