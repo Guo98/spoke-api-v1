@@ -28,7 +28,9 @@ function addCTSTrackingNumber(
       }
       orders[index]?.items.forEach((item) => {
         if (
-          (item.supplier === supplier || item.type === "laptop") &&
+          (item.supplier === supplier ||
+            item.type === "laptop" ||
+            item.name.toLowerCase().indexOf("macbook") > -1) &&
           item.tracking_number === ""
         ) {
           item.tracking_number = [trackNum];
@@ -52,7 +54,7 @@ function addCTSTrackingNumber(
   if (aftershipArray.length > 0) {
     const base64csv = createAftershipCSV(aftershipArray);
     try {
-      // sendAftershipCSV(base64csv, orderNum);
+      sendAftershipCSV(base64csv, orderNum);
       console.log(
         `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );

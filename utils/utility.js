@@ -27,7 +27,7 @@ const determineContainer = (client) => {
     case "FLYR":
       return "FLYR";
     default:
-      return "";
+      return client;
   }
 };
 

@@ -175,6 +175,11 @@ const suppliers = {
     location: "US",
     company: "Bowery",
   },
+  'MacBook Air M1 Chip "13: 16GB (NurseDash) - USED': {
+    type: "laptop",
+    location: "US",
+    company: "NurseDash",
+  },
 };
 
 const fullyMapping = {
