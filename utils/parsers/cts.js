@@ -54,7 +54,7 @@ function addCTSTrackingNumber(
   if (aftershipArray.length > 0) {
     const base64csv = createAftershipCSV(aftershipArray);
     try {
-      // sendAftershipCSV(base64csv, orderNum);
+      sendAftershipCSV(base64csv, orderNum);
       console.log(
         `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
       );
