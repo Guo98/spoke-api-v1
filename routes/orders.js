@@ -454,7 +454,10 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
             `/completeOrder/${client} => Adding order to ${client} container.`
           );
           req.body.shipping_status = "Completed";
-          const updateResp = await orders.completeOrder(client, req.body);
+          const updateResp = await orders.completeOrder(
+            client === "Public" ? "Mock" : client,
+            req.body
+          );
           console.log(
             `/completeOrder/${client} => Finished adding order to ${client} container`
           );
@@ -472,7 +475,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
         );
         req.body.shipping_status = "Completed";
         const updateResp = await orders.updateOrderStatusByContainer(
-          client,
+          client === "Public" ? "Mock" : client,
           id,
           full_name,
           shipping_status
