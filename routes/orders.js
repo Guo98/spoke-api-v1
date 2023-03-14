@@ -364,7 +364,8 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     console.log(
       `/downloadorders/${req.params.client} => Error in getting all orders. Error: ${e}`
     );
-    if (!res.headersSent) res.status(500).send({ status: "Error in here" });
+    if (!res.headersSent)
+      res.status(500).send({ status: "Error in here", error: e });
   }
   // res.send("Hello World!");
   console.log(`/downloadorders/${req.params.client} => Ending route.`);
