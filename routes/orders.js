@@ -278,7 +278,7 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", checkJwt, async (req, res) => {
+router.get("/downloadorders/:client", async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
@@ -286,7 +286,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     let client = "";
     switch (req.params.client) {
       case "public":
-        client = "Public";
+        client = "Mock";
         break;
       case "FLYR":
         client = "FLYR";
@@ -304,7 +304,6 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
           name: "@client",
           value: client,
         },
-        ,
         {
           name: "@country",
           value: "USA",
@@ -319,6 +318,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
 
       if (client !== "") {
         const inProgRes = await orders.find(querySpec);
+
         if (inProgRes.length > 0) {
           inProgRes.reverse().forEach((order) => {
             order.items.forEach((item) => {
