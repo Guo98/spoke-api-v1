@@ -278,7 +278,7 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", async (req, res) => {
+router.get("/downloadorders/:client", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
@@ -364,8 +364,7 @@ router.get("/downloadorders/:client", async (req, res) => {
     console.log(
       `/downloadorders/${req.params.client} => Error in getting all orders. Error: ${e}`
     );
-    if (!res.headersSent)
-      res.status(500).send({ status: "Error in here", error: e });
+    if (!res.headersSent) res.status(500).send({ status: "Error in here" });
   }
   // res.send("Hello World!");
   console.log(`/downloadorders/${req.params.client} => Ending route.`);
