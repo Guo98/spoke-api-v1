@@ -286,7 +286,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     let client = "";
     switch (req.params.client) {
       case "public":
-        client = "Public";
+        client = "Mock";
         break;
       case "FLYR":
         client = "FLYR";
@@ -304,7 +304,6 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
           name: "@client",
           value: client,
         },
-        ,
         {
           name: "@country",
           value: "USA",
@@ -319,6 +318,7 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
 
       if (client !== "") {
         const inProgRes = await orders.find(querySpec);
+
         if (inProgRes.length > 0) {
           inProgRes.reverse().forEach((order) => {
             order.items.forEach((item) => {
@@ -454,13 +454,16 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
             `/completeOrder/${client} => Adding order to ${client} container.`
           );
           req.body.shipping_status = "Completed";
-          const updateResp = await orders.completeOrder(client, req.body);
+          const updateResp = await orders.completeOrder(
+            client === "Public" ? "Mock" : client,
+            req.body
+          );
           console.log(
             `/completeOrder/${client} => Finished adding order to ${client} container`
           );
         } catch (e) {
           console.log(
-            `/completeOrder/${client} => Error in adding order to ${client} container`
+            `/completeOrder/${client} => Error in adding order to ${client} container. Error: ${e}`
           );
           res.status(500).json({ status: "Error in moving to container" });
         }
@@ -472,7 +475,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
         );
         req.body.shipping_status = "Completed";
         const updateResp = await orders.updateOrderStatusByContainer(
-          client,
+          client === "Public" ? "Mock" : client,
           id,
           full_name,
           shipping_status
@@ -482,7 +485,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
         );
       } catch (e) {
         console.log(
-          `/completeOrder/${client} => Error in updating order status in ${client} container. ${e}`
+          `/completeOrder/${client} => Error in updating order status in ${client} container. Error: ${e}`
         );
         res
           .status(500)

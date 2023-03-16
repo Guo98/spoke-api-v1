@@ -180,6 +180,10 @@ const suppliers = {
     location: "US",
     company: "NurseDash",
   },
+  'MacBook Pro M1 Chip 16.2": 16GB (Bowery) - Redeployment': {
+    company: "Bowery",
+    type: "laptop",
+  },
 };
 
 const fullyMapping = {

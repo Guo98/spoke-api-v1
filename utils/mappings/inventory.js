@@ -65,6 +65,21 @@ const inventoryDBMapping = {
   "HP Omen 16": {
     "Georgia, USA": "mb5na",
   },
+  'MacBook Air 13" M1: 16GB': {
+    "Georgia, USA": "macbook_pro_13_16_usa",
+  },
+  'Asus Chromebook Flip 14" Intel m3: 4GB': {
+    "Georgia, USA": "asus_flip_14",
+  },
+  'Duet 5 Chromebook 13.3" Snapdragon: 8GB': {
+    "Georgia, USA": "duet_5_13_usa",
+  },
+  'Acer Spin 5 13.5" Intel i7: 16GB': {
+    "Georgia, USA": "acer_spin_5",
+  },
+  'MacBook Air (2015) 13" Intel i5: 4GB': {
+    "Georgia, USA": "mac_air_2015",
+  },
 };
 
 export { inventoryDBMapping };
