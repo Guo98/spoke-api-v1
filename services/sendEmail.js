@@ -106,8 +106,8 @@ async function sendAftershipCSV(content, order_no) {
     //send mail
     const attachment = {
       name: `${order_no}_tracking.txt`,
-      attachmentType: "txt",
-      contentBytesBase64: content,
+      contentType: "text/plain",
+      contentInBase64: content,
     };
     const emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
