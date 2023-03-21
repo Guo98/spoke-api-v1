@@ -63,6 +63,7 @@ async function sendSupportEmail(body) {
     return true;
   } catch (e) {
     console.error("Send tracking email error: ", e);
+    console.error("Connection string error here: ", connectionString);
     return false;
   }
 }
