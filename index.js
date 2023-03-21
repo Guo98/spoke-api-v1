@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import helmet from "helmet";
 import routes from "./routes/index.js";
 import { checkJwt } from "./services/auth0.js";
 import "dotenv/config";
@@ -17,6 +18,8 @@ const corsOptions = {
 app.use(bodyParser.json());
 
 app.use(cors(corsOptions));
+
+app.use(helmet());
 
 // defining an endpoint to return all ads
 app.get("/sitehealth", (req, res) => {

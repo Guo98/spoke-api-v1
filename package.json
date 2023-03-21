@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/andyWithSpoke/spoke-api#readme",
   "dependencies": {
-    "@azure/communication-email": "^1.0.0-beta.1",
+    "@azure/communication-email": "^1.0.0-beta.2",
     "@azure/cosmos": "^3.17.1",
     "@google-cloud/local-auth": "^2.1.0",
     "airtable": "^0.11.5",
@@ -34,7 +34,7 @@
     "express-validator": "^6.14.2",
     "google-auth-library": "^8.1.0",
     "googleapis": "^105.0.0",
-    "helmet": "^5.1.0",
+    "helmet": "^5.1.1",
     "morgan": "^1.10.0",
     "parse-address": "^1.1.2",
     "qs": "^6.11.0"

@@ -41,6 +41,15 @@ function mapLineItems(customerInfo) {
         }
       } else {
         item.supplier = "unknown";
+        const lowerCaseName = item.name.toLowerCase();
+        if (
+          lowerCaseName.indexOf("macbook") > -1 ||
+          lowerCaseName.indexOf("lenovo") > -1 ||
+          lowerCaseName.indexOf("asus") > -1 ||
+          lowerCaseName.indexOf("chromebook") > -1
+        ) {
+          item.type = "laptop";
+        }
       }
       item.tracking_number = "";
       item.delivery_company = "";
