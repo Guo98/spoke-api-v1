@@ -18,7 +18,7 @@ async function sendEmail(body) {
       recipients: {
         to: [
           {
-            email: body.email,
+            address: body.email,
           },
         ],
       },
@@ -47,7 +47,7 @@ async function sendNotificationEmail() {
       recipients: {
         to: [
           {
-            email: "info@withspoke.com",
+            address: "info@withspoke.com",
           },
         ],
       },
@@ -118,10 +118,10 @@ async function sendAftershipCSV(content, order_no) {
       recipients: {
         to: [
           {
-            email: "andy@withspoke.com",
+            address: "andy@withspoke.com",
           },
           {
-            email: "info@withspoke.com",
+            address: "info@withspoke.com",
           },
         ],
       },
@@ -165,15 +165,15 @@ async function sendConfirmation(body) {
       recipients: {
         to: [
           {
-            email: email,
+            address: email,
           },
         ],
         bcc: [
           {
-            email: requestor_email,
+            address: requestor_email,
           },
           {
-            email: "offboarding@withspoke.com",
+            address: "offboarding@withspoke.com",
           },
         ],
       },

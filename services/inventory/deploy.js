@@ -27,7 +27,7 @@ async function deployLaptop(res, body, inventoryDB) {
       let inventoryRes = await inventoryDB.getItem(containerId, deviceId);
 
       let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
-        (device) => device.sn === serial_number
+        (device) => device.sn === serial_number && device.status === "In Stock"
       );
 
       if (specificLaptopIndex > -1) {
