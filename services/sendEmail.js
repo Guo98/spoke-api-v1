@@ -168,7 +168,7 @@ async function sendConfirmation(body) {
             email: email,
           },
         ],
-        bCC: [
+        bcc: [
           {
             email: requestor_email,
           },
