@@ -10,7 +10,7 @@ async function sendEmail(body) {
     let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
-      sender: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject: `Offboarding Tracking - Subject: {Company Name} Equipment Return`,
         plainText: generateTrackingEmailBody(body.name, body.tracking_number),
@@ -23,8 +23,38 @@ async function sendEmail(body) {
         ],
       },
     };
-    var response = await client.send(emailMessage);
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
     console.log("Sent tracking email: ", response);
+    return true;
+  } catch (e) {
+    console.error("Send tracking email error: ", e);
+    return false;
+  }
+}
+
+async function sendNotificationEmail() {
+  try {
+    console.log("Sending notification email");
+    let client = new EmailClient(connectionString);
+    //send mail
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: `Deployment placed for laptop`,
+        plainText: "Please refer to google sheets for new deployed laptop",
+      },
+      recipients: {
+        to: [
+          {
+            email: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
+    console.log("Sent notification email: ", response);
     return true;
   } catch (e) {
     console.error("Send tracking email error: ", e);
@@ -39,7 +69,7 @@ async function sendSupportEmail(body) {
     let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
-      sender: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject:
           type === "support"
@@ -53,12 +83,13 @@ async function sendSupportEmail(body) {
       recipients: {
         to: [
           {
-            email: "info@withspoke.com",
+            address: "info@withspoke.com",
           },
         ],
       },
     };
-    var response = await client.send(emailMessage);
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
     console.log("Sent tracking email: ", response);
     return true;
   } catch (e) {
@@ -79,7 +110,7 @@ async function sendAftershipCSV(content, order_no) {
       contentBytesBase64: content,
     };
     const emailMessage = {
-      sender: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject: "[BETA Testing] Aftership Tracking CSV",
         plainText: "Please import the attached csv into aftership. ",
@@ -96,7 +127,8 @@ async function sendAftershipCSV(content, order_no) {
       },
       attachments: [attachment],
     };
-    var response = await client.send(emailMessage);
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
     console.log("Sent tracking email: ", response);
     return true;
   } catch (e) {
@@ -125,7 +157,7 @@ async function sendConfirmation(body) {
       emailSubject = `[Action Required] ${company} Equipment Return`;
     }
     const emailMessage = {
-      sender: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject: emailSubject,
         html: emailBody,
@@ -146,7 +178,8 @@ async function sendConfirmation(body) {
         ],
       },
     };
-    var response = await client.send(emailMessage);
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
     console.log("Sent confirmation email: ", response);
     return true;
   } catch (e) {
@@ -172,11 +205,12 @@ function generateOffboardingEmailBody(company, name, address) {
 }
 
 function generateSupportEmailBody(body) {
-  const { requestor_email, customer_name, subject, message } = body;
+  const { requestor_email, customer_name, support_subject, support_message } =
+    body;
   const emailBody = `<div dir="ltr">Requestor Email: <a href="mailto:${requestor_email}" target="_blank">${requestor_email}</a><div><br></div>${
     customer_name &&
     `<div>Customer Name: ${customer_name}</div><div><br></div><div>`
-  }Subject: ${subject}</div><div><br></div><div>Message: ${message}</div><div><br></div></div>`;
+  }Subject: ${support_subject}</div><div><br></div><div>Message: ${support_message}</div><div><br></div></div>`;
 
   return emailBody;
 }
@@ -227,4 +261,10 @@ function generateTrackingEmailBody(name, tracking_num) {
   return emailBody;
 }
 
-export { sendEmail, sendConfirmation, sendAftershipCSV, sendSupportEmail };
+export {
+  sendEmail,
+  sendConfirmation,
+  sendAftershipCSV,
+  sendSupportEmail,
+  sendNotificationEmail,
+};

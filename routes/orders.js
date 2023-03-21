@@ -268,7 +268,7 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Ending route.`);
 });
 
-router.post("/supportEmail", checkJwt, async (req, res) => {
+router.post("/supportEmail", async (req, res) => {
   console.log("/supportEmail => Starting route.");
   try {
     console.log("/supportEmail => Sending support email.");

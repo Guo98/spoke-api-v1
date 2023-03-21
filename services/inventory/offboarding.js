@@ -1,6 +1,7 @@
 import { createOffboardRow } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
 import { determineContainer } from "../../utils/utility.js";
+import { sendConfirmation } from "../sendEmail.js";
 import { inventoryDBMapping } from "../../utils/mappings/inventory.js";
 
 async function inventoryOffboard(res, body, inventoryDB) {
@@ -47,6 +48,26 @@ async function inventoryOffboard(res, body, inventoryDB) {
       `/offboarding/${client} => Error in adding offboard order to offboarding sheet. Error: ${e}`
     );
     res.status(500).send({ status: "Error" });
+  }
+
+  try {
+    console.log(
+      `/offboarding/${client} => Sending confirmation email for offboarding`
+    );
+    await sendConfirmation({
+      company: client,
+      name: recipient_name,
+      requestor_email,
+      type,
+      address: shipping_address,
+    });
+    console.log(
+      `/offboarding/${client} => Finished sending confirmation email for offboarding`
+    );
+  } catch (e) {
+    console.log(
+      `/offboarding/${client} => Error sending confirmation email for offboarding`
+    );
   }
 
   const containerId = determineContainer(client);

@@ -9,6 +9,7 @@ import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
+import { sendNotificationEmail } from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -83,7 +84,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
-
+  await sendNotificationEmail();
   console.log(`/deployLaptop/${client} => Ending route.`);
   if (!res.headersSent) res.send({ status: "Success" });
 });
