@@ -6,7 +6,7 @@ const fedexTrackingEmail =
 
 async function sendEmail(body) {
   try {
-    console.log("Sending tracking email with body: ", body);
+    console.log("sendEmail() => Starting function:", body);
     let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
@@ -25,17 +25,25 @@ async function sendEmail(body) {
     };
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log("Sent tracking email: ", response);
+    console.log(
+      "sendEmail() => Successfully sent offboarding tracking email:",
+      response
+    );
     return true;
   } catch (e) {
-    console.error("Send tracking email error: ", e);
+    console.error(
+      "sendEmail() => Error in sending offboarding tracking email:",
+      e
+    );
     return false;
   }
 }
 
 async function sendNotificationEmail() {
   try {
-    console.log("Sending notification email");
+    console.log(
+      "sendNotificationEmail() => Starting function to send notification email for new deployment."
+    );
     let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
@@ -54,10 +62,16 @@ async function sendNotificationEmail() {
     };
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log("Sent notification email: ", response);
+    console.log(
+      "sendNotificationEmail() => Successfully sent notification email:",
+      response
+    );
     return true;
   } catch (e) {
-    console.error("Send tracking email error: ", e);
+    console.error(
+      "sendNotificationEmail() => Error in sending notification email:",
+      e
+    );
     return false;
   }
 }
@@ -65,7 +79,7 @@ async function sendNotificationEmail() {
 async function sendSupportEmail(body) {
   const { type } = body;
   try {
-    console.log("Sending tracking email with body: ", body);
+    console.log("sendSupportEmail() => Starting function:", body);
     let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
@@ -90,18 +104,20 @@ async function sendSupportEmail(body) {
     };
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log("Sent tracking email: ", response);
+    console.log(
+      "sendSupportEmail() => Successfully sent support email:",
+      response
+    );
     return true;
   } catch (e) {
-    console.error("Send tracking email error: ", e);
-    console.error("Connection string error here: ", connectionString);
+    console.error("sendSupportEmail() => Error in sending support email:", e);
     return false;
   }
 }
 
 async function sendAftershipCSV(content, order_no) {
   try {
-    // console.log("Sending tracking email with body: ", body);
+    console.log("sendAftershipCSV() => Starting function:", body);
     let client = new EmailClient(connectionString);
     //send mail
     const attachment = {
@@ -129,10 +145,10 @@ async function sendAftershipCSV(content, order_no) {
     };
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log("Sent tracking email: ", response);
+    console.log("sendAftershipCSV() => successfully sent email:", response);
     return true;
   } catch (e) {
-    console.error("Send tracking email error: ", e);
+    console.error("sendAftershipCSV() => Error sending email:", e);
     return false;
   }
 }
@@ -141,7 +157,7 @@ async function sendConfirmation(body) {
   // company, name, address
   const { company, name, email, requestor_email, type } = body;
   try {
-    console.log("Sending confirmation email with body: ", body);
+    console.log("sendConfirmation() => Starting function:", body);
     let client = new EmailClient(connectionString);
     //send mail
     let emailBody = "";
@@ -180,10 +196,16 @@ async function sendConfirmation(body) {
     };
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log("Sent confirmation email: ", response);
+    console.log(
+      "sendConfirmation() => Successfully sent confirmation email:",
+      response
+    );
     return true;
   } catch (e) {
-    console.error("Send confirmation email error: ", e);
+    console.error(
+      "sendConfirmation() => Error in sending confirmation email:",
+      e
+    );
     return false;
   }
 }
