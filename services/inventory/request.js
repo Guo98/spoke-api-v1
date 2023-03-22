@@ -25,24 +25,6 @@ function createLaptopObj(item, type) {
 
 async function requestInventory(res, body, inventoryDB) {
   const { client, name, requestor_email, request_type, items, notes } = body;
-  try {
-    const inventoryObj = {
-      type: "inventory",
-      ...body,
-    };
-    console.log(
-      `/requestInventory/${client} => Starting sendSupportEmail function with body: ${JSON.stringify(
-        inventoryObj
-      )}`
-    );
-    const emailResp = await sendSupportEmail(inventoryObj);
-    console.log(`/requestInventory/${client} => Sent support email.`);
-  } catch (e) {
-    console.log(
-      `/requestInventory/${client} => sendSupportEmail error. Error: ${e}`
-    );
-    res.status(500).json({ status: "Error in sending email" });
-  }
 
   const containerId = determineContainer(client);
   if (containerId !== "") {
@@ -66,6 +48,7 @@ async function requestInventory(res, body, inventoryDB) {
             console.log(
               `/requestInventory/${client} => Successfully updated container: ${containerId} with top up for: ${deviceId}`
             );
+            res.json({ status: "Successful" });
           } catch (e) {
             console.log(
               `/requestInventory/${client} => Error in updating (top up) inventory in DB container: ${containerId}. For device: ${items[i].name} and quantity: ${items[i].quantity}.`
@@ -78,6 +61,7 @@ async function requestInventory(res, body, inventoryDB) {
           console.log(
             `/requestInventory/${client} => Couldn't find device id for device: ${items[i].name} at ${items[i].location}. Quantity: ${items[i].quantity}`
           );
+          res.status(500).json({ status: "Error finding device for top up" });
         }
       }
     } else if (request_type === "to send a device to Spoke") {
@@ -100,6 +84,7 @@ async function requestInventory(res, body, inventoryDB) {
           console.log(
             `/requestInventory/${client} => Successfully updated db container: ${containerId} for send to spoke existing device: ${deviceId}`
           );
+          res.json({ status: "Successful" });
         } catch (e) {
           console.log(
             `/requestInventory/${client} => Error updating db container: ${containerId} for send to spoke existing device: ${deviceId} with quantity: ${items[0].quantity}`
@@ -120,6 +105,7 @@ async function requestInventory(res, body, inventoryDB) {
           console.log(
             `/requestInventory/${client} => Successfully updated db container: ${containerId} for send to spoke new device.`
           );
+          res.json({ status: "Successful" });
         } catch (e) {
           console.log(
             `/requestInventory/${client} => Error updating db container: ${containerId} for send to spoke new device: ${JSON.stringify(
@@ -144,6 +130,7 @@ async function requestInventory(res, body, inventoryDB) {
         console.log(
           `/requestInventory/${client} => Successfully updated db container: ${containerId} for new device.`
         );
+        res.json({ status: "Successful" });
       } catch (e) {
         console.log(
           `/requestInventory/${client} => Error updating db container: ${containerId} for new device: ${JSON.stringify(
@@ -158,6 +145,25 @@ async function requestInventory(res, body, inventoryDB) {
       `/requestInventory/${client} => Did not find a db container for client.`
     );
     res.status(500).json({ status: "Error, client doesn't exist" });
+  }
+
+  try {
+    const inventoryObj = {
+      type: "inventory",
+      ...body,
+    };
+    console.log(
+      `/requestInventory/${client} => Starting sendSupportEmail function with body: ${JSON.stringify(
+        inventoryObj
+      )}`
+    );
+    const emailResp = await sendSupportEmail(inventoryObj);
+    console.log(`/requestInventory/${client} => Sent support email.`);
+  } catch (e) {
+    console.log(
+      `/requestInventory/${client} => sendSupportEmail error. Error: ${e}`
+    );
+    res.status(500).json({ status: "Error in sending email" });
   }
 }
 
