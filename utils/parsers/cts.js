@@ -20,12 +20,13 @@ function addCTSTrackingNumber(
     const text = $(ptag).text();
     const orderLines = text.split("-");
     if (orderLines[lineIndex].indexOf("Tracking #") > -1) {
-      const splitLine = orderLines[lineIndex];
+      let splitLine = orderLines[lineIndex];
+      if (splitLine.indexOf(" ") > -1) {
+        splitLine.replace(" ", "");
+      }
 
       const trackNum = trackingRegex[supplier].exec(splitLine)[0];
-      if (trackNum.indexOf(" ") > -1) {
-        trackNum.replace(" ", "");
-      }
+
       orders[index]?.items.forEach((item) => {
         if (
           (item.supplier === supplier ||
