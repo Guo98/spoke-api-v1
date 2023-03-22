@@ -163,7 +163,6 @@ async function requestInventory(res, body, inventoryDB) {
     console.log(
       `/requestInventory/${client} => sendSupportEmail error. Error: ${e}`
     );
-    res.status(500).json({ status: "Error in sending email" });
   }
 }
 
