@@ -84,9 +84,23 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
-  await sendNotificationEmail();
+
   console.log(`/deployLaptop/${client} => Ending route.`);
+
   if (!res.headersSent) res.send({ status: "Success" });
+
+  try {
+    console.log(`/deployLaptop/${client} => Starting notification email.`);
+    await sendNotificationEmail();
+    console.log(
+      `/deployLaptop/${client} => Successfully sent notification email.`
+    );
+  } catch (e) {
+    console.log(
+      `/deployLaptop/${client} => Error in sending notification email:`,
+      e
+    );
+  }
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {

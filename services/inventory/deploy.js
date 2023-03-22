@@ -18,6 +18,7 @@ async function deployLaptop(res, body, inventoryDB) {
     device_location,
     requestor_email,
   } = body;
+  console.log(`deployLaptop() => Starting function:`, body);
   const containerId = determineContainer(client);
 
   if (containerId !== "") {
