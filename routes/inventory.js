@@ -29,7 +29,7 @@ inventory
 
 const router = Router();
 
-router.get("/getInventory/:company", checkJwt, async (req, res) => {
+router.get("/getInventory/:company", async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
   console.log(`/getInventory/${company} => Starting route.`);
