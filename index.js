@@ -21,6 +21,11 @@ app.use(cors(corsOptions));
 
 app.use(helmet());
 
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  next();
+});
+
 // defining an endpoint to return all ads
 app.get("/sitehealth", (req, res) => {
   res.status(200).json({ status: "healthy" });
