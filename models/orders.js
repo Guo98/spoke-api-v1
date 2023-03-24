@@ -60,9 +60,7 @@ class Orders {
   }
 
   async updateOrderByContainer(containerId, itemId, fullNameKey, items) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
+    const coResponse = await this.database.container(containerId).read();
 
     const { resource } = await coResponse.container
       .item(itemId, fullNameKey)
@@ -78,9 +76,7 @@ class Orders {
   }
 
   async updateOrderStatusByContainer(containerId, itemId, fullNameKey, status) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
+    const coResponse = await this.database.container(containerId).read();
 
     const { resource } = await coResponse.container
       .item(itemId, fullNameKey)
@@ -103,9 +99,7 @@ class Orders {
   }
 
   async getAllOrders(company) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: company,
-    });
+    const coResponse = await this.database.container(company).read();
 
     const { resources: receivedList } = await coResponse.container.items
       .readAll()
@@ -141,10 +135,7 @@ class Orders {
   }
 
   async completeOrder(client, obj) {
-    const clientCoResponse = await this.database.containers.createIfNotExists({
-      id: client,
-    });
-
+    const clientCoResponse = await this.database.container(client).read();
     let clientContainer = clientCoResponse.container;
 
     const { resource: doc } = await clientContainer.items.create(obj);

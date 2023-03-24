@@ -35,18 +35,14 @@ class Inventory {
   }
 
   async addItem(containerId, item) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
+    const coResponse = await this.database.container(containerId).read();
     // item.completed = false;
     const { resource: doc } = await coResponse.container.items.create(item);
     return doc;
   }
 
   async updateLaptopInventory(containerId, deviceId, type, topupNum) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
+    const coResponse = await this.database.container(containerId).read();
 
     const { resource } = await coResponse.container
       .item(deviceId, deviceId)
@@ -67,10 +63,7 @@ class Inventory {
   }
 
   async updateLaptop(containerId, deviceId, newDevice) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
-
+    const coResponse = await this.database.container(containerId).read();
     const { resource: replaced } = await coResponse.container
       .item(deviceId, deviceId)
       .replace(newDevice);
@@ -79,10 +72,7 @@ class Inventory {
   }
 
   async updateDevice(deviceId, device, containerId, deviceIndex) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
-
+    const coResponse = await this.database.container(containerId).read();
     const { resource } = await coResponse.container
       .item(deviceId, deviceId)
       .read();
@@ -97,9 +87,7 @@ class Inventory {
   }
 
   async getAll(containerId) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
+    const coResponse = await this.database.container(containerId).read();
     const { resources: receivedList } = await coResponse.container.items
       .readAll()
       .fetchAll();
@@ -107,10 +95,7 @@ class Inventory {
   }
 
   async getItem(containerId, itemId) {
-    const coResponse = await this.database.containers.createIfNotExists({
-      id: containerId,
-    });
-
+    const coResponse = await this.database.container(containerId).read();
     const { resource } = await coResponse.container.item(itemId, itemId).read();
 
     return resource;
