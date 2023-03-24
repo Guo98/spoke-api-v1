@@ -39,10 +39,10 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
     );
     try {
       const inventoryRes = await inventory.getAll(dbContainer);
-      const filteredRes = inventoryRes.filter(
-        (inv) => inv.location.indexOf("USA") > -1
-      );
-      filteredRes.forEach((device) => {
+      // const filteredRes = inventoryRes.filter(
+      //   (inv) => inv.location.indexOf("USA") > -1
+      // );
+      inventoryRes.forEach((device) => {
         delete device._rid;
         delete device._self;
         delete device._etag;
@@ -50,7 +50,7 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
         delete device._ts;
       });
       console.log(`/getInventory/${company} => Ending route. Successful.`);
-      res.json({ data: filteredRes });
+      res.json({ data: inventoryRes });
     } catch (e) {
       console.log(
         `/getInventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
