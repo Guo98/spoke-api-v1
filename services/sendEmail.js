@@ -117,7 +117,7 @@ async function sendSupportEmail(body) {
 
 async function sendAftershipCSV(content, order_no) {
   try {
-    console.log("sendAftershipCSV() => Starting function:", body);
+    console.log("sendAftershipCSV() => Starting function");
     let client = new EmailClient(connectionString);
     //send mail
     const attachment = {
