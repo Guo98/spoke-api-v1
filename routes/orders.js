@@ -11,7 +11,6 @@ import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
-import { sendAftershipCSV } from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 

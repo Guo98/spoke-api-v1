@@ -142,5 +142,9 @@ class Orders {
 
     return doc;
   }
+
+  async updateClient(client, orders) {
+    const coResponse = await this.database.container(client).read();
+  }
 }
 export { Orders };
