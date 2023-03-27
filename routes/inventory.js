@@ -9,7 +9,10 @@ import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
-import { sendNotificationEmail } from "../services/sendEmail.js";
+import {
+  sendNotificationEmail,
+  sendOrderConfirmationEmail,
+} from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -80,7 +83,15 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
  * @param {string} device_location
  */
 router.post("/deployLaptop", checkJwt, async (req, res) => {
-  const { client } = req.body;
+  const {
+    client,
+    requestor_email,
+    requestor_name,
+    first_name,
+    last_name,
+    device_name,
+    shipping,
+  } = req.body;
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
@@ -101,16 +112,58 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       e
     );
   }
+
+  try {
+    console.log(
+      `/deployLaptop/${client} => Starting order confirmation email.`
+    );
+    await sendOrderConfirmationEmail(
+      requestor_email,
+      requestor_name,
+      "Deployment",
+      first_name + " " + last_name,
+      device_name,
+      shipping
+    );
+    console.log(
+      `/deployLaptop/${client} => Successfully sent order confirmation email.`
+    );
+  } catch (e) {
+    console.log(
+      `/deployLaptop/${client} => Error in sending order confirmation email:`,
+      e
+    );
+  }
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { client } = req.body;
+  const { client, recipient_name, requestor_email, requestor_name } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
   await inventoryOffboard(res, req.body, inventory);
 
   console.log(`/offboarding/${client} => Ending route.`);
   if (!res.headersSent) res.send({ status: "Success" });
+
+  try {
+    console.log(`/offboarding/${client} => Starting order confirmation email.`);
+    await sendOrderConfirmationEmail(
+      requestor_email,
+      requestor_name,
+      "Offboarding",
+      recipient_name,
+      "",
+      "Standard"
+    );
+    console.log(
+      `/offboarding/${client} => Successfully sent order confirmation email.`
+    );
+  } catch (e) {
+    console.log(
+      `/offboarding/${client} => Error in sending order confirmation email:`,
+      e
+    );
+  }
 });
 
 /**
@@ -319,6 +372,17 @@ router.post("/addtostock", checkJwt, async (req, res) => {
   console.log(`/addtostock/${client} => Ending route.`);
   if (!res.headersSent) res.json({ status: "Success" });
 });
+
+// router.get("/testingroute", async (req, res) => {
+//   await sendOrderConfirmationEmail(
+//     "username99",
+//     "deployment",
+//     "Andy Guo",
+//     "macbook air m2",
+//     "overnight"
+//   );
+//   res.json({ status: "Successful" });
+// });
 
 function resetDevice(item) {
   let resetItem = {
