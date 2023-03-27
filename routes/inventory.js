@@ -181,40 +181,57 @@ router.get("/resetdata", checkJwt, async (req, res) => {
   res.json({ status: "Success" });
 });
 
-router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
-  let containerId = determineContainer(req.params.client);
-  console.log(`/downloadinventory/${req.params.client} => Starting route.`);
-  try {
-    console.log(
-      `/downloadinventory/${req.params.client} => Getting all inventory.`
-    );
-    const inventoryRes = await inventory.getAll(containerId);
+router.get(
+  "/downloadinventory/:client/:entity?",
+  checkJwt,
+  async (req, res) => {
+    let containerId = determineContainer(req.params.client);
+    console.log(`/downloadinventory/${req.params.client} => Starting route.`);
+    try {
+      console.log(
+        `/downloadinventory/${
+          req.params.client
+        } => Getting all inventory. Entity: ${
+          req.params.entity ? req.params.entity : ""
+        }`
+      );
+      const inventoryRes = await inventory.getAll(containerId);
 
-    let allDevices = [];
+      let allDevices = [];
 
-    inventoryRes.forEach((device) => {
-      if (device.location.indexOf("USA") > -1) {
-        device.serial_numbers.forEach((item) => {
-          allDevices.push({
-            ...item,
-            name: device.name,
-            location: device.location,
-            grade: item.grade ? item.grade : "",
+      inventoryRes.forEach((device) => {
+        if (req.params.entity && device.entity === req.params.entity) {
+          device.serial_numbers.forEach((item) => {
+            allDevices.push({
+              ...item,
+              name: device.name,
+              location: device.location,
+              grade: item.grade ? item.grade : "",
+            });
           });
-        });
-      }
-    });
-    console.log(
-      `/downloadinventory/${req.params.client} => Got list of of devices.`
-    );
+        } else {
+          device.serial_numbers.forEach((item) => {
+            allDevices.push({
+              ...item,
+              name: device.name,
+              location: device.location,
+              grade: item.grade ? item.grade : "",
+            });
+          });
+        }
+      });
+      console.log(
+        `/downloadinventory/${req.params.client} => Got list of of devices.`
+      );
 
-    await exportInventory(res, allDevices);
-  } catch (e) {
-    res.status(500).send({ status: "Error in here" });
+      await exportInventory(res, allDevices);
+    } catch (e) {
+      res.status(500).send({ status: "Error in here" });
+    }
+    // res.send("Hello World!");
+    console.log(`/downloadinventory/${req.params.client} => Ending route.`);
   }
-  // res.send("Hello World!");
-  console.log(`/downloadinventory/${req.params.client} => Ending route.`);
-});
+);
 
 // add to stock
 router.post("/addtostock", checkJwt, async (req, res) => {

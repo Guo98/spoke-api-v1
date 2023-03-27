@@ -278,7 +278,7 @@ router.post("/supportEmail", async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", checkJwt, async (req, res) => {
+router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
@@ -297,18 +297,26 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     }
 
     const querySpec = {
-      query:
-        "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
-      parameters: [
-        {
-          name: "@client",
-          value: client,
-        },
-        {
-          name: "@country",
-          value: "USA",
-        },
-      ],
+      query: req.params.entity
+        ? "SELECT * FROM Received r WHERE r.client = @client AND r.entity = @entity"
+        : "SELECT * FROM Received r WHERE r.client = @client",
+      parameters: req.params.entity
+        ? [
+            {
+              name: "@client",
+              value: client,
+            },
+            {
+              name: "@entity",
+              value: req.params.entity,
+            },
+          ]
+        : [
+            {
+              name: "@client",
+              value: client,
+            },
+          ],
     };
 
     if (containerId !== "") {
@@ -338,7 +346,19 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
 
       if (ordersRes.length > 0) {
         ordersRes.reverse().forEach((order) => {
-          if (order.address.country === "USA") {
+          if (req.params.entity && req.params.entity === order.entity) {
+            order.items.forEach((item) => {
+              allOrders.push({
+                orderNo: order.orderNo,
+                name: order.firstName + " " + order.lastName,
+                item: item.name,
+                price: item.price,
+                date: order.date,
+                location:
+                  order.address.subdivision + ", " + order.address.country,
+              });
+            });
+          } else {
             order.items.forEach((item) => {
               allOrders.push({
                 orderNo: order.orderNo,
