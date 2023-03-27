@@ -200,15 +200,17 @@ router.get(
       let allDevices = [];
 
       inventoryRes.forEach((device) => {
-        if (req.params.entity && device.entity === req.params.entity) {
-          device.serial_numbers.forEach((item) => {
-            allDevices.push({
-              ...item,
-              name: device.name,
-              location: device.location,
-              grade: item.grade ? item.grade : "",
+        if (req.params.entity) {
+          if (req.params.entity === device.entity) {
+            device.serial_numbers.forEach((item) => {
+              allDevices.push({
+                ...item,
+                name: device.name,
+                location: device.location,
+                grade: item.grade ? item.grade : "",
+              });
             });
-          });
+          }
         } else {
           device.serial_numbers.forEach((item) => {
             allDevices.push({

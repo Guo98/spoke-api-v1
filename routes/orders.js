@@ -346,18 +346,20 @@ router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
 
       if (ordersRes.length > 0) {
         ordersRes.reverse().forEach((order) => {
-          if (req.params.entity && req.params.entity === order.entity) {
-            order.items.forEach((item) => {
-              allOrders.push({
-                orderNo: order.orderNo,
-                name: order.firstName + " " + order.lastName,
-                item: item.name,
-                price: item.price,
-                date: order.date,
-                location:
-                  order.address.subdivision + ", " + order.address.country,
+          if (req.params.entity) {
+            if (req.params.entity === order.entity) {
+              order.items.forEach((item) => {
+                allOrders.push({
+                  orderNo: order.orderNo,
+                  name: order.firstName + " " + order.lastName,
+                  item: item.name,
+                  price: item.price,
+                  date: order.date,
+                  location:
+                    order.address.subdivision + ", " + order.address.country,
+                });
               });
-            });
+            }
           } else {
             order.items.forEach((item) => {
               allOrders.push({
