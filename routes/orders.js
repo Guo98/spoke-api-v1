@@ -180,7 +180,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
+router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
@@ -205,13 +205,26 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Starting route.`);
 
   const querySpec = {
-    query: "SELECT * FROM Received r WHERE r.client = @client",
-    parameters: [
-      {
-        name: "@client",
-        value: client,
-      },
-    ],
+    query: req.params.entity
+      ? "SELECT * FROM Received r WHERE r.client = @client AND r.entity = @entity"
+      : "SELECT * FROM Received r WHERE r.client = @client",
+    parameters: req.params.entity
+      ? [
+          {
+            name: "@client",
+            value: client,
+          },
+          {
+            name: "@entity",
+            value: req.params.entity,
+          },
+        ]
+      : [
+          {
+            name: "@client",
+            value: client,
+          },
+        ],
   };
 
   if (dbContainer !== "") {
@@ -219,10 +232,13 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
       );
-      const ordersRes = await orders.getAllOrders(dbContainer);
-      // const filteredRes = ordersRes.filter(
-      //   (order) => order.address.country === "USA"
-      // );
+      let ordersRes = await orders.getAllOrders(dbContainer);
+
+      if (req.params.entity) {
+        ordersRes = ordersRes.filter(
+          (order) => order.entity === req.params.entity
+        );
+      }
       ordersRes.forEach((order) => {
         delete order._rid;
         delete order._self;

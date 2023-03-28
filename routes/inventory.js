@@ -32,7 +32,7 @@ inventory
 
 const router = Router();
 
-router.get("/getInventory/:company", checkJwt, async (req, res) => {
+router.get("/getInventory/:company/:entity?", checkJwt, async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
   console.log(`/getInventory/${company} => Starting route.`);
@@ -41,10 +41,15 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
       `/getInventory/${company} => Getting inventory from db: ${dbContainer}.`
     );
     try {
-      const inventoryRes = await inventory.getAll(dbContainer);
+      let inventoryRes = await inventory.getAll(dbContainer);
       // const filteredRes = inventoryRes.filter(
       //   (inv) => inv.location.indexOf("USA") > -1
       // );
+      if (req.params.entity) {
+        inventoryRes = inventoryRes.filter(
+          (inv) => inv.entity === req.params.entity
+        );
+      }
       inventoryRes.forEach((device) => {
         delete device._rid;
         delete device._self;
