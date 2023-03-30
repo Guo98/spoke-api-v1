@@ -4,10 +4,30 @@ const connectionString = process.env.COMMUNICATION_SERVICES_CONNECTION_STRING;
 const fedexTrackingEmail =
   "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=";
 
+async function sendAzureEmail(emailMessage) {
+  try {
+    console.log("sendAzureEmail() => Starting function:");
+    let client = new EmailClient(connectionString);
+    //send mail
+    var poller = await client.beginSend(emailMessage);
+    const response = await poller.pollUntilDone();
+    console.log(
+      "sendAzureEmail() => Successfully sent offboarding tracking email:",
+      response
+    );
+    return response;
+  } catch (e) {
+    console.error(
+      "sendAzureEmail() => Error in sending offboarding tracking email:",
+      e
+    );
+    throw e;
+  }
+}
+
 async function sendEmail(body) {
   try {
     console.log("sendEmail() => Starting function:", body);
-    let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
@@ -23,8 +43,7 @@ async function sendEmail(body) {
         ],
       },
     };
-    var poller = await client.beginSend(emailMessage);
-    const response = await poller.pollUntilDone();
+    const response = await sendAzureEmail(emailMessage);
     console.log(
       "sendEmail() => Successfully sent offboarding tracking email:",
       response
@@ -44,7 +63,6 @@ async function sendNotificationEmail() {
     console.log(
       "sendNotificationEmail() => Starting function to send notification email for new deployment."
     );
-    let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
@@ -60,8 +78,7 @@ async function sendNotificationEmail() {
         ],
       },
     };
-    var poller = await client.beginSend(emailMessage);
-    const response = await poller.pollUntilDone();
+    const response = await sendAzureEmail(emailMessage);
     console.log(
       "sendNotificationEmail() => Successfully sent notification email:",
       response
@@ -80,7 +97,6 @@ async function sendSupportEmail(body) {
   const { type } = body;
   try {
     console.log("sendSupportEmail() => Starting function:", body);
-    let client = new EmailClient(connectionString);
     //send mail
     const emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
@@ -102,8 +118,8 @@ async function sendSupportEmail(body) {
         ],
       },
     };
-    var poller = await client.beginSend(emailMessage);
-    const response = await poller.pollUntilDone();
+
+    const response = await sendAzureEmail(emailMessage);
     console.log(
       "sendSupportEmail() => Successfully sent support email:",
       response
@@ -118,7 +134,6 @@ async function sendSupportEmail(body) {
 async function sendAftershipCSV(content, order_no) {
   try {
     console.log("sendAftershipCSV() => Starting function");
-    let client = new EmailClient(connectionString);
     //send mail
     const attachment = {
       name: `${order_no}_tracking.txt`,
@@ -143,8 +158,7 @@ async function sendAftershipCSV(content, order_no) {
       },
       attachments: [attachment],
     };
-    var poller = await client.beginSend(emailMessage);
-    const response = await poller.pollUntilDone();
+    const response = await sendAzureEmail(emailMessage);
     console.log("sendAftershipCSV() => successfully sent email:", response);
     return true;
   } catch (e) {
@@ -158,7 +172,6 @@ async function sendConfirmation(body) {
   const { company, name, email, requestor_email, type } = body;
   try {
     console.log("sendConfirmation() => Starting function:", body);
-    let client = new EmailClient(connectionString);
     //send mail
     let emailBody = "";
     let emailSubject = "";
@@ -194,8 +207,8 @@ async function sendConfirmation(body) {
         ],
       },
     };
-    var poller = await client.beginSend(emailMessage);
-    const response = await poller.pollUntilDone();
+
+    const response = await sendAzureEmail(emailMessage);
     console.log(
       "sendConfirmation() => Successfully sent confirmation email:",
       response
@@ -205,6 +218,54 @@ async function sendConfirmation(body) {
     console.error(
       "sendConfirmation() => Error in sending confirmation email:",
       e
+    );
+    return false;
+  }
+}
+
+async function sendOrderConfirmationEmail(
+  requestor_email,
+  requestor_name,
+  request_type,
+  recipient_name,
+  device_name,
+  shipping
+) {
+  try {
+    console.log(`sendOrderConfirmationEmail() => Starting function.`);
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: request_type + " Confirmation Email",
+        html: generateConfirmationEmail(
+          requestor_name,
+          request_type,
+          recipient_name,
+          device_name,
+          shipping
+        ),
+      },
+      recipients: {
+        to: [
+          {
+            address: requestor_email,
+          },
+        ],
+        bcc: [
+          {
+            address: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    const response = await sendAzureEmail(emailMessage);
+    console.log(
+      `sendOrderConfirmationEmail() => Successfully sent order confirmation email: ${response}`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendOrderConfirmationEmail() => Error in sending order confirmation email: ${e}`
     );
     return false;
   }
@@ -283,10 +344,24 @@ function generateTrackingEmailBody(name, tracking_num) {
   return emailBody;
 }
 
+function generateConfirmationEmail(
+  requestor_name,
+  request_type,
+  recipient_name,
+  device_name,
+  shipping
+) {
+  const emailBody = `<div dir="ltr"><span><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Hi ${requestor_name},</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">This email confirms that we have received the following order:</span></p><ul style="margin-top:0px;margin-bottom:0px"><li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt" role="presentation"><span style="font-size:11pt;background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Request: ${request_type}</span></p></li><li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt" role="presentation"><span style="font-size:11pt;background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Recipient: ${recipient_name}</span></p></li><li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt" role="presentation"><span style="font-size:11pt;background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Device: ${
+    device_name !== "" ? device_name : "N/A"
+  }</span></p></li><li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt" role="presentation"><span style="font-size:11pt;background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Shipping: ${shipping}</span></p></li></ul><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">We are working on getting your order out as quickly as we can!</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Once items have shipped, tracking information will be available. It may take up to 24 hours to appear on the Orders page of your portal.</span></p><br><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Best,</span></p><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt"><span style="font-size:11pt;font-family:Arial;color:rgb(0,0,0);background-color:transparent;font-variant-numeric:normal;font-variant-east-asian:normal;font-variant-alternates:normal;vertical-align:baseline;white-space:pre-wrap">Team Spoke</span></p></span><table width="500" cellspacing="0" cellpadding="0" border="0" style="color:rgb(72,101,137);font-family:Montserrat,sans-serif;font-size:17px"><tbody><tr><td style="margin:0.1px"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td valign="top" style="padding:0px 8px 0px 0px;vertical-align:top"></td><td valign="top" style="margin:0.1px;font-size:1em;padding:0px 15px 0px 8px;vertical-align:top"><br></td></tr></tbody></table></td></tr></tbody></table></div>`;
+  return emailBody;
+}
+
 export {
   sendEmail,
   sendConfirmation,
   sendAftershipCSV,
   sendSupportEmail,
   sendNotificationEmail,
+  sendOrderConfirmationEmail,
 };

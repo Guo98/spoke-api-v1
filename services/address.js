@@ -1,5 +1,6 @@
 import axios from "axios";
 import parser from "parse-address";
+import { countryMappings } from "../utils/mappings/countrycodes.js";
 
 async function autocompleteAddress(address) {
   const validateUrl =
@@ -29,11 +30,11 @@ async function autocompleteAddress(address) {
   return result;
 }
 
-async function validateAddress(address) {
+async function validateAddress(address, source) {
   const validateUrl =
     process.env.GEO_URL +
     "search?text=" +
-    address +
+    encodeURIComponent(address) +
     "&apiKey=" +
     process.env.GEO_API_KEY;
 
@@ -48,8 +49,11 @@ async function validateAddress(address) {
       // console.log("address data :::::::: ", data.data.features[0]);
       if (data.status && data.status === 200) {
         const features = data.data.features[0];
-        // console.log("addres obj :::::: ", features);
-        if (features.properties.country === "United States") {
+
+        if (
+          features.properties.country === "United States" ||
+          source !== "wix"
+        ) {
           let addressLine2 = "";
           const splitAddr = address.split(",");
           if (parsed.sec_unit_type && parsed.sec_unit_num) {
@@ -63,8 +67,12 @@ async function validateAddress(address) {
               address_line2: addressLine2,
               city: features.properties.city,
               zipCode: features.properties.postcode,
-              state: features.properties.state_code,
-              country: features.properties.country_code.toUpperCase(),
+              state:
+                features.properties.state_code || features.properties.state,
+              country:
+                countryMappings[
+                  features.properties.country_code.toUpperCase()
+                ] || features.properties.country_code.toUpperCase(),
             };
             return { status: 200, data: addressObj };
           } else {

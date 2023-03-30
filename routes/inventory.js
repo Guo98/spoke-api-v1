@@ -9,7 +9,10 @@ import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
 import { inventoryDBMapping } from "../utils/mappings/inventory.js";
-import { sendNotificationEmail } from "../services/sendEmail.js";
+import {
+  sendNotificationEmail,
+  sendOrderConfirmationEmail,
+} from "../services/sendEmail.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -29,7 +32,7 @@ inventory
 
 const router = Router();
 
-router.get("/getInventory/:company", checkJwt, async (req, res) => {
+router.get("/getInventory/:company/:entity?", checkJwt, async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
   console.log(`/getInventory/${company} => Starting route.`);
@@ -38,11 +41,16 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
       `/getInventory/${company} => Getting inventory from db: ${dbContainer}.`
     );
     try {
-      const inventoryRes = await inventory.getAll(dbContainer);
-      const filteredRes = inventoryRes.filter(
-        (inv) => inv.location.indexOf("USA") > -1
-      );
-      filteredRes.forEach((device) => {
+      let inventoryRes = await inventory.getAll(dbContainer);
+      // const filteredRes = inventoryRes.filter(
+      //   (inv) => inv.location.indexOf("USA") > -1
+      // );
+      if (req.params.entity) {
+        inventoryRes = inventoryRes.filter(
+          (inv) => inv.entity === req.params.entity
+        );
+      }
+      inventoryRes.forEach((device) => {
         delete device._rid;
         delete device._self;
         delete device._etag;
@@ -50,7 +58,7 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
         delete device._ts;
       });
       console.log(`/getInventory/${company} => Ending route. Successful.`);
-      res.json({ data: filteredRes });
+      res.json({ data: inventoryRes });
     } catch (e) {
       console.log(
         `/getInventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
@@ -80,7 +88,15 @@ router.get("/getInventory/:company", checkJwt, async (req, res) => {
  * @param {string} device_location
  */
 router.post("/deployLaptop", checkJwt, async (req, res) => {
-  const { client } = req.body;
+  const {
+    client,
+    requestor_email,
+    requestor_name,
+    first_name,
+    last_name,
+    device_name,
+    shipping,
+  } = req.body;
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
@@ -101,16 +117,58 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       e
     );
   }
+
+  try {
+    console.log(
+      `/deployLaptop/${client} => Starting order confirmation email.`
+    );
+    await sendOrderConfirmationEmail(
+      requestor_email,
+      requestor_name,
+      "Deployment",
+      first_name + " " + last_name,
+      device_name,
+      shipping
+    );
+    console.log(
+      `/deployLaptop/${client} => Successfully sent order confirmation email.`
+    );
+  } catch (e) {
+    console.log(
+      `/deployLaptop/${client} => Error in sending order confirmation email:`,
+      e
+    );
+  }
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { client } = req.body;
+  const { client, recipient_name, requestor_email, requestor_name } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
   await inventoryOffboard(res, req.body, inventory);
 
   console.log(`/offboarding/${client} => Ending route.`);
   if (!res.headersSent) res.send({ status: "Success" });
+
+  try {
+    console.log(`/offboarding/${client} => Starting order confirmation email.`);
+    await sendOrderConfirmationEmail(
+      requestor_email,
+      requestor_name,
+      "Offboarding",
+      recipient_name,
+      "",
+      "Standard"
+    );
+    console.log(
+      `/offboarding/${client} => Successfully sent order confirmation email.`
+    );
+  } catch (e) {
+    console.log(
+      `/offboarding/${client} => Error in sending order confirmation email:`,
+      e
+    );
+  }
 });
 
 /**
@@ -181,40 +239,59 @@ router.get("/resetdata", checkJwt, async (req, res) => {
   res.json({ status: "Success" });
 });
 
-router.get("/downloadinventory/:client", checkJwt, async (req, res) => {
-  let containerId = determineContainer(req.params.client);
-  console.log(`/downloadinventory/${req.params.client} => Starting route.`);
-  try {
-    console.log(
-      `/downloadinventory/${req.params.client} => Getting all inventory.`
-    );
-    const inventoryRes = await inventory.getAll(containerId);
+router.get(
+  "/downloadinventory/:client/:entity?",
+  checkJwt,
+  async (req, res) => {
+    let containerId = determineContainer(req.params.client);
+    console.log(`/downloadinventory/${req.params.client} => Starting route.`);
+    try {
+      console.log(
+        `/downloadinventory/${
+          req.params.client
+        } => Getting all inventory. Entity: ${
+          req.params.entity ? req.params.entity : ""
+        }`
+      );
+      const inventoryRes = await inventory.getAll(containerId);
 
-    let allDevices = [];
+      let allDevices = [];
 
-    inventoryRes.forEach((device) => {
-      if (device.location.indexOf("USA") > -1) {
-        device.serial_numbers.forEach((item) => {
-          allDevices.push({
-            ...item,
-            name: device.name,
-            location: device.location,
-            grade: item.grade ? item.grade : "",
+      inventoryRes.forEach((device) => {
+        if (req.params.entity) {
+          if (req.params.entity === device.entity) {
+            device.serial_numbers.forEach((item) => {
+              allDevices.push({
+                ...item,
+                name: device.name,
+                location: device.location,
+                grade: item.grade ? item.grade : "",
+              });
+            });
+          }
+        } else {
+          device.serial_numbers.forEach((item) => {
+            allDevices.push({
+              ...item,
+              name: device.name,
+              location: device.location,
+              grade: item.grade ? item.grade : "",
+            });
           });
-        });
-      }
-    });
-    console.log(
-      `/downloadinventory/${req.params.client} => Got list of of devices.`
-    );
+        }
+      });
+      console.log(
+        `/downloadinventory/${req.params.client} => Got list of of devices.`
+      );
 
-    await exportInventory(res, allDevices);
-  } catch (e) {
-    res.status(500).send({ status: "Error in here" });
+      await exportInventory(res, allDevices);
+    } catch (e) {
+      res.status(500).send({ status: "Error in here" });
+    }
+    // res.send("Hello World!");
+    console.log(`/downloadinventory/${req.params.client} => Ending route.`);
   }
-  // res.send("Hello World!");
-  console.log(`/downloadinventory/${req.params.client} => Ending route.`);
-});
+);
 
 // add to stock
 router.post("/addtostock", checkJwt, async (req, res) => {
@@ -300,6 +377,17 @@ router.post("/addtostock", checkJwt, async (req, res) => {
   console.log(`/addtostock/${client} => Ending route.`);
   if (!res.headersSent) res.json({ status: "Success" });
 });
+
+// router.get("/testingroute", async (req, res) => {
+//   await sendOrderConfirmationEmail(
+//     "username99",
+//     "deployment",
+//     "Andy Guo",
+//     "macbook air m2",
+//     "overnight"
+//   );
+//   res.json({ status: "Successful" });
+// });
 
 function resetDevice(item) {
   let resetItem = {

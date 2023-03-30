@@ -79,7 +79,7 @@ router.post("/validateAddress", async (req, res) => {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
-      validateAddress(req.body.address)
+      validateAddress(req.body.address, "wix")
         .then((data) => {
           // console.log("address data ::::: ", data);
           if (data.status && data.status === 200) {
@@ -104,17 +104,20 @@ router.post("/validateAddress", async (req, res) => {
 });
 
 router.post("/validateAddressUI", checkJwt, async (req, res) => {
+  console.log("/validateAddressUI => Starting route");
   if (req.body && req.body !== {}) {
-    validateAddress(req.body.address)
+    validateAddress(req.body.address, "portal")
       .then((data) => {
         // console.log("address data ::::: ", data);
         if (data.status && data.status === 200) {
+          console.log("/validateAddressUI => Successfully validated address");
           res.send({ message: "Successful!", data: data.data });
         } else {
           throw new Error(data.data);
         }
       })
       .catch((err) => {
+        console.log("/validateAddressUI => Error in validating address:", err);
         if (err.message === "not in the united states") {
           res.status(500).json({ message: "Country not supported" });
         } else {
@@ -124,6 +127,7 @@ router.post("/validateAddressUI", checkJwt, async (req, res) => {
   } else {
     res.status(500).json({ message: "Missing Body" });
   }
+  console.log("/validateAddressUI => Finished route");
 });
 
 export default router;

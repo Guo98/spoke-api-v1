@@ -1,4 +1,4 @@
-import { suppliers } from "./constants.js";
+import { suppliers, euCodes } from "./constants.js";
 // import { createRecord } from "../services/airtable.js";
 
 function mapLineItems(customerInfo) {
@@ -15,6 +15,15 @@ function mapLineItems(customerInfo) {
         break;
       case "flyrlabs":
         customerInfo.client = "FLYR";
+        if (customerInfo?.address?.country === "USA") {
+          customerInfo.entity = "FLYR USA";
+        } else if (customerInfo?.address?.country === "POL") {
+          customerInfo.entity = "FLYR Poland";
+        } else if (euCodes.indexOf(customerInfo?.address?.country) > -1) {
+          customerInfo.entity = "FLYR EU";
+        } else {
+          customerInfo.entity = "FLYR Misc";
+        }
         break;
       case "bowery":
         customerInfo.client = "Bowery";

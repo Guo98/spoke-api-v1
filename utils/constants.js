@@ -277,7 +277,6 @@ const euCodes = [
   "LUX",
   "MLT",
   "NLD",
-  "POL",
   "PRT",
   "ROU",
   "SVK",

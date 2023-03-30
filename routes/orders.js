@@ -11,7 +11,6 @@ import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import { sendSupportEmail } from "../services/sendEmail.js";
-import { sendAftershipCSV } from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 
@@ -181,7 +180,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
+router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
@@ -206,18 +205,26 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Starting route.`);
 
   const querySpec = {
-    query:
-      "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
-    parameters: [
-      {
-        name: "@client",
-        value: client,
-      },
-      {
-        name: "@country",
-        value: "USA",
-      },
-    ],
+    query: req.params.entity
+      ? "SELECT * FROM Received r WHERE r.client = @client AND r.entity = @entity"
+      : "SELECT * FROM Received r WHERE r.client = @client",
+    parameters: req.params.entity
+      ? [
+          {
+            name: "@client",
+            value: client,
+          },
+          {
+            name: "@entity",
+            value: req.params.entity,
+          },
+        ]
+      : [
+          {
+            name: "@client",
+            value: client,
+          },
+        ],
   };
 
   if (dbContainer !== "") {
@@ -225,11 +232,14 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
       );
-      const ordersRes = await orders.getAllOrders(dbContainer);
-      const filteredRes = ordersRes.filter(
-        (order) => order.address.country === "USA"
-      );
-      filteredRes.forEach((order) => {
+      let ordersRes = await orders.getAllOrders(dbContainer);
+
+      if (req.params.entity) {
+        ordersRes = ordersRes.filter(
+          (order) => order.entity === req.params.entity
+        );
+      }
+      ordersRes.forEach((order) => {
         delete order._rid;
         delete order._self;
         delete order._etag;
@@ -254,7 +264,7 @@ router.get("/getAllOrders/:company", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
       );
-      res.json({ data: { in_progress: inProgRes, completed: filteredRes } });
+      res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
     } catch (e) {
       console.log(
         `/getAllOrders/${company} => Error in getting all orders: ${e}`
@@ -284,7 +294,7 @@ router.post("/supportEmail", async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
-router.get("/downloadorders/:client", checkJwt, async (req, res) => {
+router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
   try {
@@ -303,18 +313,26 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
     }
 
     const querySpec = {
-      query:
-        "SELECT * FROM Received r WHERE r.client = @client AND r.address.country = @country",
-      parameters: [
-        {
-          name: "@client",
-          value: client,
-        },
-        {
-          name: "@country",
-          value: "USA",
-        },
-      ],
+      query: req.params.entity
+        ? "SELECT * FROM Received r WHERE r.client = @client AND r.entity = @entity"
+        : "SELECT * FROM Received r WHERE r.client = @client",
+      parameters: req.params.entity
+        ? [
+            {
+              name: "@client",
+              value: client,
+            },
+            {
+              name: "@entity",
+              value: req.params.entity,
+            },
+          ]
+        : [
+            {
+              name: "@client",
+              value: client,
+            },
+          ],
     };
 
     if (containerId !== "") {
@@ -344,7 +362,21 @@ router.get("/downloadorders/:client", checkJwt, async (req, res) => {
 
       if (ordersRes.length > 0) {
         ordersRes.reverse().forEach((order) => {
-          if (order.address.country === "USA") {
+          if (req.params.entity) {
+            if (req.params.entity === order.entity) {
+              order.items.forEach((item) => {
+                allOrders.push({
+                  orderNo: order.orderNo,
+                  name: order.firstName + " " + order.lastName,
+                  item: item.name,
+                  price: item.price,
+                  date: order.date,
+                  location:
+                    order.address.subdivision + ", " + order.address.country,
+                });
+              });
+            }
+          } else {
             order.items.forEach((item) => {
               allOrders.push({
                 orderNo: order.orderNo,
