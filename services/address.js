@@ -70,9 +70,11 @@ async function validateAddress(address, source) {
               state:
                 features.properties.state_code || features.properties.state,
               country:
-                countryMappings[
-                  features.properties.country_code.toUpperCase()
-                ] || features.properties.country_code.toUpperCase(),
+                source === "wix"
+                  ? features.properties.country_code.toUpperCase()
+                  : countryMappings[
+                      features.properties.country_code.toUpperCase()
+                    ] || features.properties.country_code.toUpperCase(),
             };
             return { status: 200, data: addressObj };
           } else {

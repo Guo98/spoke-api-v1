@@ -278,7 +278,7 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   console.log(`/getAllOrders/${company} => Ending route.`);
 });
 
-router.post("/supportEmail", async (req, res) => {
+router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Starting route.");
   try {
     console.log("/supportEmail => Sending support email.");
@@ -540,5 +540,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
   console.log(`/completeOrder/${client} => Ending route.`);
   if (!res.headersSent) res.json({ status: "Success" });
 });
+
+router.post("/newPurchase", async (req, res) => {});
 
 export default router;
