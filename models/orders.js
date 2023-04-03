@@ -52,7 +52,7 @@ class Orders {
 
     item.date = new Date().toLocaleDateString("en-US");
 
-    const { resource: doc } = await coResponse.items.create(item);
+    const { resource: doc } = await coResponse.container.items.create(item);
     return doc;
   }
 
