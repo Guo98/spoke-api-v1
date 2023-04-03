@@ -541,6 +541,17 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Success" });
 });
 
-router.post("/newPurchase", async (req, res) => {});
+router.post("/newPurchase", checkJwt, async (req, res) => {
+  const { client } = req.body;
+
+  try {
+    await orders.addOrderByContainer("Marketplace", req.body);
+  } catch (e) {
+    console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
+    res.status(500).json({ status: "Error" });
+  }
+
+  if (!res.headersSent) res.json({ status: "Successful" });
+});
 
 export default router;

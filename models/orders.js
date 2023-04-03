@@ -47,6 +47,15 @@ class Orders {
     return doc;
   }
 
+  async addOrderByContainer(containerid, item) {
+    const coResponse = await this.database.container(containerid).read();
+
+    item.date = new Date().toLocaleDateString("en-US");
+
+    const { resource: doc } = await coResponse.items.create(item);
+    return doc;
+  }
+
   async updateOrder(itemId, fullNameKey, items) {
     const doc = await this.getItem(itemId, fullNameKey);
 
