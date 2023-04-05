@@ -10,7 +10,10 @@ import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
-import { sendSupportEmail } from "../services/sendEmail.js";
+import {
+  sendSupportEmail,
+  sendMarketplaceRequestEmail,
+} from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 
@@ -542,13 +545,57 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
 });
 
 router.post("/newPurchase", checkJwt, async (req, res) => {
-  const { client } = req.body;
+  const {
+    client,
+    device_type,
+    specs,
+    color,
+    notes: { device, recipient },
+    order_type,
+    recipient_name,
+    address,
+    email,
+    phone_number,
+    shipping_rate,
+  } = req.body;
 
   try {
+    console.log(
+      `/newPurchase/${client} => Adding new request to db:`,
+      req.body
+    );
     await orders.addOrderByContainer("Marketplace", req.body);
+    console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
     console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
     res.status(500).json({ status: "Error" });
+  }
+
+  try {
+    console.log(
+      `/newPurchase/${client} => Sending marketplace request notification email.`
+    );
+    await sendMarketplaceRequestEmail(
+      client,
+      device_type,
+      specs,
+      color,
+      order_type,
+      device,
+      recipient_name,
+      address,
+      email,
+      phone_number,
+      recipient,
+      shipping_rate
+    );
+    console.log(
+      `/newPurchase/${client} => Finished sending marketplace request notification email.`
+    );
+  } catch (e) {
+    console.log(
+      `/newPurchase/${client} => Error in sending market request email: ${e}`
+    );
   }
 
   if (!res.headersSent) res.json({ status: "Successful" });
