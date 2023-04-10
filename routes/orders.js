@@ -601,4 +601,30 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
 });
 
+router.get("/getmarketplace", checkJwt, async (req, res) => {
+  console.log("/getmarketplace => Starting route.");
+  try {
+    console.log("/getmarketplace => Getting all orders from marketplace.");
+    let orderRes = await orders.getAllOrders("Marketplace");
+    orderRes.forEach((order) => {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+      delete order.id;
+    });
+    console.log("/getmarkatplace => Got all orders from marketplace.");
+    res.json({ status: "Successful", data: orderRes });
+  } catch (e) {
+    console.log(
+      `/getmarketplace => Error in getting all marketplace orders: ${JSON.stringify(
+        e
+      )}`
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log("/getmarketplace => Finished route.");
+});
+
 export default router;
