@@ -94,7 +94,7 @@ class Orders {
     resource.status = status;
 
     const { resource: replaced } = await coResponse.container
-      .item(itemId, fullNameKey)
+      .item(itemId, clientKey)
       .replace(resource);
 
     return replaced;
