@@ -633,11 +633,10 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   console.log("/updateMarketOrder => Starting route.");
   try {
     console.log("/updateMarketOrder => Starting update db function.");
-    const updateRes = await orders.updateOrderByContainer(
-      "Marketplace",
+    const updateRes = await orders.updateMarketOrder(
       req.body.id,
       req.body.client,
-      req.body
+      req.body.status
     );
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {

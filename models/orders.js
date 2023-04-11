@@ -84,6 +84,22 @@ class Orders {
     return replaced;
   }
 
+  async updateMarketOrder(itemId, clientKey, status) {
+    const coResponse = await this.database.container("Marketplace").read();
+
+    const { resource } = await coResponse.container
+      .item(itemId, clientKey)
+      .read();
+
+    resource.status = status;
+
+    const { resource: replaced } = await coResponse.container
+      .item(itemId, fullNameKey)
+      .replace(resource);
+
+    return replaced;
+  }
+
   async updateOrderStatusByContainer(containerId, itemId, fullNameKey, status) {
     const coResponse = await this.database.container(containerId).read();
 
