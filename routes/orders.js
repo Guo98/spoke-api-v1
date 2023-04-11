@@ -564,7 +564,10 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
       `/newPurchase/${client} => Adding new request to db:`,
       req.body
     );
-    await orders.addOrderByContainer("Marketplace", req.body);
+    await orders.addOrderByContainer("Marketplace", {
+      ...req.body,
+      status: "Received",
+    });
     console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
     console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
@@ -612,7 +615,6 @@ router.get("/getmarketplace", checkJwt, async (req, res) => {
       delete order._etag;
       delete order._attachments;
       delete order._ts;
-      delete order.id;
     });
     console.log("/getmarkatplace => Got all orders from marketplace.");
     res.json({ status: "Successful", data: orderRes });
@@ -625,6 +627,25 @@ router.get("/getmarketplace", checkJwt, async (req, res) => {
     res.status(500).json({ status: "Error" });
   }
   console.log("/getmarketplace => Finished route.");
+});
+
+router.post("/updateMarketOrder", checkJwt, async (req, res) => {
+  console.log("/updateMarketOrder => Starting route.");
+  try {
+    console.log("/updateMarketOrder => Starting update db function.");
+    const updateRes = await orders.updateOrderByContainer(
+      "Marketplace",
+      req.body.id,
+      req.body.client,
+      req.body
+    );
+    console.log("/updateMarketOrder => Finished update db function.");
+  } catch (e) {
+    console.log("/updateMarketOrder => Error in updating db: ", e);
+    res.status(500).json({ status: "Error" });
+  }
+  console.log("/updateMarketOrder => Finished route.");
+  if (!res.headersSent) res.json({ status: "Successful" });
 });
 
 export default router;
