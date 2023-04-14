@@ -25,10 +25,6 @@ const inventoryDBMapping = {
     Poland: "macbook_pro_14_10_pol",
     Netherlands: "macbook_pro_14_10_nld",
   },
-  'MacBook Pro 16", 10-core Apple M1 Pro': {
-    Poland: "macbook_pro_16_10_pol",
-    Netherlands: "macbook_pro_16_10_nld",
-  },
   'MacBook Pro 16", 10-core Apple M1 Pro, 1TB': {
     Poland: "macbook_pro_16_10_1tb_pol",
   },
@@ -79,6 +75,23 @@ const inventoryDBMapping = {
   },
   'MacBook Air (2015) 13" Intel i5: 4GB': {
     "Georgia, USA": "mac_air_2015",
+  },
+  "Dell XPS 15” - 32GB": {
+    "Maastricht, Netherlands": "dell_xps_nld_15_32",
+  },
+  "Dell XPS 15” - 16GB": {
+    "Maastricht, Netherlands": "dell_xps_nld_15_16",
+  },
+  'MacBook Pro 16" M1: 16GB': {
+    "Maastricht, Netherlands": "macbook_pro_16_16_nld",
+    "Gdańsk, Poland": "macbook_pro_16_16_pol",
+  },
+  'MacBook Pro 16" M1: 32GB': {
+    "Maastricht, Netherlands": "macbook_pro_16_10_nld",
+    "Gdańsk, Poland": "macbook_pro_16_10_pol",
+  },
+  'MacBook Pro 16" M2: 32GB': {
+    "Gdańsk, Poland": "macbook_pro_16_32_m2_pol",
   },
 };
 
