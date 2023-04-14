@@ -1,6 +1,18 @@
 import { suppliers, euCodes } from "./constants.js";
 // import { createRecord } from "../services/airtable.js";
 
+function determineFLYRRegion(country) {
+  if (country === "USA") {
+    return "FLYR USA";
+  } else if (country === "POL") {
+    return "FLYR Poland";
+  } else if (euCodes.indexOf(country) > -1) {
+    return "FLYR EU";
+  } else {
+    return "FLYR Misc";
+  }
+}
+
 function mapLineItems(customerInfo) {
   if (customerInfo?.discount?.appliedCoupon) {
     switch (customerInfo.discount.appliedCoupon?.code) {
@@ -15,18 +27,17 @@ function mapLineItems(customerInfo) {
         break;
       case "flyrlabs":
         customerInfo.client = "FLYR";
-        if (customerInfo?.address?.country === "USA") {
-          customerInfo.entity = "FLYR USA";
-        } else if (customerInfo?.address?.country === "POL") {
-          customerInfo.entity = "FLYR Poland";
-        } else if (euCodes.indexOf(customerInfo?.address?.country) > -1) {
-          customerInfo.entity = "FLYR EU";
-        } else {
-          customerInfo.entity = "FLYR Misc";
+        if (customerInfo?.address?.country) {
+          customerInfo.entity = determineFLYRRegion(
+            customerInfo?.address?.country
+          );
         }
         break;
       case "bowery":
         customerInfo.client = "Bowery";
+        break;
+      case "hiddenroad":
+        customerInfo.client = "Hidden Road";
         break;
       default:
         break;
@@ -62,6 +73,21 @@ function mapLineItems(customerInfo) {
       }
       item.tracking_number = "";
       item.delivery_company = "";
+      if (item.name.toLowerCase().indexOf("pribas eu") > -1) {
+        customerInfo.entity = "Pribas EU";
+        customerInfo.client = "FLYR";
+      } else if (item.name.toLowerCase().indexOf("flyr") > -1) {
+        customerInfo.client = "FLYR";
+        if (customerInfo?.address?.country) {
+          customerInfo.entity = determineFLYRRegion(
+            customerInfo?.address?.country
+          );
+        }
+      } else if (item.name.toLowerCase().indexOf("bowery") > -1) {
+        customerInfo.client = "Bowery";
+      } else if (item.name.toLowerCase().indexOf("nursedash") > -1) {
+        customerInfo.client = "NurseDash";
+      }
     });
   }
   customerInfo.full_name =

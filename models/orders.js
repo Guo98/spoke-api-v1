@@ -47,6 +47,15 @@ class Orders {
     return doc;
   }
 
+  async addOrderByContainer(containerid, item) {
+    const coResponse = await this.database.container(containerid).read();
+
+    item.date = new Date().toLocaleDateString("en-US");
+
+    const { resource: doc } = await coResponse.container.items.create(item);
+    return doc;
+  }
+
   async updateOrder(itemId, fullNameKey, items) {
     const doc = await this.getItem(itemId, fullNameKey);
 
@@ -70,6 +79,22 @@ class Orders {
 
     const { resource: replaced } = await coResponse.container
       .item(itemId, fullNameKey)
+      .replace(resource);
+
+    return replaced;
+  }
+
+  async updateMarketOrder(itemId, clientKey, status) {
+    const coResponse = await this.database.container("Marketplace").read();
+
+    const { resource } = await coResponse.container
+      .item(itemId, clientKey)
+      .read();
+
+    resource.status = status;
+
+    const { resource: replaced } = await coResponse.container
+      .item(itemId, clientKey)
       .replace(resource);
 
     return replaced;

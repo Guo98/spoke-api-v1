@@ -271,6 +271,63 @@ async function sendOrderConfirmationEmail(
   }
 }
 
+async function sendMarketplaceRequestEmail(
+  client,
+  item_name,
+  specs,
+  color,
+  request_type,
+  item_notes,
+  name,
+  address,
+  email,
+  phone,
+  emp_notes,
+  shipping
+) {
+  try {
+    console.log(`sendMarketplaceRequestEmail() => Starting function.`);
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: client + ": New Marketplace Request",
+        html: generateMarketplaceRequestEmail(
+          item_name,
+          specs,
+          color,
+          request_type,
+          item_notes,
+          name,
+          address,
+          email,
+          phone,
+          emp_notes,
+          shipping
+        ),
+      },
+      recipients: {
+        to: [
+          {
+            address: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    const response = await sendAzureEmail(emailMessage);
+    console.log(
+      `sendMarketplaceRequestEmail() => Successfully sent market request email: ${JSON.stringify(
+        response
+      )}`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendMarketplaceRequestEmail() => Error in sending market request email: ${e}`
+    );
+    return false;
+  }
+}
+
 function generateReturnEmailBody(company, name, address) {
   const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
     company === "Bowery" ? "Bowery Valuation" : company
@@ -357,6 +414,28 @@ function generateConfirmationEmail(
   return emailBody;
 }
 
+function generateMarketplaceRequestEmail(
+  item_name,
+  specs,
+  color,
+  request_type,
+  item_notes,
+  name,
+  address,
+  email,
+  phone,
+  emp_notes,
+  shipping
+) {
+  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div><div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div><div dir="ltr">Specs: ${specs}</div><div dir="ltr"><br></div><div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div><div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div><div dir="ltr">Request Type: ${request_type}</div>${
+    request_type === "Hold in Inventory"
+      ? ""
+      : `<div dir="ltr"><br></div><div dir="ltr">Recipient Name: ${name}</div><div dir="ltr"><br></div><div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div><div dir="ltr">Email Address: <a href=${email} target="_blank">${email}</a></div><div dir="ltr"><br></div><div dir="ltr">Phone Number: ${phone}<br></div><div dir="ltr"><br></div><div dir="ltr">Shipping Rate: ${shipping}</div><div dir="ltr"><br></div><div dir="ltr">Employee Notes: ${emp_notes}</div>`
+  }</div>`;
+
+  return emailBody;
+}
+
 export {
   sendEmail,
   sendConfirmation,
@@ -364,4 +443,5 @@ export {
   sendSupportEmail,
   sendNotificationEmail,
   sendOrderConfirmationEmail,
+  sendMarketplaceRequestEmail,
 };

@@ -10,7 +10,10 @@ import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
-import { sendSupportEmail } from "../services/sendEmail.js";
+import {
+  sendSupportEmail,
+  sendMarketplaceRequestEmail,
+} from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 
@@ -541,6 +544,107 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Success" });
 });
 
-router.post("/newPurchase", async (req, res) => {});
+router.post("/newPurchase", checkJwt, async (req, res) => {
+  const {
+    client,
+    device_type,
+    specs,
+    color,
+    notes: { device, recipient },
+    order_type,
+    recipient_name,
+    address,
+    email,
+    phone_number,
+    shipping_rate,
+  } = req.body;
+
+  try {
+    console.log(
+      `/newPurchase/${client} => Adding new request to db:`,
+      req.body
+    );
+    await orders.addOrderByContainer("Marketplace", {
+      ...req.body,
+      status: "Received",
+    });
+    console.log(`/newPurchase/${client} => Finished adding new request to db.`);
+  } catch (e) {
+    console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
+    res.status(500).json({ status: "Error" });
+  }
+
+  try {
+    console.log(
+      `/newPurchase/${client} => Sending marketplace request notification email.`
+    );
+    await sendMarketplaceRequestEmail(
+      client,
+      device_type,
+      specs,
+      color,
+      order_type,
+      device,
+      recipient_name,
+      address,
+      email,
+      phone_number,
+      recipient,
+      shipping_rate
+    );
+    console.log(
+      `/newPurchase/${client} => Finished sending marketplace request notification email.`
+    );
+  } catch (e) {
+    console.log(
+      `/newPurchase/${client} => Error in sending market request email: ${e}`
+    );
+  }
+
+  if (!res.headersSent) res.json({ status: "Successful" });
+});
+
+router.get("/getmarketplace", checkJwt, async (req, res) => {
+  console.log("/getmarketplace => Starting route.");
+  try {
+    console.log("/getmarketplace => Getting all orders from marketplace.");
+    let orderRes = await orders.getAllOrders("Marketplace");
+    orderRes.forEach((order) => {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    });
+    console.log("/getmarkatplace => Got all orders from marketplace.");
+    res.json({ status: "Successful", data: orderRes });
+  } catch (e) {
+    console.log(
+      `/getmarketplace => Error in getting all marketplace orders: ${JSON.stringify(
+        e
+      )}`
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log("/getmarketplace => Finished route.");
+});
+
+router.post("/updateMarketOrder", checkJwt, async (req, res) => {
+  console.log("/updateMarketOrder => Starting route.");
+  try {
+    console.log("/updateMarketOrder => Starting update db function.");
+    const updateRes = await orders.updateMarketOrder(
+      req.body.id,
+      req.body.client,
+      req.body.status
+    );
+    console.log("/updateMarketOrder => Finished update db function.");
+  } catch (e) {
+    console.log("/updateMarketOrder => Error in updating db: ", e);
+    res.status(500).json({ status: "Error" });
+  }
+  console.log("/updateMarketOrder => Finished route.");
+  if (!res.headersSent) res.json({ status: "Successful" });
+});
 
 export default router;
