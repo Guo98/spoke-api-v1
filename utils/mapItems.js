@@ -36,6 +36,9 @@ function mapLineItems(customerInfo) {
       case "bowery":
         customerInfo.client = "Bowery";
         break;
+      case "hiddenroad":
+        customerInfo.client = "Hidden Road";
+        break;
       default:
         break;
     }
