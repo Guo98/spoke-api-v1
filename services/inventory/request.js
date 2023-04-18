@@ -24,7 +24,8 @@ function createLaptopObj(item, type) {
 }
 
 async function requestInventory(res, body, inventoryDB) {
-  const { client, name, requestor_email, request_type, items, notes } = body;
+  const { client, name, requestor_email, request_type, items, notes, id } =
+    body;
 
   const containerId = determineContainer(client);
   if (containerId !== "") {

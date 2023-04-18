@@ -17,12 +17,13 @@ async function deployLaptop(res, body, inventoryDB) {
     serial_number,
     device_location,
     requestor_email,
+    id,
   } = body;
   console.log(`deployLaptop() => Starting function:`, body);
   const containerId = determineContainer(client);
 
   if (containerId !== "") {
-    let deviceId = inventoryDBMapping[device_name]?.[device_location];
+    let deviceId = id;
 
     if (deviceId) {
       let inventoryRes = await inventoryDB.getItem(containerId, deviceId);
