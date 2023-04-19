@@ -53,6 +53,8 @@ app.use(routes.orders);
 
 app.use(routes.inventory);
 
+app.use(routes.slack);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });

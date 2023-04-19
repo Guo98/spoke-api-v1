@@ -5,6 +5,7 @@ import validation from "./validation.js";
 import login from "./login.js";
 import orders from "./orders.js";
 import inventory from "./inventory.js";
+import slack from "./slack.js";
 
 export default {
   offboard,
@@ -14,4 +15,5 @@ export default {
   login,
   orders,
   inventory,
+  slack,
 };

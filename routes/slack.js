@@ -73,3 +73,5 @@ router.post("/slackdemoroute", async (req, res) => {
     return res.status(500).send("Ooops");
   }
 });
+
+export default router;
