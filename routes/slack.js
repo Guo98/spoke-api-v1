@@ -74,4 +74,9 @@ router.post("/slackdemoroute", async (req, res) => {
   }
 });
 
+router.post("/slackactions", async (req, res) => {
+  console.log("/slackactions => req.body", req.body);
+  res.send("successful");
+});
+
 export default router;
