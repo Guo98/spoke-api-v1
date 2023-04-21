@@ -16,6 +16,7 @@ const corsOptions = {
 
 // adding Helmet to enhance your Rest API's security
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(cors(corsOptions));
 
@@ -32,10 +33,6 @@ app.get("/sitehealth", (req, res) => {
 });
 
 app.get("/testingauth", checkJwt, (req, res) => {
-  // res.setHeader("Access-Control-Allow-Origin", "*");
-  // res.setHeader("Access-Control-Allow-Headers", "*");
-  // res.header("Access-Control-Allow-Credentials", true);
-  // res.setHeader("Access-Control-Allow-Methods", "*");
   res.status(200).send("Successful auth!");
 });
 
