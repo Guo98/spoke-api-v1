@@ -14,12 +14,13 @@ const slack = (req, res, next) => {
         +req.headers["x-slack-request-timestamp"]
     ) > 300
   ) {
+    console.log("request too old ::::::::::");
     return res.status(400).send("Request too old!");
   }
 
   const baseStr = `v0:${req.headers["x-slack-request-timestamp"]}:${req.rawBody}`;
 
-  const receivedSignature = req.headers["x-slack-request-timestamp"];
+  const receivedSignature = req.headers["x-slack-signature"];
 
   const expectedSignature = `v0=${crypto
     .createHmac("sha256", process.env.SLACK_SIGNING_SECRET)
@@ -27,6 +28,7 @@ const slack = (req, res, next) => {
     .digest("hex")}`;
 
   if (expectedSignature !== receivedSignature) {
+    console.log("signature mismatch :::::::::::: ");
     return res.status(400).send("Signature mismatched.");
   }
 
