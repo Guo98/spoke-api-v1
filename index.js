@@ -16,7 +16,14 @@ const corsOptions = {
 
 // adding Helmet to enhance your Rest API's security
 app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    verify: (req, _, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 app.use(cors(corsOptions));
 

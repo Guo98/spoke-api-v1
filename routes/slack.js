@@ -1,10 +1,38 @@
 import { Router } from "express";
 import axios from "axios";
+import crypto from "crypto";
 import { sendSlackRequestEmail } from "../services/sendEmail.js";
 
 const router = Router();
 
-router.post("/slackorder", async (req, res) => {
+const slack = (req, res, next) => {
+  if (
+    !req.headers["x-slack-request-timestamp"] ||
+    Math.abs(
+      Math.floor(new Date().getTime() / 1000) -
+        +req.headers["x-slack-request-timestamp"]
+    ) > 300
+  ) {
+    return res.status(400).send("Request too old!");
+  }
+
+  const baseStr = `v0:${req.headers["x-slack-request-timestamp"]}:${req.rawBody}`;
+
+  const receivedSignature = req.headers["x-slack-request-timestamp"];
+
+  const expectedSignature = `v0=${crypto
+    .createHmac("sha256", process.env.SLACK_SIGNING_SECRET)
+    .update(baseStr, "utf8")
+    .digest("hex")}`;
+
+  if (expectedSignature !== receivedSignature) {
+    return res.status(400).send("Signature mismatched.");
+  }
+
+  next();
+};
+
+router.post("/slackorder", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
   try {
     const response = {
@@ -169,9 +197,9 @@ router.post("/slackorder", async (req, res) => {
     "status": "Received",
 */
 
-router.post("/slackactions", async (req, res) => {
+router.post("/slackactions", slack, async (req, res) => {
   console.log("/slackactions => req.body", req.body);
-  console.log("/slackactions => request headers", req.headers);
+
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
   const userId = payload.user.id;
