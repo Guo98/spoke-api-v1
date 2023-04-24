@@ -647,4 +647,13 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
 });
 
+const addMarketplaceOrder = async (request) => {
+  await orders.addOrderByContainer("Marketplace", {
+    ...request,
+    status: "Received",
+  });
+};
+
 export default router;
+
+export { addMarketplaceOrder };

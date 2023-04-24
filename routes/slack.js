@@ -2,6 +2,7 @@ import { Router } from "express";
 import axios from "axios";
 import crypto from "crypto";
 import { sendSlackRequestEmail } from "../services/sendEmail.js";
+import { addMarketplaceOrder } from "./orders.js";
 
 const router = Router();
 
@@ -256,6 +257,8 @@ router.post("/slackactions", slack, async (req, res) => {
 
     orderObj.date = new Date().toLocaleDateString("en-US");
     orderObj.notes = { device: orderObj.notes };
+
+    await addMarketplaceOrder(orderObj);
   }
 
   axios
