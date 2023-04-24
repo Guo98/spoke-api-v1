@@ -154,8 +154,24 @@ router.post("/slackorder", async (req, res) => {
   }
 });
 
+/*
+    "client": "Test client",
+    "color": "Gray",
+    "notes": {
+        "device": "device notes",
+        "recipient": "employee notes here"
+    },
+    "order_type": "Deploy",
+    "email": "andy@withspoke.com",
+    "phone_number": "1234567890",
+    "shipping_rate": "standard",
+    "date": "4/5/2023",
+    "status": "Received",
+*/
+
 router.post("/slackactions", async (req, res) => {
-  console.log("/slackactions => req.body", req.body.payload);
+  console.log("/slackactions => req.body", req.body);
+  console.log("/slackactions => request headers", req.headers);
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
   const userId = payload.user.id;
@@ -166,10 +182,10 @@ router.post("/slackactions", async (req, res) => {
   };
 
   const inputKeys = [
-    { key: "item_name_input", new_key: "item_name", field_name: "Item Name" },
+    { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
     {
       key: "req_specs_input",
-      new_key: "req_specs",
+      new_key: "specs",
       field_name: "Required Specs",
     },
     {
@@ -179,17 +195,17 @@ router.post("/slackactions", async (req, res) => {
     },
     {
       key: "recipient_addr_input",
-      new_key: "recipient_addr",
+      new_key: "address",
       field_name: "Recipient Address",
     },
     {
       key: "recipient_email_input",
-      new_key: "recipient_email",
+      new_key: "email",
       field_name: "Recipient Email",
     },
     {
       key: "recipient_pn_input",
-      new_key: "recipient_pn",
+      new_key: "phone_number",
       field_name: "Recipient Phone Number",
     },
     { key: "ref_url_input", new_key: "ref_url", field_name: "Reference URL" },
@@ -209,6 +225,9 @@ router.post("/slackactions", async (req, res) => {
         `*${inputMapping.field_name}:*\n${input[inputMapping.key].value}\n`;
       console.log("/slackactions => orderobj: ", JSON.stringify(orderObj));
     });
+
+    orderObj.date = new Date().toLocaleDateString("en-US");
+    orderObj.notes = { device: orderObj.notes };
   }
 
   axios
