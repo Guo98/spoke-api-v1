@@ -16,6 +16,14 @@ const corsOptions = {
 
 // adding Helmet to enhance your Rest API's security
 app.use(bodyParser.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+    verify: (req, _, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 app.use(cors(corsOptions));
 
@@ -32,10 +40,6 @@ app.get("/sitehealth", (req, res) => {
 });
 
 app.get("/testingauth", checkJwt, (req, res) => {
-  // res.setHeader("Access-Control-Allow-Origin", "*");
-  // res.setHeader("Access-Control-Allow-Headers", "*");
-  // res.header("Access-Control-Allow-Credentials", true);
-  // res.setHeader("Access-Control-Allow-Methods", "*");
   res.status(200).send("Successful auth!");
 });
 
@@ -52,6 +56,8 @@ app.use(routes.login);
 app.use(routes.orders);
 
 app.use(routes.inventory);
+
+app.use(routes.slack);
 
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });

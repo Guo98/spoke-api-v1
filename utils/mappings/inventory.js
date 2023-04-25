@@ -93,6 +93,9 @@ const inventoryDBMapping = {
   'MacBook Pro 16" M2: 32GB': {
     "Gdańsk, Poland": "macbook_pro_16_32_m2_pol",
   },
+  'MacBook Pro 16" M2 Chip': {
+    Brazil: "e3n3h",
+  },
 };
 
 export { inventoryDBMapping };

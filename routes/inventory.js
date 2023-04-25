@@ -302,11 +302,12 @@ router.post("/addtostock", checkJwt, async (req, res) => {
     status,
     date_requested,
     serial_numbers,
+    id,
   } = req.body;
   const containerId = determineContainer(client);
   console.log(`/addtostock/${client} => Starting route.`);
   if (containerId !== "") {
-    const deviceId = inventoryDBMapping[device_name]?.[device_location];
+    const deviceId = id;
     if (deviceId) {
       try {
         console.log(

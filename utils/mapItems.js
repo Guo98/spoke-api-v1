@@ -87,6 +87,8 @@ function mapLineItems(customerInfo) {
         customerInfo.client = "Bowery";
       } else if (item.name.toLowerCase().indexOf("nursedash") > -1) {
         customerInfo.client = "NurseDash";
+      } else if (item.name.toLowerCase().indexOf("alma") > -1) {
+        customerInfo.client = "Alma";
       }
     });
   }

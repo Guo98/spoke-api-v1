@@ -557,6 +557,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     email,
     phone_number,
     shipping_rate,
+    requestor_email,
   } = req.body;
 
   try {
@@ -579,6 +580,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
       `/newPurchase/${client} => Sending marketplace request notification email.`
     );
     await sendMarketplaceRequestEmail(
+      requestor_email,
       client,
       device_type,
       specs,
@@ -647,4 +649,13 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
 });
 
+const addMarketplaceOrder = async (request) => {
+  await orders.addOrderByContainer("Marketplace", {
+    ...request,
+    status: "Received",
+  });
+};
+
 export default router;
+
+export { addMarketplaceOrder };
