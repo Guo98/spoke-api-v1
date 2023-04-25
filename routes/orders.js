@@ -557,6 +557,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     email,
     phone_number,
     shipping_rate,
+    requestor_email,
   } = req.body;
 
   try {
@@ -579,6 +580,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
       `/newPurchase/${client} => Sending marketplace request notification email.`
     );
     await sendMarketplaceRequestEmail(
+      requestor_email,
       client,
       device_type,
       specs,
