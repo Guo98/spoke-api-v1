@@ -15,7 +15,7 @@ router.get("/documents", async (req, res) => {
       new DefaultAzureCredential()
     );
 
-    const containerClient = blobServiceClient.getContainerClient("images");
+    const containerClient = blobServiceClient.getContainerClient("image");
 
     for await (const blob of containerClient.listBlobsFlat()) {
       //const tempBlockBlobClient = containerClient.getBlockBlobClient(blob.name);
