@@ -64,7 +64,7 @@ router.get("/downloaddoc", async (req, res) => {
     const downloaded = (
       await streamToBuffer(downloadBlockBlobResponse.readableStreamBody)
     ).toString();
-
+    res.send({ status: "Success", byteStream: downloaded });
     console.log("/downloadDoc => Download document response: ", downloaded);
   } catch (e) {
     console.log(`/downloadDoc => Error in downloading document.`);
