@@ -5,6 +5,19 @@ import { checkJwt } from "../services/auth0.js";
 
 const router = Router();
 
+async function streamToBuffer(readableStream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    readableStream.on("data", (data) => {
+      chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+    });
+    readableStream.on("end", () => {
+      resolve(Buffer.concat(chunks));
+    });
+    readableStream.on("error", reject);
+  });
+}
+
 router.get("/documents", checkJwt, async (req, res) => {
   let blobNames = [];
   try {
@@ -46,12 +59,13 @@ router.get("/downloaddoc", async (req, res) => {
       "delllaptop.jpeg"
     );
 
-    const downloadBlockBlobResponse = await blockBlobClient.download(0);
+    const downloadBlockBlobResponse = await blockBlobClient.download();
 
-    console.log(
-      "/downloadDoc => Download document response: ",
-      downloadBlockBlobResponse
-    );
+    const downloaded = (
+      await streamToBuffer(downloadBlockBlobResponse.readableStreamBody)
+    ).toString();
+
+    console.log("/downloadDoc => Download document response: ", downloaded);
   } catch (e) {
     console.log(`/downloadDoc => Error in downloading document.`);
     res.status(500).json({ status: "Error in downloading" });
