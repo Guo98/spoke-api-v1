@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
-import { checkJwt } from "../services/auth0";
+import { checkJwt } from "../services/auth0.js";
 
 const router = Router();
 
