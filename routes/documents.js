@@ -56,14 +56,14 @@ router.get("/downloaddoc", async (req, res) => {
     const containerClient = blobServiceClient.getContainerClient("quotes");
 
     const blockBlobClient = await containerClient.getBlockBlobClient(
-      "delllaptop.jpeg"
+      "testing.pdf"
     );
 
     const downloadBlockBlobResponse = await blockBlobClient.download();
 
-    const downloaded = (
-      await streamToBuffer(downloadBlockBlobResponse.readableStreamBody)
-    ).toString();
+    const downloaded = await streamToBuffer(
+      downloadBlockBlobResponse.readableStreamBody
+    );
     res.send({ status: "Success", byteStream: downloaded });
     console.log("/downloadDoc => Download document response: ", downloaded);
   } catch (e) {

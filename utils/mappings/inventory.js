@@ -96,6 +96,9 @@ const inventoryDBMapping = {
   'MacBook Pro 16" M2 Chip': {
     Brazil: "e3n3h",
   },
+  "ThinkPad X1 Carbon Gen 9": {
+    "United States": "vj6mmh",
+  },
 };
 
 export { inventoryDBMapping };
