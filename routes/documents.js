@@ -43,7 +43,8 @@ router.get("/documents", checkJwt, async (req, res) => {
   res.send({ status: "Hello World", blobNames: blobNames });
 });
 
-router.get("/downloaddoc", async (req, res) => {
+router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
+  const filename = req.params.filename;
   try {
     const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
     if (!accountName) throw new Error("Azure Storage accountName not found");
@@ -55,9 +56,7 @@ router.get("/downloaddoc", async (req, res) => {
 
     const containerClient = blobServiceClient.getContainerClient("quotes");
 
-    const blockBlobClient = await containerClient.getBlockBlobClient(
-      "testing.pdf"
-    );
+    const blockBlobClient = await containerClient.getBlockBlobClient(filename);
 
     const downloadBlockBlobResponse = await blockBlobClient.download();
 
