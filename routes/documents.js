@@ -73,6 +73,9 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
   if (!res.headersSent) res.send({ status: "Success" });
 });
 
-router.post("/uploadDoc", checkJwt, async (req, res) => {});
+router.post("/uploadDoc", checkJwt, async (req, res) => {
+  console.log("req.body upload doc :::::::::::: ", req.body);
+  res.send({ status: "Success" });
+});
 
 export default router;
