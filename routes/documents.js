@@ -83,9 +83,9 @@ router.post(
   async (req, res) => {
     console.log("req.body upload doc :::::::::::: ", req.file);
 
-    let data = fs.createReadStream(req.file.path, "utf8");
+    // let data = fs.createReadStream(req.file.path, "utf8");
 
-    console.log("test content here :::::::: ", data);
+    // console.log("test content here :::::::: ", data);
 
     // data.on("data", function (chunk) {
     //   console.log("chunk to string :::::::: ", chunk.toString());
@@ -105,11 +105,15 @@ router.post(
       const blockBlobClient = await containerClient.getBlockBlobClient(
         req.file.originalname
       );
-      await blockBlobClient.uploadFile(req.file.path);
+      // await blockBlobClient.uploadFile(req.file.path);
       // data.on("data", async function (chunk) {
       //   console.log("chunk to string :::::::: ", chunk.toString());
       //   await blockBlobClient.uploadStream(chunk);
       // });
+      console.log("file path ::::::::::::::::: ", req.file.path);
+      const buffer = await fs.readFile(req.file.path);
+      console.log("buffer :::::::::: ", buffer);
+      await blockBlobClient.uploadData(buffer);
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
