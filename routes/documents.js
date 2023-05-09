@@ -78,6 +78,10 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
 
 router.post("/uploadDoc", upload.single("file"), async (req, res) => {
   console.log("req.body upload doc :::::::::::: ", req.file);
+
+  let data = fs.createReadStream(req.file.path, "utf8");
+
+  console.log("test content here :::::::: ", data);
   res.send({ status: "Success" });
 });
 
