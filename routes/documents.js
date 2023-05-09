@@ -70,7 +70,7 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
     res.send({ status: "Success", byteStream: downloaded });
     console.log("/downloadDoc => Download document response: ", downloaded);
   } catch (e) {
-    console.log(`/downloadDoc => Error in downloading document.`);
+    console.log(`/downloadDoc => Error in downloading document.`, e);
     res.status(500).json({ status: "Error in downloading" });
   }
 
@@ -97,7 +97,9 @@ router.post(
 
       const blobServiceClient = new BlobServiceClient(
         `https://${accountName}.blob.core.windows.net`,
-        new DefaultAzureCredential()
+        new DefaultAzureCredential({
+          tenantId: "9b9f4cee-fe96-4873-8081-83787efec6ee",
+        })
       );
 
       const containerClient = blobServiceClient.getContainerClient("quotes");
