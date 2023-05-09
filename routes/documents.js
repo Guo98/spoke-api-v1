@@ -77,13 +77,38 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
   if (!res.headersSent) res.send({ status: "Success" });
 });
 
-router.post("/uploadDoc", upload.single("file"), async (req, res) => {
-  console.log("req.body upload doc :::::::::::: ", req.file);
+router.post(
+  "/uploadDoc",
+  [checkJwt, upload.single("file")],
+  async (req, res) => {
+    console.log("req.body upload doc :::::::::::: ", req.file);
 
-  let data = fs.createReadStream(req.file.path, "utf8");
+    let data = fs.createReadStream(req.file.path, "utf8");
 
-  console.log("test content here :::::::: ", data);
-  res.send({ status: "Success" });
-});
+    console.log("test content here :::::::: ", data);
+
+    try {
+      const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+      if (!accountName) throw new Error("Azure Storage accountName not found");
+
+      const blobServiceClient = new BlobServiceClient(
+        `https://${accountName}.blob.core.windows.net`,
+        new DefaultAzureCredential()
+      );
+
+      const containerClient = blobServiceClient.getContainerClient("quotes");
+
+      const blockBlobClient = await containerClient.getBlockBlobClient(
+        req.file.originalname
+      );
+
+      await blockBlobClient.uploadStream(data);
+    } catch (e) {
+      console.log("/uploadDoc => Error in uploading document: ", e);
+      res.status(500).json({ status: "Error in uploading doc" });
+    }
+    if (!res.headersSent) res.send({ status: "Success" });
+  }
+);
 
 export default router;
