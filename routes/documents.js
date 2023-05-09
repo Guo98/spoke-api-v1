@@ -87,6 +87,10 @@ router.post(
 
     console.log("test content here :::::::: ", data);
 
+    data.on("data", function (chunk) {
+      console.log("chunk to string :::::::: ", chunk.toString());
+    });
+
     try {
       const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
       if (!accountName) throw new Error("Azure Storage accountName not found");
