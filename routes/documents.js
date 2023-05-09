@@ -106,7 +106,10 @@ router.post(
         req.file.originalname
       );
 
-      await blockBlobClient.uploadStream(data);
+      data.on("data", async function (chunk) {
+        console.log("chunk to string :::::::: ", chunk.toString());
+        await blockBlobClient.uploadStream(chunk);
+      });
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
