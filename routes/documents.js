@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
+import multer from "multer";
 import { checkJwt } from "../services/auth0.js";
 
 const router = Router();
+
+const upload = multer({ dest: "uploads/" });
 
 async function streamToBuffer(readableStream) {
   return new Promise((resolve, reject) => {
@@ -73,9 +76,13 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
   if (!res.headersSent) res.send({ status: "Success" });
 });
 
-router.post("/uploadDoc", checkJwt, async (req, res) => {
-  console.log("req.body upload doc :::::::::::: ", req.body);
-  res.send({ status: "Success" });
-});
+router.post(
+  "/uploadDoc",
+  [checkJwt, upload.array("files")],
+  async (req, res) => {
+    console.log("req.body upload doc :::::::::::: ", req.body);
+    res.send({ status: "Success" });
+  }
+);
 
 export default router;
