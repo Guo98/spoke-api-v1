@@ -87,9 +87,9 @@ router.post(
 
     console.log("test content here :::::::: ", data);
 
-    data.on("data", function (chunk) {
-      console.log("chunk to string :::::::: ", chunk.toString());
-    });
+    // data.on("data", function (chunk) {
+    //   console.log("chunk to string :::::::: ", chunk.toString());
+    // });
 
     try {
       const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
@@ -105,11 +105,11 @@ router.post(
       const blockBlobClient = await containerClient.getBlockBlobClient(
         req.file.originalname
       );
-
-      data.on("data", async function (chunk) {
-        console.log("chunk to string :::::::: ", chunk.toString());
-        await blockBlobClient.uploadStream(chunk);
-      });
+      await blockBlobClient.uploadFile(req.file.path);
+      // data.on("data", async function (chunk) {
+      //   console.log("chunk to string :::::::: ", chunk.toString());
+      //   await blockBlobClient.uploadStream(chunk);
+      // });
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
