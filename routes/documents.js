@@ -3,6 +3,7 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { checkJwt } from "../services/auth0.js";
+import * as fs from "fs";
 
 const router = Router();
 
