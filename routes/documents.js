@@ -12,8 +12,7 @@ const multerStorage = multer.diskStorage({
     cb(null, "uploads");
   },
   filename: (req, file, cb) => {
-    const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.fieldname}.${ext}`);
+    cb(null, file.originalname);
   },
 });
 
@@ -127,7 +126,9 @@ router.post(
       //   await blockBlobClient.uploadStream(chunk);
       // });
       console.log("file path ::::::::::::::::: ", req.file.path);
-      const buffer = fs.readFileSync(req.file.path, "utf8");
+      const buffer = await streamToBuffer(
+        fs.readFileSync(req.file.path, "utf8")
+      );
       console.log("buffer :::::::::: ", buffer.toString());
       await blockBlobClient.uploadData(buffer.toString());
     } catch (e) {
