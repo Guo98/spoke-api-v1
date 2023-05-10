@@ -7,7 +7,17 @@ import * as fs from "fs";
 
 const router = Router();
 
-const upload = multer({ dest: "uploads/" });
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split("/")[1];
+    cb(null, `${file.fieldname}.${ext}`);
+  },
+});
+
+const upload = multer({ storage: multerStorage });
 
 async function streamToBuffer(readableStream) {
   return new Promise((resolve, reject) => {
