@@ -30,7 +30,9 @@ router.get("/documents", checkJwt, async (req, res) => {
 
     const blobServiceClient = new BlobServiceClient(
       `https://${accountName}.blob.core.windows.net`,
-      new DefaultAzureCredential()
+      new DefaultAzureCredential({
+        tenantId: "9b9f4cee-fe96-4873-8081-83787efec6ee",
+      })
     );
 
     const containerClient = blobServiceClient.getContainerClient("quotes");
@@ -55,7 +57,9 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
 
     const blobServiceClient = new BlobServiceClient(
       `https://${accountName}.blob.core.windows.net`,
-      new DefaultAzureCredential()
+      new DefaultAzureCredential({
+        tenantId: "9b9f4cee-fe96-4873-8081-83787efec6ee",
+      })
     );
 
     const containerClient = blobServiceClient.getContainerClient("quotes");
@@ -114,8 +118,8 @@ router.post(
       // });
       console.log("file path ::::::::::::::::: ", req.file.path);
       const buffer = fs.readFileSync(req.file.path, "utf8");
-      console.log("buffer :::::::::: ", buffer);
-      await blockBlobClient.uploadData(buffer);
+      console.log("buffer :::::::::: ", buffer.toString());
+      await blockBlobClient.uploadData(buffer.toString());
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
