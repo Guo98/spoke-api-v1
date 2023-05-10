@@ -3,7 +3,7 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { checkJwt } from "../services/auth0.js";
-import fs from "fs/promises";
+import { fs } from "fs";
 
 const router = Router();
 
@@ -113,7 +113,7 @@ router.post(
       //   await blockBlobClient.uploadStream(chunk);
       // });
       console.log("file path ::::::::::::::::: ", req.file.path);
-      const buffer = await fs.readFile(req.file.path, { encoding: "utf8" });
+      const buffer = fs.readFileSync(req.file.path, "utf8");
       console.log("buffer :::::::::: ", buffer);
       await blockBlobClient.uploadData(buffer);
     } catch (e) {
