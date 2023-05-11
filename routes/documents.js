@@ -127,10 +127,10 @@ router.post(
       //   await blockBlobClient.uploadStream(chunk);
       // });
       //console.log("file path ::::::::::::::::: ", req.file.path);
-      const buffer = fs.readFileSync(req.file.path, "utf8");
+      // const buffer = fs.readFileSync(req.file.path, "utf8");
 
-      console.log("buffer :::::::::: ", buffer.toString());
-      await blockBlobClient.uploadData(buffer.toString());
+      // console.log("buffer :::::::::: ", buffer.toString());
+      await blockBlobClient.uploadData(req.file.buffer);
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
