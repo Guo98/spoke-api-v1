@@ -638,11 +638,21 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   console.log("/updateMarketOrder => Starting route.");
   try {
     console.log("/updateMarketOrder => Starting update db function.");
-    const updateRes = await orders.updateMarketOrder(
-      req.body.id,
-      req.body.client,
-      req.body.status
-    );
+    if (req.body.status) {
+      const updateRes = await orders.updateMarketOrder(
+        req.body.id,
+        req.body.client,
+        req.body.status
+      );
+    } else if (req.body.price) {
+      const updateRes = await orders.updateMarketOrder(
+        req.body.id,
+        req.body.client,
+        "",
+        "",
+        req.body.price
+      );
+    }
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {
     console.log("/updateMarketOrder => Error in updating db: ", e);
