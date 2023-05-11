@@ -17,7 +17,7 @@ const multerStorage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: multerStorage });
+const upload = multer();
 
 async function streamToBuffer(readableStream) {
   return new Promise((resolve, reject) => {
