@@ -94,7 +94,7 @@ router.post(
   "/uploadDoc",
   [checkJwt, upload.single("file")],
   async (req, res) => {
-    console.log("req.body upload doc :::::::::::: ", req.file);
+    console.log("req.body upload doc :::::::::::: ", req.file.buffer);
 
     // let data = fs.createReadStream(req.file.path, "utf8");
 
@@ -125,10 +125,9 @@ router.post(
       //   console.log("chunk to string :::::::: ", chunk.toString());
       //   await blockBlobClient.uploadStream(chunk);
       // });
-      console.log("file path ::::::::::::::::: ", req.file.path);
-      const buffer = await streamToBuffer(
-        fs.readFileSync(req.file.path, "utf8")
-      );
+      //console.log("file path ::::::::::::::::: ", req.file.path);
+      const buffer = fs.readFileSync(req.file.path, "utf8");
+
       console.log("buffer :::::::::: ", buffer.toString());
       await blockBlobClient.uploadData(buffer.toString());
     } catch (e) {
