@@ -1,6 +1,9 @@
 import axios from "axios";
 import parser from "parse-address";
-import { countryMappings } from "../utils/mappings/countrycodes.js";
+import {
+  countryMappings,
+  euCountryCodes,
+} from "../utils/mappings/countrycodes.js";
 
 async function autocompleteAddress(address) {
   const validateUrl =
@@ -52,7 +55,10 @@ async function validateAddress(address, source) {
 
         if (
           features.properties.country === "United States" ||
-          source !== "wix"
+          source !== "wix" ||
+          euCountryCodes.indexOf(
+            features.properties.country_code.toUpperCase()
+          ) > -1
         ) {
           let addressLine2 = "";
           const splitAddr = address.split(",");
