@@ -3,7 +3,7 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { checkJwt } from "../services/auth0.js";
-import * as fs from "fs";
+import { updateMarketplaceFile } from "./orders.js";
 
 const router = Router();
 
@@ -95,16 +95,6 @@ router.post(
   "/uploadDoc",
   [checkJwt, upload.single("file")],
   async (req, res) => {
-    console.log("req.body upload doc :::::::::::: ", req.file.buffer);
-
-    // let data = fs.createReadStream(req.file.path, "utf8");
-
-    // console.log("test content here :::::::: ", data);
-
-    // data.on("data", function (chunk) {
-    //   console.log("chunk to string :::::::: ", chunk.toString());
-    // });
-
     try {
       const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
       if (!accountName) throw new Error("Azure Storage accountName not found");
@@ -121,19 +111,26 @@ router.post(
       const blockBlobClient = await containerClient.getBlockBlobClient(
         req.file.originalname
       );
-      // await blockBlobClient.uploadFile(req.file.path);
-      // data.on("data", async function (chunk) {
-      //   console.log("chunk to string :::::::: ", chunk.toString());
-      //   await blockBlobClient.uploadStream(chunk);
-      // });
-      //console.log("file path ::::::::::::::::: ", req.file.path);
-      // const buffer = fs.readFileSync(req.file.path, "utf8");
 
-      // console.log("buffer :::::::::: ", buffer.toString());
       await blockBlobClient.uploadData(req.file.buffer);
     } catch (e) {
       console.log("/uploadDoc => Error in uploading document: ", e);
       res.status(500).json({ status: "Error in uploading doc" });
+    }
+
+    try {
+      console.log(
+        `/uploadDoc => Updating market order with filepath: `,
+        req.body
+      );
+      await updateMarketplaceFile(
+        req.body.order_id,
+        req.body.client,
+        req.file.originalname
+      );
+    } catch (e) {
+      console.log("/uploadDoc => Error in updating db: ", e);
+      res.status(500).json({ status: "Error in updating db" });
     }
     if (!res.headersSent) res.send({ status: "Success" });
   }

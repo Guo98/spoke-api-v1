@@ -659,6 +659,10 @@ const addMarketplaceOrder = async (request) => {
   });
 };
 
+const updateMarketplaceFile = async (id, client, filename) => {
+  await orders.updateMarketOrder(id, client, "", filename, "");
+};
+
 export default router;
 
-export { addMarketplaceOrder };
+export { addMarketplaceOrder, updateMarketplaceFile };
