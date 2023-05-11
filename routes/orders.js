@@ -606,11 +606,14 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
 });
 
-router.get("/getmarketplace", checkJwt, async (req, res) => {
+router.get("/getmarketplace/:client?", checkJwt, async (req, res) => {
   console.log("/getmarketplace => Starting route.");
   try {
     console.log("/getmarketplace => Getting all orders from marketplace.");
     let orderRes = await orders.getAllOrders("Marketplace");
+    if (req.params.client) {
+      orderRes = orderRes.filter((order) => order.client === req.params.client);
+    }
     orderRes.forEach((order) => {
       delete order._rid;
       delete order._self;
