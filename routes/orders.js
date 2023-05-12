@@ -13,6 +13,7 @@ import { checkJwt } from "../services/auth0.js";
 import {
   sendSupportEmail,
   sendMarketplaceRequestEmail,
+  sendMarketplaceResponse,
 } from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
@@ -652,6 +653,15 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
         "",
         req.body.price
       );
+    } else if (req.body.approved !== undefined) {
+      const updateRes = await orders.updateMarketOrder(
+        req.body.id,
+        req.body.client,
+        "",
+        "",
+        "",
+        req.body.approved
+      );
     }
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {
@@ -660,6 +670,20 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   }
   console.log("/updateMarketOrder => Finished route.");
   if (!res.headersSent) res.json({ status: "Successful" });
+
+  if (req.body.approved !== undefined) {
+    try {
+      await sendMarketplaceResponse(req.body);
+      console.log(
+        `/updateMarketOrder => Successfully sent approval/denial email.`
+      );
+    } catch (e) {
+      console.log(
+        `/updateMarketOrder => Error in sending approval/denial email: `,
+        e
+      );
+    }
+  }
 });
 
 const addMarketplaceOrder = async (request) => {

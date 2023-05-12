@@ -89,7 +89,8 @@ class Orders {
     clientKey,
     status = "",
     filename = "",
-    price = ""
+    price = "",
+    approved = ""
   ) {
     const coResponse = await this.database.container("Marketplace").read();
 
@@ -105,6 +106,9 @@ class Orders {
     }
     if (price !== "") {
       resource.quote_price = price;
+    }
+    if (approved !== "") {
+      resource.approved = approved;
     }
 
     const { resource: replaced } = await coResponse.container
