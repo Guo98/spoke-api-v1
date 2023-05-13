@@ -1,4 +1,5 @@
 import { auth, requiredScopes } from "express-oauth2-jwt-bearer";
+import axios from "axios";
 
 const checkJwt = auth({
   audience: process.env.AUDIENCE,
