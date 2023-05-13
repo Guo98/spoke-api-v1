@@ -17,4 +17,11 @@ export const connectionsMappings = {
 
 export const rolesMappings = {
   "flo-uk-emp": "rol_MJ75jZI9Ixe1pQKO",
+  admin: "rol_Yh0IsDYLB6qFK14S",
+  "flo-lt-emp": "rol_FccLGiQFjTo57bto",
+  "flo-nl-emp": "rol_PmGtWDtvzbRwadym",
+  "flyr-eu": "rol_EF75kFbzxgBzNHiy",
+  "flyr-poland": "rol_ZL8dlQs5O51Pykwl",
+  "flyr-usa": "rol_f05WYzK8itRisvsn",
+  "pribas-eu": "rol_viebYzpRZB4cnOCv",
 };
