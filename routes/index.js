@@ -7,6 +7,7 @@ import orders from "./orders.js";
 import inventory from "./inventory.js";
 import slack from "./slack.js";
 import documents from "./documents.js";
+import users from "./users.js";
 
 export default {
   offboard,
@@ -18,4 +19,5 @@ export default {
   inventory,
   slack,
   documents,
+  users,
 };

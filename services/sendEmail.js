@@ -364,6 +364,42 @@ async function sendSlackRequestEmail(body) {
   }
 }
 
+async function sendMarketplaceResponse(body) {
+  try {
+    console.log("sendMarketplaceResponse() => Starting function.");
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: body.approved
+          ? "Marketplace Approval Request"
+          : "Marketplace Denial Request",
+        html: generateMarketplaceResponseBody(body),
+      },
+      recipients: {
+        to: [
+          {
+            address: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    const response = await sendAzureEmail(emailMessage);
+    console.log(
+      `sendMarketplaceResponse() => Successfully sent marketplace response email: ${JSON.stringify(
+        response
+      )}`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendMarketplaceResponse() => Error in sending marketplace response email: ${JSON.stringify(
+        e
+      )}`
+    );
+    return false;
+  }
+}
+
 function generateReturnEmailBody(company, name, address) {
   const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
     company === "Bowery" ? "Bowery Valuation" : company
@@ -488,6 +524,18 @@ function generateSlackBody(body) {
   return emailBody;
 }
 
+function generateMarketplaceResponseBody(body) {
+  const { approved, item_name, recipient_name, recipient_address } = body;
+
+  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div>Marketplace Request: ${
+    approved
+      ? `<font color="#00ff00">Approved</font>`
+      : `<font color="#ff0000">Denied</font>`
+  }</div><div><font color="#00ff00"><br></font></div><div><font color="#000000">Item Name: ${item_name}</font></div><div><font color="#000000"><br></font></div><div><span style="color:rgb(0,0,0)">Recipient Name: ${recipient_name}</span><br></div><div><font color="#000000"><br></font></div><div><font color="#000000">Recipient Address: ${recipient_address}<br><br></font></div></div>`;
+
+  return emailBody;
+}
+
 export {
   sendEmail,
   sendConfirmation,
@@ -497,4 +545,5 @@ export {
   sendOrderConfirmationEmail,
   sendMarketplaceRequestEmail,
   sendSlackRequestEmail,
+  sendMarketplaceResponse,
 };

@@ -61,6 +61,8 @@ app.use(routes.slack);
 
 app.use(routes.documents);
 
+app.use(routes.users);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });
