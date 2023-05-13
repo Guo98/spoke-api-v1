@@ -11,8 +11,8 @@ import { checkJwt } from "../services/auth0.js";
 const router = Router();
 
 router.post("/inviteusers", checkJwt, async (req, res) => {
-  console.log(`/inviteusers/${client} => Starting route.`);
   const { client, connection, invite_email, role } = req.body;
+  console.log(`/inviteusers/${client} => Starting route.`);
   const options = {
     method: "POST",
     url: "https://withspoke.us.auth0.com/oauth/token",
