@@ -525,13 +525,18 @@ function generateSlackBody(body) {
 }
 
 function generateMarketplaceResponseBody(body) {
-  const { approved, item_name, recipient_name, recipient_address } = body;
+  const { approved, item_name, recipient_name, recipient_address, reason } =
+    body;
 
   const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div>Marketplace Request: ${
     approved
       ? `<font color="#00ff00">Approved</font>`
       : `<font color="#ff0000">Denied</font>`
-  }</div><div><font color="#00ff00"><br></font></div><div><font color="#000000">Item Name: ${item_name}</font></div><div><font color="#000000"><br></font></div><div><span style="color:rgb(0,0,0)">Recipient Name: ${recipient_name}</span><br></div><div><font color="#000000"><br></font></div><div><font color="#000000">Recipient Address: ${recipient_address}<br><br></font></div></div>`;
+  }</div><div><font color="#00ff00"><br></font></div><div><font color="#000000">Item Name: ${item_name}</font></div><div><font color="#000000"><br></font></div><div><span style="color:rgb(0,0,0)">Recipient Name: ${recipient_name}</span><br></div><div><font color="#000000"><br></font></div><div><font color="#000000">Recipient Address: ${recipient_address}<br><br></font></div>${
+    !approved
+      ? `<div><font color="#000000">Reason for Denial: ${reason}<br><br></font></div>`
+      : ""
+  }</div>`;
 
   return emailBody;
 }
