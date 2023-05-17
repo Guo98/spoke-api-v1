@@ -667,6 +667,16 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
         req.body.id,
         req.body.updateClient
       );
+    } else if (req.body.entity) {
+      const updateRes = await orders.updateMarketOrder(
+        req.body.id,
+        req.body.client,
+        "",
+        "",
+        "",
+        "",
+        req.body.entity
+      );
     }
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {
@@ -699,7 +709,7 @@ const addMarketplaceOrder = async (request) => {
 };
 
 const updateMarketplaceFile = async (id, client, filename) => {
-  await orders.updateMarketOrder(id, client, "", filename, "");
+  await orders.updateMarketOrder(id, client, "", filename);
 };
 
 export default router;
