@@ -635,7 +635,7 @@ router.get("/getmarketplace/:client?", checkJwt, async (req, res) => {
   console.log("/getmarketplace => Finished route.");
 });
 
-router.post("/updateMarketOrder", async (req, res) => {
+router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   console.log("/updateMarketOrder => Starting route.");
   try {
     console.log("/updateMarketOrder => Starting update db function.");
