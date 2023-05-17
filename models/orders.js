@@ -195,7 +195,9 @@ class Orders {
 
     const item = coResponse.container.item(id, undefined);
 
-    const newItem = { ...item, client };
+    const { resource } = await item.read();
+
+    const newItem = { ...resource, client };
 
     delete newItem.id;
 

@@ -31,7 +31,7 @@ router.post("/inviteusers", checkJwt, async (req, res) => {
     headers: { "content-type": "application/x-www-form-urlencoded" },
     data: qs.stringify({
       inviter: {
-        name: "Andy Guo",
+        name: "Spoke",
       },
       invitee: {
         email: invite_email,
