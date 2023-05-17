@@ -189,5 +189,23 @@ class Orders {
   async updateClient(client, orders) {
     const coResponse = await this.database.container(client).read();
   }
+
+  async updateMarketplaceClient(id, client) {
+    const coResponse = await this.database.container("Marketplace").read();
+
+    const item = coResponse.container.item(id, undefined);
+
+    const { resource } = await item.read();
+
+    const newItem = { ...resource, client };
+
+    delete newItem.id;
+
+    await item.delete();
+
+    const { resource: doc } = await coResponse.container.items.create(newItem);
+
+    return doc;
+  }
 }
 export { Orders };
