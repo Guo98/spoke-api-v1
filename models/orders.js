@@ -90,7 +90,8 @@ class Orders {
     status = "",
     filename = "",
     price = "",
-    approved = ""
+    approved = "",
+    entity = ""
   ) {
     const coResponse = await this.database.container("Marketplace").read();
 
@@ -109,6 +110,9 @@ class Orders {
     }
     if (approved !== "") {
       resource.approved = approved;
+    }
+    if (entity !== "") {
+      resource.entity = entity;
     }
 
     const { resource: replaced } = await coResponse.container
