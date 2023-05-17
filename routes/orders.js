@@ -662,6 +662,11 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
         "",
         req.body.approved
       );
+    } else if (req.body.updateClient) {
+      const updateRes = await orders.updateMarketplaceClient(
+        req.body.id,
+        req.body.updateClient
+      );
     }
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {
