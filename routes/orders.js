@@ -583,7 +583,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         `/newPurchase/${client} => Requesting yubikeys for: `,
         recipient_name
       );
-      const yubikeyResp = await createYubikeyShipment(req.body);
+      // const yubikeyResp = await createYubikeyShipment(req.body);
       console.log(
         `/newPurchase/${client} => Finished requesting yubikeys for:`,
         recipient_name
