@@ -17,6 +17,7 @@ import {
 } from "../services/sendEmail.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
+import { createYubikeyShipment } from "../utils/yubikey.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -574,6 +575,25 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   } catch (e) {
     console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
     res.status(500).json({ status: "Error" });
+  }
+
+  if (req.body.includeYubikey) {
+    try {
+      console.log(
+        `/newPurchase/${client} => Requesting yubikeys for: `,
+        recipient_name
+      );
+      // const yubikeyResp = await createYubikeyShipment(req.body);
+      console.log(
+        `/newPurchase/${client} => Finished requesting yubikeys for:`,
+        recipient_name
+      );
+    } catch (e) {
+      console.log(
+        `/newPurchase/${client} => Error in requesting yubikeys: ${e}. For: ${recipient_name}`
+      );
+      // res.status(500).json({ status: "Error" });
+    }
   }
 
   try {
