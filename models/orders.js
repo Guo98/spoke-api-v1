@@ -1,4 +1,4 @@
-import { validateAddress } from "../services/address";
+import { validateAddress } from "../services/address.js";
 
 const partitionKey = undefined;
 
