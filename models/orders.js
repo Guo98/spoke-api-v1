@@ -1,3 +1,5 @@
+import { validateAddress } from "../services/address";
+
 const partitionKey = undefined;
 
 class Orders {
@@ -110,6 +112,41 @@ class Orders {
     }
     if (approved !== "") {
       resource.approved = approved;
+      if (approved) {
+        const ordersResponse = await this.database
+          .container(clientKey === "public" ? "Mock" : clientKey)
+          .read();
+
+        const addrResp = await validateAddress(resource.address, "system");
+
+        let orderItem = {
+          client: clientKey === "public" ? "Public" : clientKey,
+          full_name: resource.recipient_name,
+          email: resource.email,
+          phone: resource.phone_number,
+          items: [
+            {
+              name: resource.device_type + " " + resource.specs,
+            },
+          ],
+          shipping_status: "Incomplete",
+        };
+
+        if (addrResp.status && addrResp.status === 200) {
+          orderItem.address = {
+            city: addrResp.city,
+            addressLine: addrResp.address_line1,
+            addressLine2: addrResp.address_line2 ? addrResp.address_line2 : "",
+            subdivision: addrResp.state,
+            postalCode: addrResp.zipCode,
+            country: addrResp.country,
+          };
+        }
+
+        const { resource: doc } = await ordersResponse.container.items.create(
+          orderItem
+        );
+      }
     }
     if (entity !== "") {
       resource.entity = entity;
