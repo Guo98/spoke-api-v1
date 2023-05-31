@@ -400,6 +400,12 @@ router.get("/getmarketplaceinventory/:client", checkJwt, async (req, res) => {
       delete device._etag;
       delete device._attachments;
       delete device._ts;
+      device.brands.push({
+        brand: "Others",
+        types: [],
+        imgSrc:
+          "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
+      });
     });
     console.log(
       `/getmarketplaceinventory/${client} => Ending route. Successful.`
