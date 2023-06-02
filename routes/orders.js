@@ -567,9 +567,12 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
       `/newPurchase/${client} => Adding new request to db:`,
       req.body
     );
+    let orderRes = await orders.getAllOrders("Marketplace");
+
     await orders.addOrderByContainer("Marketplace", {
       ...req.body,
       status: "Received",
+      market_order: orderRes.length.toString().padStart(5, "0"),
     });
     console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
@@ -719,6 +722,19 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
       );
     }
   }
+});
+
+router.post("/deleteOrder", checkJwt, async (req, res) => {
+  const { client, id, full_name } = req.body;
+  console.log(`/deleteOrder => Starting route for ${client}`);
+  try {
+    await orders.deleteOrder(client, id, full_name);
+  } catch (e) {
+    console.log(`/deleteOrder => Error in deleting order for ${client}:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+  if (!res.headersSent) res.json({ status: "Successful" });
+  console.log(`/deleteOrder => Finishing route for ${client}`);
 });
 
 const addMarketplaceOrder = async (request) => {

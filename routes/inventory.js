@@ -379,6 +379,44 @@ router.post("/addtostock", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Success" });
 });
 
+router.get("/getmarketplaceinventory/:client", checkJwt, async (req, res) => {
+  const dbContainer = determineContainer("MarketplaceInventory");
+  const client = req.params.client;
+
+  console.log(`/getmarketplaceinventory/${client} => Starting route.`);
+
+  console.log(
+    `/getmarketplaceinventory/${client} => Getting marketplace inventory.`
+  );
+
+  try {
+    let inventoryRes = await inventory.getAll(dbContainer);
+
+    inventoryRes = inventoryRes.filter((inv) => inv.client === client);
+
+    inventoryRes.forEach((device) => {
+      delete device._rid;
+      delete device._self;
+      delete device._etag;
+      delete device._attachments;
+      delete device._ts;
+      device.brands.push({
+        brand: "Others",
+        types: [],
+        imgSrc:
+          "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
+      });
+    });
+    console.log(
+      `/getmarketplaceinventory/${client} => Ending route. Successful.`
+    );
+    res.json({ status: "Successful", data: inventoryRes });
+  } catch (e) {
+    console.log(`/getmarketplaceinventory/${client} => Error: `, e);
+    res.status(500).json({ status: "Error", data: [] });
+  }
+});
+
 // router.get("/testingroute", async (req, res) => {
 //   await sendOrderConfirmationEmail(
 //     "username99",

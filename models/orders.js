@@ -1,3 +1,5 @@
+import { validateAddress } from "../services/address.js";
+
 const partitionKey = undefined;
 
 class Orders {
@@ -110,6 +112,48 @@ class Orders {
     }
     if (approved !== "") {
       resource.approved = approved;
+      if (approved) {
+        const ordersResponse = await this.database
+          .container(clientKey === "public" ? "Mock" : clientKey)
+          .read();
+
+        const addrResp = await validateAddress(resource.address, "system");
+
+        let orderItem = {
+          client: clientKey === "public" ? "Public" : clientKey,
+          full_name: resource.recipient_name,
+          email: resource.email,
+          phone: resource.phone_number,
+          orderNo: "APR" + resource.market_order,
+          items: [
+            {
+              name: resource.device_type + " " + resource.specs,
+              quantity: 1,
+              price: resource.quote_price,
+              tracking_number: "",
+              type: "laptop",
+            },
+          ],
+          shipping_status: "Incomplete",
+        };
+
+        if (addrResp.status && addrResp.status === 200) {
+          orderItem.address = {
+            city: addrResp.data.city,
+            addressLine: addrResp.data.address_line1,
+            addressLine2: addrResp.data.address_line2
+              ? addrResp.data.address_line2
+              : "",
+            subdivision: addrResp.data.state,
+            postalCode: addrResp.data.zipCode,
+            country: addrResp.data.country,
+          };
+        }
+
+        const { resource: doc } = await ordersResponse.container.items.create(
+          orderItem
+        );
+      }
     }
     if (entity !== "") {
       resource.entity = entity;
@@ -178,6 +222,16 @@ class Orders {
 
   async removeFromReceived(id, name) {
     const item = this.container.item(id, name);
+    await item.delete();
+  }
+
+  async deleteOrder(client, id, name) {
+    const coResponse = await this.database
+      .container(client === "public" || client === "Public" ? "Mock" : client)
+      .read();
+
+    const item = coResponse.container.item(id, name);
+
     await item.delete();
   }
 
