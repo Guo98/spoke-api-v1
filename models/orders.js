@@ -127,6 +127,10 @@ class Orders {
           items: [
             {
               name: resource.device_type + " " + resource.specs,
+              quantity: 1,
+              price: resource.quote_price,
+              tracking_number: "",
+              type: "laptop",
             },
           ],
           shipping_status: "Incomplete",
@@ -134,12 +138,14 @@ class Orders {
 
         if (addrResp.status && addrResp.status === 200) {
           orderItem.address = {
-            city: addrResp.city,
-            addressLine: addrResp.address_line1,
-            addressLine2: addrResp.address_line2 ? addrResp.address_line2 : "",
-            subdivision: addrResp.state,
-            postalCode: addrResp.zipCode,
-            country: addrResp.country,
+            city: addrResp.data.city,
+            addressLine: addrResp.data.address_line1,
+            addressLine2: addrResp.data.address_line2
+              ? addrResp.data.address_line2
+              : "",
+            subdivision: addrResp.data.state,
+            postalCode: addrResp.data.zipCode,
+            country: addrResp.data.country,
           };
         }
 
