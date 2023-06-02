@@ -567,9 +567,12 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
       `/newPurchase/${client} => Adding new request to db:`,
       req.body
     );
+    let orderRes = await orders.getAllOrders("Marketplace");
+
     await orders.addOrderByContainer("Marketplace", {
       ...req.body,
       status: "Received",
+      market_order: orderRes.length.toString().padStart(5, "0"),
     });
     console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
