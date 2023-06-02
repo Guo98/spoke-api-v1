@@ -124,6 +124,7 @@ class Orders {
           full_name: resource.recipient_name,
           email: resource.email,
           phone: resource.phone_number,
+          orderNo: "APR" + resource.market_order,
           items: [
             {
               name: resource.device_type + " " + resource.specs,
@@ -221,6 +222,16 @@ class Orders {
 
   async removeFromReceived(id, name) {
     const item = this.container.item(id, name);
+    await item.delete();
+  }
+
+  async deleteOrder(client, id, name) {
+    const coResponse = await this.database
+      .container(client === "public" ? "Mock" : client)
+      .read();
+
+    const item = coResponse.container.item(id, name);
+
     await item.delete();
   }
 

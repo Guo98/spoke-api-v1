@@ -721,6 +721,19 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
   }
 });
 
+router.post("/deleteOrder", checkJwt, async (req, res) => {
+  const { client, id, full_name } = req.body;
+  console.log(`/deleteOrder => Starting route for ${client}`);
+  try {
+    await orders.deleteOrder(client, id, full_name);
+  } catch (e) {
+    console.log(`/deleteOrder => Error in deleting order for ${client}:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+  if (!res.headersSent) res.json({ status: "Successful" });
+  console.log(`/deleteOrder => Finishing route for ${client}`);
+});
+
 const addMarketplaceOrder = async (request) => {
   await orders.addOrderByContainer("Marketplace", {
     ...request,
