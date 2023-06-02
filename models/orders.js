@@ -227,7 +227,7 @@ class Orders {
 
   async deleteOrder(client, id, name) {
     const coResponse = await this.database
-      .container(client === "public" ? "Mock" : client)
+      .container(client === "public" || client === "Public" ? "Mock" : client)
       .read();
 
     const item = coResponse.container.item(id, name);
