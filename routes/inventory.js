@@ -469,6 +469,56 @@ router.post("/updateinventory", checkJwt, async (req, res) => {
   console.log(`/updateinventory/${client} => Finished route.`);
 });
 
+router.post("/addinventory", checkJwt, async (req, res) => {
+  const { client, device_id, new_devices } = req.body;
+  console.log(`/addinventory/${client} => Starting route.`);
+  try {
+    console.log(`/addinventory/${client} => Starting updating db function.`);
+    const addResp = await inventory.opsAddInventory(
+      client,
+      device_id,
+      new_devices
+    );
+    console.log(`/addinventory/${client} => Finished updating db function.`);
+    res.json({ status: "Successful", data: addResp });
+  } catch (e) {
+    console.log(`/addinventory/${client} => Error in updating:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log(`/updateinventory/${client} => Finished route.`);
+});
+
+router.post("/deleteinventory", checkJwt, async (req, res) => {
+  const { client, device_id, device_index, serial_number } = req.body;
+  console.log(`/deleteinventory/${client} => Starting route.`);
+  try {
+    console.log(`/deleteinventory/${client} => Starting delete function.`);
+    const deleteResp = await inventory.opsDeleteInventory(
+      client,
+      device_id,
+      device_index,
+      serial_number
+    );
+
+    if (deleteResp === "Error") {
+      throw new Error("Serial number not found");
+    } else {
+      res.json({ status: "Successful", data: deleteResp });
+    }
+    console.log(
+      `/deleteinventory/${client} => Finished deleting ${serial_number} from ${device_id}.`
+    );
+  } catch (e) {
+    console.log(
+      `/deleteinventory/${client} => Error in deleting ${serial_number} from ${device_id}:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`/deleteinventory/${client} => Finished route.`);
+});
+
 // router.get("/testingroute", async (req, res) => {
 //   await sendOrderConfirmationEmail(
 //     "username99",
