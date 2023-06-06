@@ -100,5 +100,54 @@ class Inventory {
 
     return resource;
   }
+
+  async opsUpdateInventory(
+    containerId,
+    device_index,
+    device_id,
+    serial_number,
+    updated_status = "",
+    updated_sn = "",
+    updated_fn = "",
+    updated_ln = ""
+  ) {
+    let verified_index = device_index;
+    const coResponse = await this.database
+      .container(containerId === "public" ? "Mock" : containerId)
+      .read();
+
+    const { resource } = await coResponse.container
+      .item(device_id, device_id)
+      .read();
+
+    if (serial_number !== resource.serial_numbers[device_index].sn) {
+      verified_index = resource.serial_numbers.findIndex(
+        (dev) => dev.sn === serial_number
+      );
+    }
+
+    if (verified_index > -1) {
+      if (updated_status !== "") {
+        resource.serial_numbers[verified_index].status = updated_status;
+      }
+      if (updated_sn !== "") {
+        resource.serial_numbers[verified_index].sn = updated_sn;
+      }
+      if (updated_fn !== "") {
+        resource.serial_numbers[verified_index].first_name = updated_fn;
+      }
+      if (updated_ln !== "") {
+        resource.serial_numbers[verified_index].last_name = updated_ln;
+      }
+
+      const { resource: replaced } = await coResponse.container
+        .item(device_id, device_id)
+        .replace(resource);
+
+      return replaced;
+    } else {
+      return "Error";
+    }
+  }
 }
 export { Inventory };

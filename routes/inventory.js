@@ -417,6 +417,56 @@ router.get("/getmarketplaceinventory/:client", checkJwt, async (req, res) => {
   }
 });
 
+/**
+ * @param {string} client
+ * @param {string} device_id
+ * @param {string} serial_number
+ * @param {string} updated_sn
+ * @param {string} updated_fn
+ * @param {string} updated_ln
+ * @param {string} updated_status
+ * @param {string} device_index
+ */
+router.post("/updateinventory", checkJwt, async (req, res) => {
+  const {
+    client,
+    device_id,
+    serial_number,
+    device_index,
+    updated_sn,
+    updated_fn,
+    updated_ln,
+    updated_status,
+  } = req.body;
+  console.log(`/updateinventory/${client} => Starting route.`);
+
+  try {
+    console.log(`/updateinventory/${client} => Starting update function.`);
+    const updateResp = await inventory.opsUpdateInventory(
+      client,
+      device_index,
+      device_id,
+      serial_number,
+      updated_status,
+      updated_sn,
+      updated_fn,
+      updated_ln
+    );
+    if (updateResp === "Error") {
+      throw new Error("Error in updating");
+    } else {
+      res.json({ status: "Successful", data: updateResp });
+    }
+    console.log(`/updateinventory/${client} => Finished updating db function.`);
+  } catch (e) {
+    console.log(`/updateinventory/${client} => Error in updating:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log(`/updateinventory/${client} => Finished route.`);
+});
+
 // router.get("/testingroute", async (req, res) => {
 //   await sendOrderConfirmationEmail(
 //     "username99",
