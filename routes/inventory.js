@@ -437,6 +437,7 @@ router.post("/updateinventory", checkJwt, async (req, res) => {
     updated_fn,
     updated_ln,
     updated_status,
+    grade,
   } = req.body;
   console.log(`/updateinventory/${client} => Starting route.`);
 
@@ -450,7 +451,8 @@ router.post("/updateinventory", checkJwt, async (req, res) => {
       updated_status,
       updated_sn,
       updated_fn,
-      updated_ln
+      updated_ln,
+      grade
     );
     if (updateResp === "Error") {
       throw new Error("Error in updating");

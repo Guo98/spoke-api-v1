@@ -109,7 +109,8 @@ class Inventory {
     updated_status = "",
     updated_sn = "",
     updated_fn = "",
-    updated_ln = ""
+    updated_ln = "",
+    grade = ""
   ) {
     let verified_index = device_index;
     const coResponse = await this.database
@@ -128,6 +129,14 @@ class Inventory {
 
     if (verified_index > -1) {
       if (updated_status !== "") {
+        if (updated_status === "In Stock") {
+          resource.serial_numbers[verified_index] = {
+            sn: resource.serial_numbers[verified_index].sn,
+            condition: "Used",
+            status: "In Stock",
+            grade: grade !== "" ? grade.toUpperCase() : "",
+          };
+        }
         resource.serial_numbers[verified_index].status = updated_status;
       }
       if (updated_sn !== "") {
