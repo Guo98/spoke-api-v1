@@ -45,4 +45,5 @@ export const rolesMappings = {
   "flyr-poland": "rol_ZL8dlQs5O51Pykwl",
   "flyr-usa": "rol_f05WYzK8itRisvsn",
   "pribas-eu": "rol_viebYzpRZB4cnOCv",
+  approvedbuyers: "rol_TfXXCx0IIyYPXu9L",
 };
