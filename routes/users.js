@@ -19,7 +19,7 @@ var management = new ManagementClient({
 });
 
 router.post("/invites", checkJwt, async (req, res) => {
-  const { client, connection, invite_email, role } = req.body;
+  const { client, connection, invite_email, role, hasIds } = req.body;
   console.log(`[POST] /invites/${client} => Starting route.`);
 
   management.organizations.createInvitation(
@@ -32,9 +32,9 @@ router.post("/invites", checkJwt, async (req, res) => {
         email: invite_email,
       },
       client_id: process.env.AUTH0_UI_CLIENT_ID,
-      connection_id: connectionsMappings[connection],
+      connection_id: hasIds ? connection : connectionsMappings[connection],
       send_invitation_email: true,
-      roles: role ? [rolesMappings[role]] : [],
+      roles: hasIds ? (role ? role : []) : role ? [rolesMappings[role]] : [],
     },
     function (err) {
       if (err) {
