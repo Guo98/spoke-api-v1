@@ -158,5 +158,55 @@ class Inventory {
       return "Error";
     }
   }
+
+  async opsAddInventory(containerId, device_id, new_devices) {
+    const coResponse = await this.database
+      .container(containerId === "public" ? "Mock" : containerId)
+      .read();
+
+    const { resource } = await coResponse.container
+      .item(device_id, device_id)
+      .read();
+
+    resource.serial_numbers = [...resource.serial_numbers, ...new_devices];
+
+    const { resource: replaced } = await coResponse.container
+      .item(device_id, device_id)
+      .replace(resource);
+
+    return replaced;
+  }
+
+  async opsDeleteInventory(
+    containerId,
+    device_id,
+    device_index,
+    serial_number
+  ) {
+    let verified_index = device_index;
+    const coResponse = await this.database
+      .container(containerId === "public" ? "Mock" : containerId)
+      .read();
+
+    const { resource } = await coResponse.container
+      .item(device_id, device_id)
+      .read();
+
+    if (serial_number !== resource.serial_numbers[device_index].sn) {
+      verified_index = resource.serial_numbers.findIndex(
+        (dev) => dev.sn === serial_number
+      );
+    }
+
+    if (verified_index > -1) {
+      resource.serial_numbers.splice(verified_index, 1);
+      const { resource: replaced } = await coResponse.container
+        .item(device_id, device_id)
+        .replace(resource);
+      return replaced;
+    } else {
+      return "Error";
+    }
+  }
 }
 export { Inventory };
