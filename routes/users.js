@@ -50,7 +50,7 @@ router.post("/invites", checkJwt, async (req, res) => {
       res.json({ status: "Successful" });
     }
   );
-  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`[POST] /invites/${client} => Ending route.`);
 });
 
@@ -107,7 +107,7 @@ router.delete("/invites/:client/:inviteId", checkJwt, async (req, res) => {
       res.json({ status: "Successful" });
     }
   );
-  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`[DELETE] /invites/${client} => Finished route.`);
 });
 
@@ -131,7 +131,7 @@ router.get("/users", checkJwt, async (req, res) => {
     });
     res.json({ status: "Successful", data: users });
   });
-  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log("[GET] /users => Finished route.");
 });
 
@@ -150,7 +150,7 @@ router.delete("/users/:id", checkJwt, async (req, res) => {
     console.log("[DELETE] /users => Successfully deleted user.");
     res.json({ status: "Successful" });
   });
-  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log("[DELETE] /users => Finished route.");
 });
 
@@ -193,7 +193,7 @@ router.patch("/users", checkJwt, async (req, res) => {
       );
     }
   );
-  if (!res.headersSent) res.json({ status: "Nothing happened" });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log("[PATCH] /users => Finished route.");
 });
 export default router;
