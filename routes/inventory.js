@@ -8,7 +8,6 @@ import inventoryOffboard from "../services/inventory/offboarding.js";
 import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
-import { inventoryDBMapping } from "../utils/mappings/inventory.js";
 import {
   sendNotificationEmail,
   sendOrderConfirmationEmail,
@@ -518,17 +517,6 @@ router.post("/deleteinventory", checkJwt, async (req, res) => {
   }
   console.log(`/deleteinventory/${client} => Finished route.`);
 });
-
-// router.get("/testingroute", async (req, res) => {
-//   await sendOrderConfirmationEmail(
-//     "username99",
-//     "deployment",
-//     "Andy Guo",
-//     "macbook air m2",
-//     "overnight"
-//   );
-//   res.json({ status: "Successful" });
-// });
 
 function resetDevice(item) {
   let resetItem = {
