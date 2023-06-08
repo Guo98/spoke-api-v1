@@ -2,6 +2,9 @@ import { Router } from "express";
 import { body } from "express-validator";
 import { sendEmail, sendConfirmation } from "../services/sendEmail.js";
 import { basicAuth } from "../services/basicAuth.js";
+import { sendMarketplaceRequestEmail } from "../services/emails/marketplace.js";
+import { checkJwt } from "../services/auth0.js";
+import { marketplaceSentApprovalEmail } from "./orders.js";
 
 const router = Router();
 
@@ -62,5 +65,25 @@ router.post(
     }
   }
 );
+
+router.post("/sendemail/:email_type", checkJwt, async (req, res) => {
+  const { email_type } = req.params;
+  console.log(`/sendemail/${email_type} => Starting route.`);
+  try {
+    if (email_type === "approvalemail") {
+      console.log(
+        `/sendemail/${email_type} => Sending marketplace request approval email.`
+      );
+      await sendMarketplaceRequestEmail({ ...req.body, type: email_type });
+      console.log(`/sendemail/${email_type} -=> Updating db.`);
+      await marketplaceSentApprovalEmail(req.body.id, req.body.client);
+    }
+  } catch (e) {
+    console.log(`/sendemail/${email_type} => Error in sending email:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`/sendemail/${email_type} => Finished route.`);
+  if (!res.headersSent) res.json({ status: "Successful" });
+});
 
 export default router;

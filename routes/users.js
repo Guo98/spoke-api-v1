@@ -1,6 +1,5 @@
 import { Router } from "express";
-import axios from "axios";
-import qs from "qs";
+import { ManagementClient } from "auth0";
 import {
   orgMappings,
   connectionsMappings,
@@ -12,26 +11,20 @@ import { checkJwt } from "../services/auth0.js";
 
 const router = Router();
 
-router.post("/inviteusers", checkJwt, async (req, res) => {
-  const { client, connection, invite_email, role } = req.body;
-  console.log(`/inviteusers/${client} => Starting route.`);
-  const options = {
-    method: "POST",
-    url: "https://withspoke.us.auth0.com/oauth/token",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    data: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: process.env.AUTH0_API_CLIENT_ID,
-      client_secret: process.env.AUTH0_CLIENT_SECRET,
-      audience: "https://withspoke.us.auth0.com/api/v2/",
-    }),
-  };
+var management = new ManagementClient({
+  domain: "withspoke.us.auth0.com",
+  clientId: process.env.AUTH0_API_CLIENT_ID,
+  clientSecret: process.env.AUTH0_CLIENT_SECRET,
+  scope: "update:users delete:role_members create:role_members read:roles",
+});
 
-  let inviteOpts = {
-    method: "POST",
-    url: `https://withspoke.us.auth0.com/api/v2/organizations/${orgMappings[client]}/invitations`,
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    data: qs.stringify({
+router.post("/invites", checkJwt, async (req, res) => {
+  const { client, connection, invite_email, role, hasIds } = req.body;
+  console.log(`[POST] /invites/${client} => Starting route.`);
+
+  management.organizations.createInvitation(
+    { id: orgMappings[client] },
+    {
       inviter: {
         name: "Spoke",
       },
@@ -39,96 +32,168 @@ router.post("/inviteusers", checkJwt, async (req, res) => {
         email: invite_email,
       },
       client_id: process.env.AUTH0_UI_CLIENT_ID,
-      connection_id: connectionsMappings[connection],
+      connection_id: hasIds ? connection : connectionsMappings[connection],
       send_invitation_email: true,
-      roles: role ? [rolesMappings[role]] : [],
-    }),
-  };
-
-  axios
-    .request(options)
-    .then(function (response) {
-      console.log(`/inviteusers/${client} => Getting access token.`);
-      inviteOpts.headers["Authorization"] =
-        response.data.token_type + " " + response.data.access_token;
-      console.log(`/inviteusers/${client} => Inviting user.`);
-      return axios.request(inviteOpts);
-    })
-    .then((inviteResp) => {
+      roles: hasIds ? (role ? role : []) : role ? [rolesMappings[role]] : [],
+    },
+    function (err) {
+      if (err) {
+        console.log(
+          `[POST] /invites/${client} => Error in inviting ${invite_email}: `,
+          error
+        );
+        res.status(500).json({ status: "Error in inviting user" });
+      }
       console.log(
-        `/inviteusers/${client} => Successfully sent invite to user:`,
-        inviteResp.data
+        `[POST] /invites/${client} => Successfully invited user: ${invite_email}.`
       );
-    })
-    .catch(function (error) {
-      console.log(`/inviteusers/${client} => Error in route: `, error);
-      res.status(500).json({ status: "Error in inviting user" });
-    });
-
-  if (!res.headersSent) res.send({ status: "Successful" });
-  console.log(`/inviteusers/${client} => Ending route.`);
+      res.json({ status: "Successful" });
+    }
+  );
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log(`[POST] /invites/${client} => Ending route.`);
 });
 
-router.get("/listusers", checkJwt, async (req, res) => {
-  const options = {
-    method: "POST",
-    url: "https://withspoke.us.auth0.com/oauth/token",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    data: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: process.env.AUTH0_API_CLIENT_ID,
-      client_secret: process.env.AUTH0_CLIENT_SECRET,
-      audience: "https://withspoke.us.auth0.com/api/v2/",
-    }),
-  };
+router.get("/invites", checkJwt, async (req, res) => {
+  console.log("[GET] /invites => Starting function.");
+  let allInvites = [];
 
-  let listOpts = {
-    method: "GET",
-  };
-  console.log("/listusers => Staring route.");
-  axios
-    .request(options)
-    .then(function (response) {
-      console.log(`/listusers => Getting access token.`);
-      listOpts.headers = {
-        Authorization:
-          response.data.token_type + " " + response.data.access_token,
-      };
-      let axiosRequestList = [];
-
-      clientIdList.forEach((client) => {
-        listOpts.url = `https://withspoke.us.auth0.com/api/v2/organizations/${client}/invitations`;
-
-        axiosRequestList.push(axios.request(listOpts));
+  for await (const client of clientIdList) {
+    try {
+      const invites = await management.organizations.getInvitations({
+        id: client,
       });
-      console.log(`/listusers => Listing users.`);
-      return axios.all(axiosRequestList);
-    })
-    .then((responses) => {
-      console.log(`/listusers => Successfully list users.`);
+      invites.forEach((user) => {
+        delete user.client_id;
+        delete user.invitation_url;
+        delete user.ticket_id;
+        delete user.expires_at;
+        user.organization = idToOrgMappings[user.organization_id];
+        delete user.organization_id;
 
-      let users = [];
-
-      responses.forEach((response) => {
-        response.data.forEach((user) => {
-          delete user.client_id;
-          delete user.invitation_url;
-          delete user.ticket_id;
-          delete user.expires_at;
-          user.organization = idToOrgMappings[user.organization_id];
-          delete user.organization_id;
-
-          users.push(user);
-        });
+        allInvites.push(user);
       });
+    } catch (err) {
+      console.log(
+        `[GET] /invites => Error in getting invites for client: ${client}`
+      );
+      res.status(500).json({ status: "Error" });
+      return;
+    }
+  }
 
-      res.json({ status: "Successful", data: users });
-    })
-    .catch(function (error) {
-      console.log(`/listusers => Error in route: `, error);
-      res.status(500).json({ status: "Error in inviting user" });
-    });
-  console.log("/listusers => Finished route.");
+  if (!res.headersSent) res.json({ status: "Successful", data: allInvites });
+  console.log("[GET] /invites => Finished function.");
 });
 
+router.delete("/invites/:client/:inviteId", checkJwt, async (req, res) => {
+  const { client, inviteId } = req.params;
+  console.log(`[DELETE] /invites/${client} => Starting route.`);
+
+  management.organizations.deleteInvitation(
+    { id: orgMappings[client], invitation_id: inviteId },
+    function (err) {
+      if (err) {
+        console.log(
+          `[DELETE] /invites/${client} => Error in deleting invite: ${inviteId}:`,
+          err
+        );
+        res.status(500).json({ status: "Error in deleting invite" });
+      }
+
+      console.log(
+        `[DELETE] /invites/${client} => Successfully deleted invite: ${inviteId}`
+      );
+      res.json({ status: "Successful" });
+    }
+  );
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log(`[DELETE] /invites/${client} => Finished route.`);
+});
+
+router.get("/users", checkJwt, async (req, res) => {
+  console.log(`[GET] /users => Starting route.`);
+
+  management.getUsers(function (err, users) {
+    if (err) {
+      console.log("[GET] /users => Error in getting all users:", err);
+      res.status(500).json({ status: "Error" });
+    }
+
+    console.log("[GET] /users => Successfully got all users.");
+    users.forEach((user) => {
+      delete user.picture;
+      delete user.last_ip;
+      delete user.updated_at;
+      delete user.identities;
+      delete user.email_verified;
+      delete user.logins_count;
+    });
+    res.json({ status: "Successful", data: users });
+  });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log("[GET] /users => Finished route.");
+});
+
+router.delete("/users/:id", checkJwt, async (req, res) => {
+  console.log("[DELETE] /users => Starting route.");
+  const { id } = req.params;
+
+  management.deleteUser({ id }, function (err) {
+    if (err) {
+      console.log(
+        `[DELETE] /users => Error in deleting user: ${id}. Error:`,
+        err
+      );
+      res.status(500).json({ status: "Error" });
+    }
+    console.log("[DELETE] /users => Successfully deleted user.");
+    res.json({ status: "Successful" });
+  });
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log("[DELETE] /users => Finished route.");
+});
+
+router.patch("/users", checkJwt, async (req, res) => {
+  const { id, new_role, delete_role } = req.body;
+  console.log("[PATCH] /users => Starting route.");
+
+  management.removeRolesFromUser(
+    { id },
+    { roles: [delete_role] },
+    function (err) {
+      if (err) {
+        console.log(
+          `[PATCH] /users => Error in removing role from user: ${id}. Error:`,
+          err
+        );
+        res.status(500).json({ status: "Error" });
+      }
+      console.log(
+        "[PATCH] /users => Succcessfully removed role from user:",
+        id
+      );
+      management.assignRolestoUser(
+        { id },
+        { roles: [new_role] },
+        function (err) {
+          if (err) {
+            console.log(
+              `[PATCH] /users => Error in assigning role to user: ${id}. Error:`,
+              err
+            );
+            res.status(500).json({ status: "Error" });
+          }
+          console.log(
+            "[PATCH] /users => Succcessfully assigned role to user:",
+            id
+          );
+          res.json({ status: "Successful" });
+        }
+      );
+    }
+  );
+  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+  console.log("[PATCH] /users => Finished route.");
+});
 export default router;
