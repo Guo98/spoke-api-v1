@@ -12,9 +12,9 @@ import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import {
   sendSupportEmail,
-  sendMarketplaceRequestEmail,
   sendMarketplaceResponse,
 } from "../services/sendEmail.js";
+import { sendMarketplaceRequestEmail } from "../services/emails/marketplace.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 import { createYubikeyShipment } from "../utils/yubikey.js";
@@ -603,21 +603,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     console.log(
       `/newPurchase/${client} => Sending marketplace request notification email.`
     );
-    await sendMarketplaceRequestEmail(
-      requestor_email,
-      client,
-      device_type,
-      specs,
-      color,
-      order_type,
-      device,
-      recipient_name,
-      address,
-      email,
-      phone_number,
-      recipient,
-      shipping_rate
-    );
+    await sendMarketplaceRequestEmail({ ...req.body, type: "userrequest" });
     console.log(
       `/newPurchase/${client} => Finished sending marketplace request notification email.`
     );
