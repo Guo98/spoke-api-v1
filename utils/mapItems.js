@@ -13,6 +13,18 @@ function determineFLYRRegion(country) {
   }
 }
 
+function determineFloEntity(country) {
+  if (country === "GBR") {
+    return "United Kingdom";
+  } else if (country === "NLD") {
+    return "Netherlands";
+  } else if (country === "LTU") {
+    return "Lithuania";
+  } else {
+    return "";
+  }
+}
+
 function mapLineItems(customerInfo) {
   if (customerInfo?.discount?.appliedCoupon) {
     switch (customerInfo.discount.appliedCoupon?.code) {
@@ -91,6 +103,13 @@ function mapLineItems(customerInfo) {
         customerInfo.client = "Alma";
       } else if (item.name.toLowerCase().indexOf("automox") > -1) {
         customerInfo.client = "Automox";
+      } else if (item.name.toLowerCase().indexOf("flo") > -1) {
+        customerInfo.client = "Flo Health";
+        if (customerInfo?.address?.country) {
+          customerInfo.entity = determineFloEntity(
+            customerInfo?.address?.country
+          );
+        }
       }
     });
   }

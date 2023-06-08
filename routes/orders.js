@@ -723,6 +723,11 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
 
+// router.get("/testyubikey", async (req, res) => {
+//   const result = await checkYubikeyQuantity();
+//   res.send({ result });
+// });
+
 const addMarketplaceOrder = async (request) => {
   await orders.addOrderByContainer("Marketplace", {
     ...request,
