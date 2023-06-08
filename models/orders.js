@@ -265,5 +265,20 @@ class Orders {
 
     return doc;
   }
+
+  async sentMarketplaceEmail(id, client) {
+    const coResponse = await this.database.container("Marketplace").read();
+    const item = coResponse.container.item(id, client);
+
+    const { resource } = await item.read();
+
+    resource.email_sent = true;
+
+    const { resource: replaced } = await coResponse.container
+      .item(id, client)
+      .replace(resource);
+
+    return replaced;
+  }
 }
 export { Orders };

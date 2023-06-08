@@ -734,6 +734,14 @@ const updateMarketplaceFile = async (id, client, filename) => {
   await orders.updateMarketOrder(id, client, "", filename);
 };
 
+const marketplaceSentApprovalEmail = async (id, client) => {
+  await orders.sentMarketplaceEmail(id, client);
+};
+
 export default router;
 
-export { addMarketplaceOrder, updateMarketplaceFile };
+export {
+  addMarketplaceOrder,
+  updateMarketplaceFile,
+  marketplaceSentApprovalEmail,
+};

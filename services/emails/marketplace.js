@@ -1,4 +1,4 @@
-import { sendAzureEmail } from "../sendEmail";
+import { sendAzureEmail } from "../sendEmail.js";
 
 export async function sendMarketplaceRequestEmail(body) {
   const {

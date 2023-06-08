@@ -1,5 +1,5 @@
 import { EmailClient } from "@azure/communication-email";
-import { generateMarketplaceResponseBody } from "./emails/marketplace";
+import { generateMarketplaceResponseBody } from "./emails/marketplace.js";
 const connectionString = process.env.COMMUNICATION_SERVICES_CONNECTION_STRING;
 
 const fedexTrackingEmail =
