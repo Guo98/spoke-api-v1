@@ -73,7 +73,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
   const containerId = determineContainer(client);
   if (containerId !== "") {
     if (id) {
-      let inventoryRes = await inventoryDB.getItem(containerId, deviceId);
+      let inventoryRes = await inventoryDB.getItem(containerId, id);
 
       let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
         (device) => device.sn === serial_number
@@ -104,7 +104,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
               )}`
             );
             await inventoryDB.updateDevice(
-              deviceId,
+              id,
               specificLaptop,
               containerId,
               specificLaptopIndex
