@@ -518,6 +518,36 @@ router.post("/deleteinventory", checkJwt, async (req, res) => {
   console.log(`/deleteinventory/${client} => Finished route.`);
 });
 
+router.post("/inventory", checkJwt, async (req, res) => {
+  const { client, device, location, screen, cpu, ram, ssd, entity, sku } =
+    req.body;
+  console.log(`/inventory/${client} => Starting function.`);
+  try {
+    console.log(`/inventory/${client} => Updating db.`);
+    const newItem = {
+      name: device,
+      location,
+      specs: {
+        screen_size: screen,
+        ram,
+        cpu,
+        hard_drive: ssd,
+      },
+      serial_numbers: [],
+      entity,
+      sku,
+    };
+    await inventory.opsAddNewDevice(client, newItem);
+    res.json({ status: "Success" });
+    console.log(`/inventory/${client} => Finished updating db.`);
+  } catch (e) {
+    console.log(`/inventory/${client} => Error in adding item to db:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+
+  console.log(`/inventory/${client} => Finished function.`);
+});
+
 function resetDevice(item) {
   let resetItem = {
     sn: item.sn,

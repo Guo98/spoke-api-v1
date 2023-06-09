@@ -208,5 +208,14 @@ class Inventory {
       return "Error";
     }
   }
+
+  async opsAddNewDevice(client, obj) {
+    const coResponse = await this.database
+      .container(client === "public" ? "Mock" : containerId)
+      .read();
+
+    const { resource: doc } = await coResponse.container.items.create(obj);
+    return doc;
+  }
 }
 export { Inventory };
