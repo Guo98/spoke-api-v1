@@ -19,7 +19,7 @@ export async function sendMarketplaceRequestEmail(body) {
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
-    const emailMessage = {
+    let emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject:
@@ -54,6 +54,9 @@ export async function sendMarketplaceRequestEmail(body) {
             : [{ address: requestor_email }],
       },
     };
+    if (type !== "userrequest") {
+      emailMessage.recipients.bcc = [{ address: "info@withspoke.com" }];
+    }
     const response = await sendAzureEmail(emailMessage);
     console.log(
       `sendMarketplaceRequestEmail() => Successfully sent market request email: ${JSON.stringify(
