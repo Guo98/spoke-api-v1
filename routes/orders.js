@@ -10,11 +10,11 @@ import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
+import { sendSupportEmail } from "../services/sendEmail.js";
 import {
-  sendSupportEmail,
+  sendMarketplaceRequestEmail,
   sendMarketplaceResponse,
-} from "../services/sendEmail.js";
-import { sendMarketplaceRequestEmail } from "../services/emails/marketplace.js";
+} from "../services/emails/marketplace.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 import { createYubikeyShipment } from "../utils/yubikey.js";

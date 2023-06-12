@@ -2,7 +2,6 @@ import { createOffboardRow } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
 import { determineContainer } from "../../utils/utility.js";
 import { sendConfirmation } from "../sendEmail.js";
-import { inventoryDBMapping } from "../../utils/mappings/inventory.js";
 
 async function inventoryOffboard(res, body, inventoryDB) {
   const {
@@ -17,6 +16,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
     phone_num,
     requestor_email,
     note,
+    id,
   } = body;
   try {
     console.log(
@@ -55,6 +55,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
       `/offboarding/${client} => Sending confirmation email for offboarding`
     );
     await sendConfirmation({
+      email: recipient_email,
       company: client,
       name: recipient_name,
       requestor_email,
@@ -72,10 +73,8 @@ async function inventoryOffboard(res, body, inventoryDB) {
 
   const containerId = determineContainer(client);
   if (containerId !== "") {
-    const deviceId = inventoryDBMapping[device_name]?.[device_location];
-
-    if (deviceId) {
-      let inventoryRes = await inventoryDB.getItem(containerId, deviceId);
+    if (id) {
+      let inventoryRes = await inventoryDB.getItem(containerId, id);
 
       let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
         (device) => device.sn === serial_number
@@ -106,7 +105,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
               )}`
             );
             await inventoryDB.updateDevice(
-              deviceId,
+              id,
               specificLaptop,
               containerId,
               specificLaptopIndex

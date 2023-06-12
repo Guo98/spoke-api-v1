@@ -14,7 +14,7 @@ const slack = (req, res, next) => {
         +req.headers["x-slack-request-timestamp"]
     ) > 300
   ) {
-    console.log("request too old ::::::::::");
+    console.log("slack middleware request too old");
     return res.status(400).send("Request too old!");
   }
 
@@ -48,6 +48,19 @@ router.post("/slackorder", slack, async (req, res) => {
           text: {
             type: "plain_text",
             text: "New request",
+            emoji: true,
+          },
+        },
+        {
+          type: "input",
+          element: {
+            type: "plain_text_input",
+            action_id: "client_input",
+            min_length: 1,
+          },
+          label: {
+            type: "plain_text",
+            text: "Client",
             emoji: true,
           },
         },
@@ -213,6 +226,7 @@ router.post("/slackactions", slack, async (req, res) => {
   };
 
   const inputKeys = [
+    { key: "client_input", new_key: "client", field_name: "Client" },
     { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
     {
       key: "req_specs_input",

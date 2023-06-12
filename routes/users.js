@@ -75,7 +75,8 @@ router.get("/invites", checkJwt, async (req, res) => {
       });
     } catch (err) {
       console.log(
-        `[GET] /invites => Error in getting invites for client: ${client}`
+        `[GET] /invites => Error in getting invites for client: ${client}`,
+        err
       );
       res.status(500).json({ status: "Error" });
       return;
@@ -113,6 +114,25 @@ router.delete("/invites/:client/:inviteId", checkJwt, async (req, res) => {
 
 router.get("/users", checkJwt, async (req, res) => {
   console.log(`[GET] /users => Starting route.`);
+  let allUsers = [];
+
+  for await (const client of clientIdList) {
+    try {
+      const users = await management.organizations.getMembers({ id: client });
+
+      users.forEach((user) => {
+        delete user.picture;
+        allUsers.push({ ...user, client: idToOrgMappings[client] });
+      });
+    } catch (err) {
+      console.log(
+        `[GET] /users => Error in getting users for client: ${client}`,
+        err
+      );
+      res.status(500).json({ status: "Error" });
+      return;
+    }
+  }
 
   management.getUsers(function (err, users) {
     if (err) {
@@ -129,9 +149,16 @@ router.get("/users", checkJwt, async (req, res) => {
       delete user.email_verified;
       delete user.logins_count;
     });
-    res.json({ status: "Successful", data: users });
+
+    const newUsersList = users.map((user) => ({
+      ...user,
+      ...allUsers.find((orgUser) => orgUser.user_id === user.user_id),
+    }));
+
+    res.json({ status: "Successful", data: newUsersList });
   });
-  // if (!res.headersSent) res.json({ status: "Nothing happened" });
+
+  // if (!res.headersSent) res.json({ status: "Successful", data: allUsers });
   console.log("[GET] /users => Finished route.");
 });
 

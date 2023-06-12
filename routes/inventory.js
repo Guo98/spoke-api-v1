@@ -31,7 +31,7 @@ inventory
 
 const router = Router();
 
-router.get("/getInventory/:company/:entity?", checkJwt, async (req, res) => {
+router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
   console.log(`/getInventory/${company} => Starting route.`);
@@ -426,7 +426,8 @@ router.get("/getmarketplaceinventory/:client", checkJwt, async (req, res) => {
  * @param {string} updated_status
  * @param {string} device_index
  */
-router.post("/updateinventory", checkJwt, async (req, res) => {
+// updateInventory
+router.patch("/inventory", checkJwt, async (req, res) => {
   const {
     client,
     device_id,
@@ -468,7 +469,8 @@ router.post("/updateinventory", checkJwt, async (req, res) => {
   console.log(`/updateinventory/${client} => Finished route.`);
 });
 
-router.post("/addinventory", checkJwt, async (req, res) => {
+// addInventory
+router.put("/inventory", checkJwt, async (req, res) => {
   const { client, device_id, new_devices } = req.body;
   console.log(`/addinventory/${client} => Starting route.`);
   try {
@@ -488,34 +490,86 @@ router.post("/addinventory", checkJwt, async (req, res) => {
   console.log(`/updateinventory/${client} => Finished route.`);
 });
 
-router.post("/deleteinventory", checkJwt, async (req, res) => {
-  const { client, device_id, device_index, serial_number } = req.body;
-  console.log(`/deleteinventory/${client} => Starting route.`);
-  try {
-    console.log(`/deleteinventory/${client} => Starting delete function.`);
-    const deleteResp = await inventory.opsDeleteInventory(
-      client,
-      device_id,
-      device_index,
-      serial_number
-    );
+router.delete(
+  "/inventory/:client/:device_id/:device_index/:serial_number",
+  checkJwt,
+  async (req, res) => {
+    const { client, device_id, device_index, serial_number } = req.params;
+    console.log(`/deleteinventory/${client} => Starting route.`);
+    try {
+      console.log(`/deleteinventory/${client} => Starting delete function.`);
+      const deleteResp = await inventory.opsDeleteInventory(
+        client,
+        device_id,
+        device_index,
+        serial_number
+      );
 
-    if (deleteResp === "Error") {
-      throw new Error("Serial number not found");
-    } else {
-      res.json({ status: "Successful", data: deleteResp });
+      if (deleteResp === "Error") {
+        throw new Error("Serial number not found");
+      } else {
+        res.json({ status: "Successful", data: deleteResp });
+      }
+      console.log(
+        `/deleteinventory/${client} => Finished deleting ${serial_number} from ${device_id}.`
+      );
+    } catch (e) {
+      console.log(
+        `/deleteinventory/${client} => Error in deleting ${serial_number} from ${device_id}:`,
+        e
+      );
+      res.status(500).json({ status: "Error" });
     }
-    console.log(
-      `/deleteinventory/${client} => Finished deleting ${serial_number} from ${device_id}.`
-    );
+    console.log(`/deleteinventory/${client} => Finished route.`);
+  }
+);
+
+router.post("/inventory", checkJwt, async (req, res) => {
+  const { client, device, location, screen, cpu, ram, ssd, entity, sku } =
+    req.body;
+  console.log(`/inventory/${client} => Starting function.`);
+  try {
+    console.log(`/inventory/${client} => Updating db.`);
+    const newItem = {
+      name: device,
+      location,
+      specs: {
+        screen_size: screen,
+        ram,
+        cpu,
+        hard_drive: ssd,
+      },
+      serial_numbers: [],
+      entity,
+      sku,
+    };
+    await inventory.opsAddNewDevice(client, newItem);
+    res.json({ status: "Success" });
+    console.log(`/inventory/${client} => Finished updating db.`);
+  } catch (e) {
+    console.log(`/inventory/${client} => Error in adding item to db:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+
+  console.log(`/inventory/${client} => Finished function.`);
+});
+
+router.patch("/marketplace", checkJwt, async (req, res) => {
+  const { client } = req.body;
+  console.log(`/marketplace/${client} => Starting route.`);
+  try {
+    console.log(`/marketplace/${client} => Starting update function.`);
+    const result = await inventory.opsUpdateMarketplace(req.body);
+    console.log(`/marketplace/${client} => Finished update function.`);
+    res.json({ status: "Successful", data: result });
   } catch (e) {
     console.log(
-      `/deleteinventory/${client} => Error in deleting ${serial_number} from ${device_id}:`,
+      `/marketplace/${client} => Error in updating marketplace inventory:`,
       e
     );
     res.status(500).json({ status: "Error" });
   }
-  console.log(`/deleteinventory/${client} => Finished route.`);
+  console.log(`/marketplace/${client} => Finished route.`);
 });
 
 function resetDevice(item) {

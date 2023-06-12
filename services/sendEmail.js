@@ -1,9 +1,5 @@
 import { EmailClient } from "@azure/communication-email";
-import { generateMarketplaceResponseBody } from "./emails/marketplace.js";
 const connectionString = process.env.COMMUNICATION_SERVICES_CONNECTION_STRING;
-
-const fedexTrackingEmail =
-  "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=";
 
 export async function sendAzureEmail(emailMessage) {
   try {
@@ -179,7 +175,7 @@ async function sendConfirmation(body) {
     if (type === "redeployment") {
       emailBody = generateRedeploymentEmailBody(company, name, body.item);
       emailSubject = `Redeployment - Subject: ${company} Equipment Deployment`;
-    } else if (type === "Offboarding") {
+    } else if (type === "Offboarding" || type === "Offboard") {
       emailBody = generateOffboardingEmailBody(company, name, body.address);
       emailSubject = `[Action Required] ${company} Equipment Return`;
     } else {
@@ -306,42 +302,6 @@ async function sendSlackRequestEmail(body) {
   }
 }
 
-async function sendMarketplaceResponse(body) {
-  try {
-    console.log("sendMarketplaceResponse() => Starting function.");
-    const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
-      content: {
-        subject: body.approved
-          ? "Marketplace Approval Request"
-          : "Marketplace Denial Request",
-        html: generateMarketplaceResponseBody(body),
-      },
-      recipients: {
-        to: [
-          {
-            address: "info@withspoke.com",
-          },
-        ],
-      },
-    };
-    const response = await sendAzureEmail(emailMessage);
-    console.log(
-      `sendMarketplaceResponse() => Successfully sent marketplace response email: ${JSON.stringify(
-        response
-      )}`
-    );
-    return true;
-  } catch (e) {
-    console.log(
-      `sendMarketplaceResponse() => Error in sending marketplace response email: ${JSON.stringify(
-        e
-      )}`
-    );
-    return false;
-  }
-}
-
 function generateReturnEmailBody(company, name, address) {
   const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
     company === "Bowery" ? "Bowery Valuation" : company
@@ -451,5 +411,4 @@ export {
   sendNotificationEmail,
   sendOrderConfirmationEmail,
   sendSlackRequestEmail,
-  sendMarketplaceResponse,
 };

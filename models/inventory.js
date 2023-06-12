@@ -208,5 +208,129 @@ class Inventory {
       return "Error";
     }
   }
+
+  async opsAddNewDevice(client, obj) {
+    const coResponse = await this.database
+      .container(client === "public" ? "Mock" : containerId)
+      .read();
+
+    const { resource: doc } = await coResponse.container.items.create(obj);
+    return doc;
+  }
+
+  async opsUpdateMarketplace(body) {
+    const { update_type, client, type } = body;
+
+    const marketplaceContainer = await this.database
+      .container("MarketplaceInventory")
+      .read();
+
+    const id =
+      type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
+    if (!update_type.includes("new")) {
+      const { resource } = await marketplaceContainer.container
+        .item(id, client)
+        .read();
+      if (update_type.includes("brand")) {
+        const { brand } = body;
+        if (update_type === "addbrand") {
+          resource.brands.push({
+            brand,
+            types: [],
+            imgSrc:
+              "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
+          });
+        } else if (update_type === "deletebrand") {
+          const brandIndex = resource.brands.findIndex(
+            (b) => b.brand === brand
+          );
+
+          if (brandIndex === 0 && resource.brands.length === 1) {
+            resource.brands = [];
+          } else {
+            resource.brands.splice(brandIndex, 1);
+          }
+        }
+      } else if (update_type.includes("type")) {
+        const { device_type, brand } = body;
+        const brandIndex = resource.brands.findIndex((b) => b.brand === brand);
+        if (update_type === "addtype") {
+          resource.brands[brandIndex].types.push({
+            type: device_type,
+            specs: [],
+            colors: body.colors,
+          });
+        } else if (update_type === "deletetype") {
+          const typeIndex = resource.brands[brandIndex].types.findIndex(
+            (t) => t.type === device_type
+          );
+
+          if (
+            resource.brands[brandIndex].types.length === 1 &&
+            typeIndex === 0
+          ) {
+            resource.brands[brandIndex].types = [];
+          } else {
+            resource.brands[brandIndex].types.splice(typeIndex, 1);
+          }
+        }
+      } else if (update_type.includes("spec")) {
+        const { brand, device_type } = body;
+        const brandIndex = resource.brands.findIndex((b) => b.brand === brand);
+        const deviceIndex = resource.brands[brandIndex].types.findIndex(
+          (t) => t.type === device_type
+        );
+        if (update_type === "addspec") {
+          const {
+            specs: { screen_size, cpu, ram, ssd },
+            locations,
+          } = body;
+
+          resource.brands[brandIndex].types[deviceIndex].specs.push({
+            spec: `${screen_size}, ${cpu}, ${ram.toUpperCase()} RAM, ${ssd.toUpperCase()} SSD`,
+            locations,
+          });
+        } else if (update_type === "deletespec") {
+          const specIndex = resource.brands[brandIndex].types[
+            deviceIndex
+          ].specs.findIndex((s) => s.spec === body.spec);
+
+          if (
+            specIndex === 0 &&
+            resource.brands[brandIndex].types[deviceIndex].specs.length === 1
+          ) {
+            resource.brands[brandIndex].types[deviceIndex].specs = [];
+          } else {
+            resource.brands[brandIndex].types[deviceIndex].specs.splice(
+              specIndex,
+              1
+            );
+          }
+        }
+      } else if (update_type.includes("locations")) {
+        const { spec, brand, device_type } = body;
+        const brandIndex = resource.brands.findIndex((b) => b.brand === brand);
+        const deviceIndex = resource.brands[brandIndex].types.findIndex(
+          (t) => t.type === device_type
+        );
+        const specIndex = resource.brands[brandIndex].types[
+          deviceIndex
+        ].specs.findIndex((s) => s.spec === spec);
+        if (update_type === "editlocations") {
+          const { locations } = body;
+
+          resource.brands[brandIndex].types[deviceIndex].specs[
+            specIndex
+          ].locations = locations;
+        }
+      }
+
+      const { resource: replaced } = await marketplaceContainer.container
+        .item(id, client)
+        .replace(resource);
+
+      return replaced;
+    }
+  }
 }
 export { Inventory };

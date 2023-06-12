@@ -19,7 +19,7 @@ export async function sendMarketplaceRequestEmail(body) {
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
-    const emailMessage = {
+    let emailMessage = {
       senderAddress: "DoNotReply@withspoke.io",
       content: {
         subject:
@@ -54,6 +54,9 @@ export async function sendMarketplaceRequestEmail(body) {
             : [{ address: requestor_email }],
       },
     };
+    if (type !== "userrequest") {
+      emailMessage.recipients.bcc = [{ address: "info@withspoke.com" }];
+    }
     const response = await sendAzureEmail(emailMessage);
     console.log(
       `sendMarketplaceRequestEmail() => Successfully sent market request email: ${JSON.stringify(
@@ -64,6 +67,42 @@ export async function sendMarketplaceRequestEmail(body) {
   } catch (e) {
     console.log(
       `sendMarketplaceRequestEmail() => Error in sending market request email: ${e}`
+    );
+    return false;
+  }
+}
+
+export async function sendMarketplaceResponse(body) {
+  try {
+    console.log("sendMarketplaceResponse() => Starting function.");
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: body.approved
+          ? "Marketplace Approval Request"
+          : "Marketplace Denial Request",
+        html: generateMarketplaceResponseBody(body),
+      },
+      recipients: {
+        to: [
+          {
+            address: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    const response = await sendAzureEmail(emailMessage);
+    console.log(
+      `sendMarketplaceResponse() => Successfully sent marketplace response email: ${JSON.stringify(
+        response
+      )}`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendMarketplaceResponse() => Error in sending marketplace response email: ${JSON.stringify(
+        e
+      )}`
     );
     return false;
   }

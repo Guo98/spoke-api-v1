@@ -1,5 +1,4 @@
 import { determineContainer } from "../../utils/utility.js";
-import { inventoryDBMapping } from "../../utils/mappings/inventory.js";
 import { createAdminDeploy } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
 
