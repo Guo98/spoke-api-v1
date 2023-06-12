@@ -554,6 +554,24 @@ router.post("/inventory", checkJwt, async (req, res) => {
   console.log(`/inventory/${client} => Finished function.`);
 });
 
+router.patch("/marketplace", checkJwt, async (req, res) => {
+  const { client } = req.body;
+  console.log(`/marketplace/${client} => Starting route.`);
+  try {
+    console.log(`/marketplace/${client} => Starting update function.`);
+    const result = await inventory.opsUpdateMarketplace(req.body);
+    console.log(`/marketplace/${client} => Finished update function.`);
+    res.json({ status: "Successful", data: result });
+  } catch (e) {
+    console.log(
+      `/marketplace/${client} => Error in updating marketplace inventory:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`/marketplace/${client} => Finished route.`);
+});
+
 function resetDevice(item) {
   let resetItem = {
     sn: item.sn,
