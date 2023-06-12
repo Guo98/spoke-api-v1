@@ -55,6 +55,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
       `/offboarding/${client} => Sending confirmation email for offboarding`
     );
     await sendConfirmation({
+      email: "info@withspoke.com",
       company: client,
       name: recipient_name,
       requestor_email,

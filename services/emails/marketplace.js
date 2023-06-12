@@ -69,6 +69,42 @@ export async function sendMarketplaceRequestEmail(body) {
   }
 }
 
+export async function sendMarketplaceResponse(body) {
+  try {
+    console.log("sendMarketplaceResponse() => Starting function.");
+    const emailMessage = {
+      senderAddress: "DoNotReply@withspoke.io",
+      content: {
+        subject: body.approved
+          ? "Marketplace Approval Request"
+          : "Marketplace Denial Request",
+        html: generateMarketplaceResponseBody(body),
+      },
+      recipients: {
+        to: [
+          {
+            address: "info@withspoke.com",
+          },
+        ],
+      },
+    };
+    const response = await sendAzureEmail(emailMessage);
+    console.log(
+      `sendMarketplaceResponse() => Successfully sent marketplace response email: ${JSON.stringify(
+        response
+      )}`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendMarketplaceResponse() => Error in sending marketplace response email: ${JSON.stringify(
+        e
+      )}`
+    );
+    return false;
+  }
+}
+
 function generateMarketplaceRequestEmail(
   requestor_email,
   item_name,
