@@ -34,7 +34,7 @@ async function requestInventory(res, body, inventoryDB) {
         `/requestInventory/${client} => Starting top up DB function.`
       );
       for (let i = 0; i < items.length; i++) {
-        const deviceId = inventoryDBMapping[items[i].name]?.[items[i].location];
+        const deviceId = items[i].id;
         if (deviceId) {
           try {
             console.log(
