@@ -219,14 +219,14 @@ class Inventory {
   }
 
   async opsUpdateMarketplace(body) {
-    const { update_type, client, type } = body;
+    const { update_type, client, type, id } = body;
 
     const marketplaceContainer = await this.database
       .container("MarketplaceInventory")
       .read();
 
-    const id =
-      type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
+    // const id =
+    //   type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
     if (!update_type.includes("new")) {
       const { resource } = await marketplaceContainer.container
         .item(id, client)
