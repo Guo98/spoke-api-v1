@@ -219,14 +219,14 @@ class Inventory {
   }
 
   async opsUpdateMarketplace(body) {
-    const { update_type, client, type } = body;
+    const { update_type, client, type, id } = body;
 
     const marketplaceContainer = await this.database
       .container("MarketplaceInventory")
       .read();
 
-    const id =
-      type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
+    // const id =
+    //   type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
     if (!update_type.includes("new")) {
       const { resource } = await marketplaceContainer.container
         .item(id, client)
@@ -244,12 +244,7 @@ class Inventory {
           const brandIndex = resource.brands.findIndex(
             (b) => b.brand === brand
           );
-
-          if (brandIndex === 0 && resource.brands.length === 1) {
-            resource.brands = [];
-          } else {
-            resource.brands.splice(brandIndex, 1);
-          }
+          resource.brands.splice(brandIndex, 1);
         }
       } else if (update_type.includes("type")) {
         const { device_type, brand } = body;
@@ -265,14 +260,7 @@ class Inventory {
             (t) => t.type === device_type
           );
 
-          if (
-            resource.brands[brandIndex].types.length === 1 &&
-            typeIndex === 0
-          ) {
-            resource.brands[brandIndex].types = [];
-          } else {
-            resource.brands[brandIndex].types.splice(typeIndex, 1);
-          }
+          resource.brands[brandIndex].types.splice(typeIndex, 1);
         }
       } else if (update_type.includes("spec")) {
         const { brand, device_type } = body;
@@ -295,17 +283,10 @@ class Inventory {
             deviceIndex
           ].specs.findIndex((s) => s.spec === body.spec);
 
-          if (
-            specIndex === 0 &&
-            resource.brands[brandIndex].types[deviceIndex].specs.length === 1
-          ) {
-            resource.brands[brandIndex].types[deviceIndex].specs = [];
-          } else {
-            resource.brands[brandIndex].types[deviceIndex].specs.splice(
-              specIndex,
-              1
-            );
-          }
+          resource.brands[brandIndex].types[deviceIndex].specs.splice(
+            specIndex,
+            1
+          );
         }
       } else if (update_type.includes("locations")) {
         const { spec, brand, device_type } = body;
@@ -323,6 +304,10 @@ class Inventory {
             specIndex
           ].locations = locations;
         }
+      } else if (update_type === "deleteitem") {
+        const item = marketplaceContainer.container.item(id, client);
+        await item.delete();
+        return "Done";
       }
 
       const { resource: replaced } = await marketplaceContainer.container
@@ -330,6 +315,21 @@ class Inventory {
         .replace(resource);
 
       return replaced;
+    } else if (update_type === "newitem") {
+      const newid =
+        type.replace(/\s+/g, "-").toLowerCase() +
+        "-" +
+        client.replace(/\s+/g, "-").toLowerCase();
+      const { resource: doc } =
+        await marketplaceContainer.container.items.create({
+          id: newid,
+          client,
+          item_type: type,
+          imgSrc:
+            "https://spokeimages.blob.core.windows.net/image/comingsoon.jpeg",
+          brands: [],
+        });
+      return doc;
     }
   }
 }

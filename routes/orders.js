@@ -686,6 +686,17 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
         "",
         req.body.entity
       );
+    } else if (req.body.requestor_email) {
+      const updateRes = await orders.updateMarketOrder(
+        req.body.id,
+        req.body.client,
+        "",
+        "",
+        "",
+        "",
+        "",
+        req.body.requestor_email
+      );
     }
     console.log("/updateMarketOrder => Finished update db function.");
   } catch (e) {
