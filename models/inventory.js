@@ -331,7 +331,9 @@ class Inventory {
       return replaced;
     } else if (update_type === "newitem") {
       const newid =
-        type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
+        type.replace(/\s+/g, "-").toLowerCase() +
+        "-" +
+        client.replace(/\s+/g, "-").toLowerCase();
       const { resource: doc } =
         await marketplaceContainer.container.items.create({
           id: newid,
@@ -339,6 +341,7 @@ class Inventory {
           item_type: type,
           imgSrc:
             "https://spokeimages.blob.core.windows.net/image/comingsoon.jpeg",
+          brands: [],
         });
       return doc;
     }
