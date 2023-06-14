@@ -264,7 +264,6 @@ class Inventory {
           const typeIndex = resource.brands[brandIndex].types.findIndex(
             (t) => t.type === device_type
           );
-
           if (
             resource.brands[brandIndex].types.length === 1 &&
             typeIndex === 0
@@ -330,6 +329,18 @@ class Inventory {
         .replace(resource);
 
       return replaced;
+    } else if (update_type === "newitem") {
+      const newid =
+        type.toLowerCase() + "-" + client.replace(/\s+/g, "-").toLowerCase();
+      const { resource: doc } =
+        await marketplaceContainer.container.items.create({
+          id: newid,
+          client,
+          item_type: type,
+          imgSrc:
+            "https://spokeimages.blob.core.windows.net/image/comingsoon.jpeg",
+        });
+      return doc;
     }
   }
 }
