@@ -93,7 +93,8 @@ class Orders {
     filename = "",
     price = "",
     approved = "",
-    entity = ""
+    entity = "",
+    requestor_email = ""
   ) {
     const coResponse = await this.database.container("Marketplace").read();
 
@@ -157,6 +158,10 @@ class Orders {
     }
     if (entity !== "") {
       resource.entity = entity;
+    }
+
+    if (requestor_email !== "") {
+      resource.requestor_email = requestor_email;
     }
 
     const { resource: replaced } = await coResponse.container
