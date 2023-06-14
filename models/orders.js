@@ -129,7 +129,7 @@ class Orders {
             {
               name: resource.device_type + " " + resource.specs,
               quantity: 1,
-              price: resource.quote_price,
+              price: resource.quote_price ? resource.quote_price : "",
               tracking_number: "",
               type: "laptop",
             },
