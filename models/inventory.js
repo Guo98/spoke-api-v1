@@ -322,6 +322,10 @@ class Inventory {
             specIndex
           ].locations = locations;
         }
+      } else if (update_type === "deleteitem") {
+        const item = marketplaceContainer.container.item(id, client);
+        await item.delete();
+        return "Done";
       }
 
       const { resource: replaced } = await marketplaceContainer.container
