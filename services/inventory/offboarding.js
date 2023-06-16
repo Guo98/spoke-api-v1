@@ -50,26 +50,26 @@ async function inventoryOffboard(res, body, inventoryDB) {
     res.status(500).send({ status: "Error" });
   }
 
-  try {
-    console.log(
-      `/offboarding/${client} => Sending confirmation email for offboarding`
-    );
-    await sendConfirmation({
-      email: recipient_email,
-      company: client,
-      name: recipient_name,
-      requestor_email,
-      type,
-      address: shipping_address,
-    });
-    console.log(
-      `/offboarding/${client} => Finished sending confirmation email for offboarding`
-    );
-  } catch (e) {
-    console.log(
-      `/offboarding/${client} => Error sending confirmation email for offboarding`
-    );
-  }
+  // try {
+  //   console.log(
+  //     `/offboarding/${client} => Sending confirmation email for offboarding`
+  //   );
+  //   await sendConfirmation({
+  //     email: recipient_email,
+  //     company: client,
+  //     name: recipient_name,
+  //     requestor_email,
+  //     type,
+  //     address: shipping_address,
+  //   });
+  //   console.log(
+  //     `/offboarding/${client} => Finished sending confirmation email for offboarding`
+  //   );
+  // } catch (e) {
+  //   console.log(
+  //     `/offboarding/${client} => Error sending confirmation email for offboarding`
+  //   );
+  // }
 
   const containerId = determineContainer(client);
   if (containerId !== "") {
