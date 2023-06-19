@@ -110,6 +110,8 @@ function mapLineItems(customerInfo) {
             customerInfo?.address?.country
           );
         }
+      } else if (item.name.toLowerCase().indexOf("roivant") > -1) {
+        customerInfo.client = "Roivant";
       }
     });
   }
