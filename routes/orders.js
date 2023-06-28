@@ -121,7 +121,7 @@ router.post("/createOrder", async (req, res) => {
   const isAuthenticated = await basicAuth(req.headers.authorization);
   if (isAuthenticated) {
     const { customerInfo } = req.body;
-    const mappedInfo = mapLineItems(customerInfo);
+    const mappedInfo = await mapLineItems(customerInfo);
 
     const {
       orderNo,

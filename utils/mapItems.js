@@ -1,4 +1,5 @@
 import { suppliers, euCodes } from "./constants.js";
+import { createYubikeyShipment } from "./yubikey.js";
 // import { createRecord } from "../services/airtable.js";
 
 function determineFLYRRegion(country) {
@@ -25,7 +26,7 @@ function determineFloEntity(country) {
   }
 }
 
-function mapLineItems(customerInfo) {
+async function mapLineItems(customerInfo) {
   if (customerInfo?.discount?.appliedCoupon) {
     switch (customerInfo.discount.appliedCoupon?.code) {
       case "intersectpower":
@@ -56,7 +57,7 @@ function mapLineItems(customerInfo) {
     }
   }
   if (customerInfo?.items.length > 0) {
-    customerInfo.items.forEach((item) => {
+    for (const item of customerInfo.items) {
       if (suppliers[item.name]) {
         if (item.name === "Offboarding") {
           item.supplier = suppliers[item.name];
@@ -113,7 +114,37 @@ function mapLineItems(customerInfo) {
       } else if (item.name.toLowerCase().indexOf("roivant") > -1) {
         customerInfo.client = "Roivant";
       }
-    });
+
+      if (
+        item.name.toLowerCase().includes("yubikey") &&
+        customerInfo.email.includes("automox")
+      ) {
+        const yubikeyBody = {
+          firstname: customerInfo.firstName,
+          lastname: customerInfo.lastName,
+          email: customerInfo.email,
+          phonenumber: customerInfo.phone,
+          address: customerInfo.address,
+        };
+        try {
+          console.log(
+            "mapLineItems() => Creating yubikey shipment:",
+            yubikeyBody
+          );
+          await createYubikeyShipment(yubikeyBody);
+          console.log("mapLineItems() => Finished creating yubikey shipment.");
+        } catch (e) {
+          console.log(
+            "mapLineItems() => Error in creating yubikey shipment for: ",
+            yubikeyBody
+          );
+          console.log(
+            "mapLineItems() => Error in creating yubikey shipment: ",
+            e
+          );
+        }
+      }
+    }
   }
   customerInfo.full_name =
     customerInfo?.firstName + " " + customerInfo?.lastName;
@@ -121,3 +152,15 @@ function mapLineItems(customerInfo) {
 }
 
 export { mapLineItems };
+
+/**
+ *   address.addressLine +
+          ", " +
+          address.city +
+          ", " +
+          address.subdivision +
+          " " +
+          address.postalCode +
+          ", " +
+          address.country
+ */
