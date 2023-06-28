@@ -21,6 +21,17 @@ import { validateAddress } from "../services/address.js";
               state:
                 features.properties.state_code || features.properties.state,
               country:  
+
+
+                address.addressLine +
+          ", " +
+          address.city +
+          ", " +
+          address.subdivision +
+          " " +
+          address.postalCode +
+          ", " +
+          address.country
     */
 
 export async function checkYubikeyQuantity() {
@@ -36,7 +47,6 @@ export async function checkYubikeyQuantity() {
 
     if (keysResp.data.result_set && keysResp.data.result_set[0]) {
       if (keysResp.data.result_set[0].total_keys_available > 2) {
-        console.log("product ids ::::::::: ", keysResp.data.result_set[0]);
         return true;
       } else {
         return false;
@@ -51,16 +61,12 @@ export async function checkYubikeyQuantity() {
 }
 
 export async function createYubikeyShipment(body) {
-  const { recipient_name, address, email, phone_number } = body;
+  const { firstname, lastname, address, email, phone_number } = body;
   const areThereKeys = await checkYubikeyQuantity();
 
   if (areThereKeys) {
-    const splitRecipientName = recipient_name.split(" ");
-
-    const splitAddress = await validateAddress(address, "system");
-
-    if (splitAddress.status === undefined || splitAddress.status !== 200) {
-      throw new Error("Error parsing address");
+    if (!email.includes("automox")) {
+      throw new Error("Not part of automox");
     }
 
     return axios
@@ -72,27 +78,19 @@ export async function createYubikeyShipment(body) {
           country_code_2: "US",
           recipient: "Automox",
           recipient_email: email,
-          recipient_firstname:
-            splitRecipientName.length > 2
-              ? splitRecipientName[0] + " " + splitRecipientName[1]
-              : splitRecipientName[0],
-          recipient_lastname:
-            splitRecipientName.length > 2
-              ? splitRecipientName[2]
-              : splitRecipientName[1],
+          recipient_firstname: firstname,
+          recipient_lastname: lastname,
           recipient_telephone: phone_number,
-          street_line1: splitAddress.address_line1,
-          street_line2: splitAddress.address_line2
-            ? splitAddress.address_line2
-            : "",
-          city: splitAddress.city,
-          region: splitAddress.state,
-          postal_code: splitAddress.zipCode,
+          street_line1: address.addressLine,
+          street_line2: "",
+          city: address.city,
+          region: address.subdivision,
+          postal_code: address.postalCode,
           shipment_items: [
             {
               product_id: 29,
               inventory_product_id: 29,
-              shipment_product_quantity: 0,
+              shipment_product_quantity: 2,
             },
           ],
         },
