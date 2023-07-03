@@ -131,7 +131,11 @@ async function mapLineItems(customerInfo) {
             "mapLineItems() => Creating yubikey shipment:",
             yubikeyBody
           );
-          await createYubikeyShipment(yubikeyBody);
+          const shipmentId = await createYubikeyShipment(yubikeyBody);
+
+          if (shipmentId !== "") {
+            item.shipment_id = shipmentId;
+          }
           console.log("mapLineItems() => Finished creating yubikey shipment.");
         } catch (e) {
           console.log(

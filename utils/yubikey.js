@@ -68,9 +68,8 @@ export async function createYubikeyShipment(body) {
     if (!email.includes("automox")) {
       throw new Error("Not part of automox");
     }
-
-    return axios
-      .post(
+    try {
+      const postResp = await axios.post(
         process.env.YUBIKEY_API_URL + "/v1/shipments_exact",
         {
           channelpartner_id: 1,
@@ -95,14 +94,21 @@ export async function createYubikeyShipment(body) {
           ],
         },
         { headers: { authorization: "", "Content-Type": "application/json" } }
-      )
-      .then((res) => {})
-      .catch((err) => {
-        console.log("err");
-      });
+      );
+      console.log(
+        "createYubikeyShipment() => Successfully ordered:",
+        postResp.data
+      );
+
+      return postResp.data.shipment_id;
+    } catch (err) {
+      console.log("createYubikeyShipment() => Error in ordering keys:", err);
+      return "";
+    }
   } else {
     console.log(
       "createYubikeyShipment() => No keys left. Please inform Automox."
     );
+    return "";
   }
 }

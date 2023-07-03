@@ -223,6 +223,7 @@ function createOffboardRow(
   recipient_name,
   recipient_email,
   item,
+  type,
   shipping_address,
   phone_num,
   requestor_email,
@@ -285,7 +286,7 @@ function createOffboardRow(
     },
     {
       userEnteredValue: {
-        stringValue: "Offboarding",
+        stringValue: type,
       },
     },
     {
