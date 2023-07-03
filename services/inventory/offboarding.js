@@ -28,6 +28,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
       recipient_name,
       recipient_email,
       device_name,
+      type,
       shipping_address,
       phone_num,
       requestor_email,
