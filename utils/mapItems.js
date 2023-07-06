@@ -115,10 +115,7 @@ async function mapLineItems(customerInfo) {
         customerInfo.client = "Roivant";
       }
 
-      if (
-        item.name.toLowerCase().includes("yubikey") &&
-        customerInfo.email.includes("automox")
-      ) {
+      if (item.name.toLowerCase().includes("yubikey 5c")) {
         const yubikeyBody = {
           firstname: customerInfo.firstName,
           lastname: customerInfo.lastName,
