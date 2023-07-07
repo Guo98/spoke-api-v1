@@ -141,7 +141,8 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { client, recipient_name, requestor_email, requestor_name } = req.body;
+  const { client, recipient_name, requestor_email, requestor_name, type } =
+    req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
   await inventoryOffboard(res, req.body, inventory);
@@ -154,7 +155,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
     await sendOrderConfirmationEmail(
       requestor_email,
       requestor_name,
-      "Offboarding",
+      type,
       recipient_name,
       "",
       "Standard"
