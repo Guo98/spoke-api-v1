@@ -101,4 +101,8 @@ const inventoryDBMapping = {
   },
 };
 
+const skuMapping = {
+  'MacBook Air 13.6" M2, 8GB, 256GB SSD': "MLXW3LL/A",
+};
+
 export { inventoryDBMapping };
