@@ -20,7 +20,8 @@ async function inventoryOffboard(res, body, inventoryDB) {
   } = body;
   try {
     console.log(
-      `/offboarding/${client} => Adding offboard order to offboarding sheet.`
+      `/offboarding/${client} => Adding offboard order to offboarding sheet:`,
+      body
     );
     const offboardValues = createOffboardRow(
       1,

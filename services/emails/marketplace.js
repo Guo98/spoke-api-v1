@@ -53,10 +53,7 @@ export async function sendMarketplaceRequestEmail(body) {
               ]
             : [
                 {
-                  address:
-                    client === "Alma"
-                      ? "spoke-invoices@helloalma.com"
-                      : requestor_email,
+                  address: requestor_email,
                 },
               ],
       },
