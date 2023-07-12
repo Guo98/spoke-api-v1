@@ -231,7 +231,7 @@ async function sendOrderConfirmationEmail(
   try {
     console.log(`sendOrderConfirmationEmail() => Starting function.`);
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "info@withspoke.com",
       content: {
         subject: request_type + " Confirmation Email",
         html: generateConfirmationEmail(
