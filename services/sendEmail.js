@@ -183,7 +183,7 @@ async function sendConfirmation(body) {
       emailSubject = `[Action Required] ${company} Equipment Return`;
     }
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "info@withspoke.com",
       content: {
         subject: emailSubject,
         html: emailBody,
