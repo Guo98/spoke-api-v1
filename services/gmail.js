@@ -104,6 +104,12 @@ async function getEmailBody(messageId, orders) {
           (header) => header.name === "Subject"
         )[0].value;
         break;
+      case "CDW":
+        subject = res.data.payload.headers.filter(
+          (header) => header.name === "Subject"
+        )[0].value;
+        body = res?.data?.payload?.parts[1]?.body?.data;
+        break;
       default:
         // body = res?.data?.payload?.parts[1].body;
         break;
@@ -115,9 +121,11 @@ async function getEmailBody(messageId, orders) {
     if (
       (isTrackingEmail.id === "Fully" && subject.indexOf("has shipped") > -1) ||
       (isTrackingEmail.id === "CTS" && subject.indexOf("Has Shipped") > -1) ||
-      (isTrackingEmail.id === "bh" && subject.indexOf("Shipped") > -1)
+      (isTrackingEmail.id === "bh" && subject.indexOf("Shipped") > -1) ||
+      (isTrackingEmail.id === "CDW" &&
+        subject.includes("CDW Shipping Confirmation"))
     ) {
-      const trackingResult = getTrackingNumber(
+      const trackingResult = await getTrackingNumber(
         body,
         isTrackingEmail.id,
         receivedOrders,

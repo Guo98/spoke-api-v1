@@ -3,6 +3,7 @@ import { trackingRegex } from "../utils/constants.js";
 import { addBHTrackingNumber } from "./parsers/bh.js";
 import { addFullyTrackingNumber } from "./parsers/fully.js";
 import { addCTSTrackingNumber } from "./parsers/cts.js";
+import addCDWTrackingNumber from "./parsers/cdw.js";
 import cheerio from "cheerio";
 
 /**
@@ -12,10 +13,11 @@ import cheerio from "cheerio";
  * @param {Array[Object]} orders
  * @param {string} subject
  */
-function getTrackingNumber(emailBody, supplier, orders, subject) {
+async function getTrackingNumber(emailBody, supplier, orders, subject) {
   console.log(`getTrackingNumber(${supplier}) => Starting function.`);
   let trackNum = "";
   const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
+
   const $ = cheerio.load(decodedMessage);
   let orderIndex = -1;
   let orderIndexList = [];
@@ -85,16 +87,7 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
 
   let updateResult = [];
   if (orderIndex > -1 || orderIndexList.length !== 0) {
-    if (supplier === "Fully") {
-      console.log(
-        `getTrackingNumber(${supplier}) => Adding Fully tracking number.`
-      );
-      addFullyTrackingNumber(decodedMessage, orders, supplier, orderIndex);
-      updateResult.push({
-        orderIndex: orderIndex,
-        items: orders[orderIndex]?.items,
-      });
-    } else if (supplier === "CTS") {
+    if (supplier === "CTS") {
       console.log(
         `getTrackingNumber(${supplier}) => Adding CTS tracking number.`
       );
@@ -116,6 +109,15 @@ function getTrackingNumber(emailBody, supplier, orders, subject) {
         `getTrackingNumber(${supplier}) => Adding B&H tracking number.`
       );
       addBHTrackingNumber(decodedMessage, orders, supplier, orderIndex);
+      updateResult.push({
+        orderIndex: orderIndex,
+        items: orders[orderIndex]?.items,
+      });
+    } else if (supplier === "CDW") {
+      console.log(
+        `getTrackingNumber(${supplier}) => Adding CDW tracking number.`
+      );
+      await addCDWTrackingNumber(decodedMessage, orders, orderIndex);
       updateResult.push({
         orderIndex: orderIndex,
         items: orders[orderIndex]?.items,
