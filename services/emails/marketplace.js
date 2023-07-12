@@ -51,7 +51,14 @@ export async function sendMarketplaceRequestEmail(body) {
                   address: "info@withspoke.com",
                 },
               ]
-            : [{ address: requestor_email }],
+            : [
+                {
+                  address:
+                    client === "Alma"
+                      ? "spoke-invoices@helloalma.com"
+                      : requestor_email,
+                },
+              ],
       },
     };
     if (type !== "userrequest") {
