@@ -18,6 +18,8 @@ import {
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 // import { createYubikeyShipment } from "../utils/yubikey.js";
+import { getAllInventory } from "./inventory.js";
+import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -733,6 +735,40 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
+
+// router.post("/adminstuff", async (req, res) => {
+//   const { client } = req.body;
+//   const allOrders = await orders.getAllOrders(client);
+//   const allInventory = await getAllInventory(client);
+
+//   for await (const order of allOrders) {
+//     if (!isNaN(order.orderNo)) {
+//       for await (const device of allInventory) {
+//         for await (const d of device.serial_numbers) {
+//           if (d.status === "Deployed") {
+//             if (d.full_name === order.full_name) {
+//               order.items.forEach(async (item) => {
+//                 if (
+//                   Object.keys(inventoryMappings).indexOf(item.name) > -1 &&
+//                   !item.serial_number
+//                 ) {
+//                   item.serial_number = d.sn;
+//                 }
+//               });
+//               await orders.updateOrderByContainer(
+//                 client,
+//                 order.id,
+//                 order.full_name,
+//                 order.items
+//               );
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   res.send("Hello World!");
+// });
 
 // router.get("/testyubikey", async (req, res) => {
 //   const result = await checkYubikeyQuantity();

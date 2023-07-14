@@ -598,6 +598,11 @@ async function addNewSerialNumber(client, device_id, new_device) {
   }
 }
 
+async function getAllInventory(client) {
+  const allInventory = await inventory.getAll(client);
+  return allInventory;
+}
+
 export default router;
 
-export { addNewSerialNumber };
+export { addNewSerialNumber, getAllInventory };
