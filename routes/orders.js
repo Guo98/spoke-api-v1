@@ -10,7 +10,7 @@ import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
-import { sendSupportEmail } from "../services/sendEmail.js";
+import { sendSupportEmail, sendConfirmation } from "../services/sendEmail.js";
 import {
   sendMarketplaceRequestEmail,
   sendMarketplaceResponse,
@@ -737,35 +737,40 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 });
 
 // router.post("/adminstuff", async (req, res) => {
-//   const { client } = req.body;
-//   const allOrders = await orders.getAllOrders(client);
-//   const allInventory = await getAllInventory(client);
+//   // const { client } = req.body;
+//   // const allOrders = await orders.getAllOrders(client);
+//   // const allInventory = await getAllInventory(client);
 
-//   for await (const order of allOrders) {
-//     if (!isNaN(order.orderNo)) {
-//       for await (const device of allInventory) {
-//         for await (const d of device.serial_numbers) {
-//           if (d.status === "Deployed") {
-//             if (d.full_name === order.full_name) {
-//               order.items.forEach(async (item) => {
-//                 if (
-//                   Object.keys(inventoryMappings).indexOf(item.name) > -1 &&
-//                   !item.serial_number
-//                 ) {
-//                   item.serial_number = d.sn;
-//                 }
-//               });
-//               await orders.updateOrderByContainer(
-//                 client,
-//                 order.id,
-//                 order.full_name,
-//                 order.items
-//               );
-//             }
-//           }
-//         }
-//       }
-//     }
+//   // for await (const order of allOrders) {
+//   //   if (!isNaN(order.orderNo)) {
+//   //     for await (const device of allInventory) {
+//   //       for await (const d of device.serial_numbers) {
+//   //         if (d.status === "Deployed") {
+//   //           if (d.full_name === order.full_name) {
+//   //             order.items.forEach(async (item) => {
+//   //               if (
+//   //                 Object.keys(inventoryMappings).indexOf(item.name) > -1 &&
+//   //                 !item.serial_number
+//   //               ) {
+//   //                 item.serial_number = d.sn;
+//   //               }
+//   //             });
+//   //             await orders.updateOrderByContainer(
+//   //               client,
+//   //               order.id,
+//   //               order.full_name,
+//   //               order.items
+//   //             );
+//   //           }
+//   //         }
+//   //       }
+//   //     }
+//   //   }
+//   // }
+//   try {
+//     await sendConfirmation(req.body);
+//   } catch (e) {
+//     console.log("error in sending email :::::::: ", e);
 //   }
 //   res.send("Hello World!");
 // });

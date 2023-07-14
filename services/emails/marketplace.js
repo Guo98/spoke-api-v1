@@ -20,7 +20,7 @@ export async function sendMarketplaceRequestEmail(body) {
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
     let emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject:
           type === "userrequest"
@@ -80,7 +80,7 @@ export async function sendMarketplaceResponse(body) {
   try {
     console.log("sendMarketplaceResponse() => Starting function.");
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject: body.approved
           ? "Marketplace Approval Request"
