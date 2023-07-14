@@ -117,7 +117,7 @@ async function getTrackingNumber(emailBody, supplier, orders, subject) {
       console.log(
         `getTrackingNumber(${supplier}) => Adding CDW tracking number.`
       );
-      await addCDWTrackingNumber(decodedMessage, orders, orderIndex);
+      await addCDWTrackingNumber(decodedMessage, orders, orderIndex, subject);
       updateResult.push({
         orderIndex: orderIndex,
         items: orders[orderIndex]?.items,

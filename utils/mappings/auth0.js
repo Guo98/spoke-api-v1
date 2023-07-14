@@ -8,6 +8,7 @@ export const orgMappings = {
   "Intersect Power": "org_gaFIEnwpsXXm8z0D",
   NurseDash: "org_ZQAwXjMDnevrYYIr",
   public: "org_2cr6d5b5cEsEEtsR",
+  Roivant: "org_lgsM9ZWjP1GdrDoA",
 };
 
 export const idToOrgMappings = {
@@ -19,11 +20,13 @@ export const idToOrgMappings = {
   org_mwy5eCy2IyrXOY1E: "Hidden Road",
   org_gaFIEnwpsXXm8z0D: "Intersect Power",
   org_ZQAwXjMDnevrYYIr: "NurseDash",
+  org_lgsM9ZWjP1GdrDoA: "Roivant",
 };
 
 export const connectionsMappings = {
   "Username Password": "con_Mt30bKtIThVagGZe",
   Google: "con_PUjmnlUiJXfcfYvG",
+  Microsoft: "con_xTB69lJ1EPz50N0O",
 };
 
 export const clientIdList = [
@@ -35,6 +38,7 @@ export const clientIdList = [
   "org_mwy5eCy2IyrXOY1E",
   "org_gaFIEnwpsXXm8z0D",
   "org_ZQAwXjMDnevrYYIr",
+  "org_lgsM9ZWjP1GdrDoA",
 ];
 export const rolesMappings = {
   "flo-uk-emp": "rol_MJ75jZI9Ixe1pQKO",
@@ -48,4 +52,7 @@ export const rolesMappings = {
   approvedbuyers: "rol_TfXXCx0IIyYPXu9L",
   nontechnical: "rol_s1EDHo4PCWwr3c5a",
   technical: "rol_1HUdtzncd7iGsXL4",
+  windows: "rol_P2MEj5mrO5lLTa3o",
+  mac: "rol_19cPtbQ7rKcFyECz",
+  manager: "rol_iRdqYMgE20Ygmf3l",
 };

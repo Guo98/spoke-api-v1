@@ -585,4 +585,24 @@ function resetDevice(item) {
   return resetItem;
 }
 
+async function addNewSerialNumber(client, device_id, new_device) {
+  try {
+    await inventory.opsAddInventory(client, device_id, [new_device]);
+  } catch (e) {
+    console.log(
+      `addNewSerialNumber(${client}) => Error in adding new serial number: ${JSON.stringify(
+        new_device
+      )}. Error: `,
+      e
+    );
+  }
+}
+
+async function getAllInventory(client) {
+  const allInventory = await inventory.getAll(client);
+  return allInventory;
+}
+
 export default router;
+
+export { addNewSerialNumber, getAllInventory };

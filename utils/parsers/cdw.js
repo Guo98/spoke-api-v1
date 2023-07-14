@@ -1,5 +1,7 @@
 import { cdwMappings } from "./cdwConstants.js";
 import { Configuration, OpenAIApi } from "openai";
+import { addNewSerialNumber } from "../../routes/inventory.js";
+import { inventoryMappings } from "./cdwConstants.js";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
@@ -8,7 +10,8 @@ const configuration = new Configuration({
 export default async function addCDWTrackingNumber(
   decodedMessage,
   orders,
-  index
+  index,
+  subject
 ) {
   const orderNum = orders[index].orderNo;
   const openai = new OpenAIApi(configuration);
@@ -18,11 +21,15 @@ export default async function addCDWTrackingNumber(
     FedEx: /\b(\d{12}|\d{15})\b/g,
   };
 
+  const cdwOrderPattern = /Order #([^/]+)/;
+  const cdwOrderMatch = subject.match(cdwOrderPattern);
+
   let tracking_number = "";
   let matches = [];
   let courier = "";
   let aftershipArray = [];
   let serial_number = "";
+  let device_name = "";
 
   if (decodedMessage.match(trackingPatterns.FedEx)) {
     matches = decodedMessage.match(trackingPatterns.FedEx);
@@ -45,6 +52,7 @@ export default async function addCDWTrackingNumber(
       tracking_number = matches[0];
     }
   }
+
   try {
     console.log(
       `addCDWTrackingNumber(${orderNum}) => Getting serial number from CDW email.`
@@ -84,6 +92,7 @@ export default async function addCDWTrackingNumber(
           item.courier = courier;
           item.serial_number = serial_number;
           item.date_shipped = new Date().toLocaleDateString("en-US");
+          device_name = item.name;
 
           let aftershipObj = {
             email: orders[index].email,
@@ -104,6 +113,27 @@ export default async function addCDWTrackingNumber(
         );
       }
     });
+  }
+
+  if (device_name !== "") {
+    const new_device = {
+      sn: serial_number,
+      status: "Deployed",
+      condition: "New",
+      first_name: orders[index].firstName,
+      last_name: orders[index].lastName,
+      full_name: orders[index].full_name,
+      supplier: "CDW",
+      supplier_order_no: cdwOrderMatch ? cdwOrderMatch[1] : "",
+    };
+
+    if (Object.keys(inventoryMappings).indexOf(device_name) > -1) {
+      await addNewSerialNumber(
+        orders[index].client,
+        inventoryMappings[device_name],
+        new_device
+      );
+    }
   }
 
   if (aftershipArray.length > 0) {

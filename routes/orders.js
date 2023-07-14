@@ -17,7 +17,9 @@ import {
 } from "../services/emails/marketplace.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
-import { createYubikeyShipment } from "../utils/yubikey.js";
+// import { createYubikeyShipment } from "../utils/yubikey.js";
+import { getAllInventory } from "./inventory.js";
+import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -84,23 +86,23 @@ router.post("/pushTracking", async (req, res) => {
   res.send({ message: "Successful!" });
 });
 
-// router.get("/getMessage/:messageid", async (req, res) => {
-//   const messageId = req.params.messageid;
-//   //const receivedOrders = await orders.getAllReceived();
-//   const updateItems = await getEmailBody(messageId, orders);
-//   // console.log("update items ::::::::: ", updateItems);
-//   // if (updateItems && updateItems[0]) {
-//   //   await orders.updateOrder(updateItems[0], updateItems[1]);
-//   // }
-//   // try {
-//   //   await sendAftershipCSV(btoa("testing this out"), "10800");
-//   // } catch (e) {
-//   //   console.log("testing out sending email error: ", e);
-//   // }
-//   const todayDate = new Date();
-//   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
-//   res.json({ "Hello world email!": todayDate.getMonth() });
-// });
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  //const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, orders);
+  // console.log("update items ::::::::: ", updateItems);
+  // if (updateItems && updateItems[0]) {
+  //   await orders.updateOrder(updateItems[0], updateItems[1]);
+  // }
+  // try {
+  //   await sendAftershipCSV(btoa("testing this out"), "10800");
+  // } catch (e) {
+  //   console.log("testing out sending email error: ", e);
+  // }
+  const todayDate = new Date();
+  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+  res.json({ "Hello world email!": todayDate.getMonth() });
+});
 
 /**
  * @param {string} body.customer_name
@@ -733,6 +735,40 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
+
+// router.post("/adminstuff", async (req, res) => {
+//   const { client } = req.body;
+//   const allOrders = await orders.getAllOrders(client);
+//   const allInventory = await getAllInventory(client);
+
+//   for await (const order of allOrders) {
+//     if (!isNaN(order.orderNo)) {
+//       for await (const device of allInventory) {
+//         for await (const d of device.serial_numbers) {
+//           if (d.status === "Deployed") {
+//             if (d.full_name === order.full_name) {
+//               order.items.forEach(async (item) => {
+//                 if (
+//                   Object.keys(inventoryMappings).indexOf(item.name) > -1 &&
+//                   !item.serial_number
+//                 ) {
+//                   item.serial_number = d.sn;
+//                 }
+//               });
+//               await orders.updateOrderByContainer(
+//                 client,
+//                 order.id,
+//                 order.full_name,
+//                 order.items
+//               );
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//   res.send("Hello World!");
+// });
 
 // router.get("/testyubikey", async (req, res) => {
 //   const result = await checkYubikeyQuantity();
