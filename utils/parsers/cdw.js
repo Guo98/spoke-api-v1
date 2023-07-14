@@ -137,7 +137,7 @@ export default async function addCDWTrackingNumber(
       );
     }
   }
-
+  orders[index].shipping_status = "Shipped";
   if (aftershipArray.length > 0) {
     console.log(
       `addCDWTrackingNumber(${orderNum}) => Sending Aftership CSV file.`
@@ -154,5 +154,6 @@ export default async function addCDWTrackingNumber(
       );
     }
   }
+
   console.log(`addCDWTrackingNumber(${orderNum}) => Finished function.`);
 }

@@ -16,7 +16,7 @@ function areAllShipped(order) {
   });
 
   if (!untrackedItem) {
-    order.shipping_status = "Complete";
+    order.shipping_status = "Shipped";
   }
 }
 
