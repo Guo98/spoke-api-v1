@@ -118,7 +118,7 @@ export default async function addCDWTrackingNumber(
   if (device_name !== "") {
     const new_device = {
       sn: serial_number,
-      status: "Deployed",
+      status: "Shipping",
       condition: "New",
       first_name: orders[index].firstName,
       last_name: orders[index].lastName,

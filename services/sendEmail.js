@@ -27,7 +27,7 @@ async function sendEmail(body) {
     console.log("sendEmail() => Starting function:", body);
     //send mail
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject: `Offboarding Tracking - Subject: {Company Name} Equipment Return`,
         plainText: generateTrackingEmailBody(body.name, body.tracking_number),
@@ -62,7 +62,7 @@ async function sendNotificationEmail() {
     );
     //send mail
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject: `Deployment placed for laptop`,
         plainText: "Please refer to google sheets for new deployed laptop",
@@ -96,7 +96,7 @@ async function sendSupportEmail(body) {
     console.log("sendSupportEmail() => Starting function:", body);
     //send mail
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject:
           type === "support"
@@ -138,7 +138,7 @@ async function sendAftershipCSV(content, order_no) {
       contentInBase64: content,
     };
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject: "[BETA Testing] Aftership Tracking CSV",
         plainText: "Please import the attached csv into aftership. ",
@@ -272,7 +272,7 @@ async function sendSlackRequestEmail(body) {
   try {
     console.log("sendSlackRequestEmail() => Starting function.");
     const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.io",
+      senderAddress: "DoNotReply@withspoke.com",
       content: {
         subject: "Slack Request Email",
         html: generateSlackBody(body),
