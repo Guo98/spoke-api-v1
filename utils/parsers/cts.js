@@ -35,6 +35,7 @@ function addCTSTrackingNumber(
           item.tracking_number === ""
         ) {
           item.tracking_number = [trackNum];
+          item.courier = "Fedex";
           const aftershipObj = {
             tracking_number: trackNum,
             email: orders[index].email,

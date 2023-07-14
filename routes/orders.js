@@ -17,7 +17,7 @@ import {
 } from "../services/emails/marketplace.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
-import { createYubikeyShipment } from "../utils/yubikey.js";
+// import { createYubikeyShipment } from "../utils/yubikey.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
