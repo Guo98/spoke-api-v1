@@ -2,6 +2,8 @@ import { cdwMappings } from "./cdwConstants.js";
 import { Configuration, OpenAIApi } from "openai";
 import { addNewSerialNumber } from "../../routes/inventory.js";
 import { inventoryMappings } from "./cdwConstants.js";
+import { createAftershipCSV } from "../../services/aftership.js";
+import { sendAftershipCSV } from "../../services/sendEmail.js";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
