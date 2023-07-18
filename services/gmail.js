@@ -2,6 +2,7 @@ import { google } from "googleapis";
 import path from "path";
 import { trackingEmails } from "../utils/constants.js";
 import { getTrackingNumber } from "../utils/emailParser.js";
+import { completeCTSReturn } from "../utils/parsers/ctsreturn.js";
 
 async function getEmailId(historyid, orders, prevMessageId) {
   console.log(`getEmailId(${historyid}) => Starting function.`);
@@ -114,9 +115,6 @@ async function getEmailBody(messageId, orders) {
         // body = res?.data?.payload?.parts[1].body;
         break;
     }
-    console.log(
-      `getEmailBody(${messageId}) => Starting getTrackingNumber(supplier: ${isTrackingEmail.id}) function.`
-    );
 
     if (
       (isTrackingEmail.id === "Fully" && subject.indexOf("has shipped") > -1) ||
@@ -125,6 +123,9 @@ async function getEmailBody(messageId, orders) {
       (isTrackingEmail.id === "CDW" &&
         subject.includes("CDW Shipping Confirmation"))
     ) {
+      console.log(
+        `getEmailBody(${messageId}) => Starting getTrackingNumber(supplier: ${isTrackingEmail.id}) function.`
+      );
       const trackingResult = await getTrackingNumber(
         body,
         isTrackingEmail.id,
@@ -191,6 +192,11 @@ async function getEmailBody(messageId, orders) {
           }
         }
       }
+    } else if (
+      isTrackingEmail.id === "CTS" &&
+      subject.includes("Device Return Complete")
+    ) {
+      await completeCTSReturn(body);
     }
   }
   console.log(`getEmailBody(${messageId}) => Ending function.`);
