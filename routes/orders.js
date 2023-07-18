@@ -800,7 +800,8 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 //   const { number } = req.params;
 
 //   // await trackPackage(number);
-//   await trackUPSPackage(number);
+//   // await trackUPSPackage(number);
+//   await getYubikeyShipmentInfo(number);
 //   res.send("Hello World");
 // });
 
@@ -852,6 +853,20 @@ const orderItemsDelivery = async (order, containerId) => {
               change = true;
               item.delivery_status = deliveryResult.data;
             }
+          }
+        }
+      }
+      if (
+        item.name.toLowerCase().includes("yubikey 5c nfc (automox)") &&
+        !item.delivery_status
+      ) {
+        if (item.shipment_id) {
+          const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
+          if (yubiShipping.tracking_number) {
+            change = true;
+            item.tracking_number = [yubiShipping.tracking_number];
+            item.courier = yubiShipping.courier;
+            item.delivery_status = yubiShipping.delivery_description;
           }
         }
       }
