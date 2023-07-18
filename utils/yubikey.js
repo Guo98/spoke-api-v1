@@ -93,7 +93,12 @@ export async function createYubikeyShipment(body) {
             },
           ],
         },
-        { headers: { authorization: "", "Content-Type": "application/json" } }
+        {
+          headers: {
+            authorization: "Bearer " + process.env.YUBIKEY_KEY,
+            "Content-Type": "application/json",
+          },
+        }
       );
       console.log(
         "createYubikeyShipment() => Successfully ordered:",
@@ -110,5 +115,24 @@ export async function createYubikeyShipment(body) {
       "createYubikeyShipment() => No keys left. Please inform Automox."
     );
     return "";
+  }
+}
+
+export async function getYubikeyShipmentInfo(shipment_id) {
+  let getOpts = {
+    method: "GET",
+    url: process.env.YUBIKEY_API_URL + "/v1/shipments_exact/" + shipment_id,
+    headers: {
+      Authorization: "Bearer " + process.env.YUBIKEY_KEY,
+    },
+  };
+  try {
+    const resp = await axios.request(getOpts);
+    console.log("resp ::::::::::: ", resp);
+  } catch (e) {
+    console.log(
+      "getYubikeyShipmentInfo() => Error in getting shipment info:",
+      e
+    );
   }
 }

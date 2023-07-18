@@ -22,6 +22,7 @@ import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 import { trackPackage } from "../services/fedex.js";
 import { trackUPSPackage } from "../services/ups.js";
+import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -41,7 +42,7 @@ orders
 
 const router = Router();
 
-router.post("/pushTracking", checkJwt, async (req, res) => {
+router.post("/pushTracking", async (req, res) => {
   const historyData = JSON.parse(atob(req.body.message.data));
   const newHistoryId = historyData?.historyId;
   console.log(`/pushTracking/${newHistoryId} => Starting route.`);
@@ -189,7 +190,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company/:entity?", async (req, res) => {
+router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
