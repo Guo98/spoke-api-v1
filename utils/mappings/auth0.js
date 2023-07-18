@@ -26,7 +26,7 @@ export const idToOrgMappings = {
 export const connectionsMappings = {
   "Username Password": "con_Mt30bKtIThVagGZe",
   Google: "con_PUjmnlUiJXfcfYvG",
-  Microsoft: "con_xTB69lJ1EPz50N0O",
+  Microsoft: "con_EkxR1C0F3nkAUcyo",
 };
 
 export const clientIdList = [
