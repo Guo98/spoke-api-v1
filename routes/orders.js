@@ -21,6 +21,7 @@ import { exportOrders } from "../services/excel.js";
 import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 import { trackPackage } from "../services/fedex.js";
+import { trackUPSPackage } from "../services/ups.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -40,7 +41,7 @@ orders
 
 const router = Router();
 
-router.post("/pushTracking", async (req, res) => {
+router.post("/pushTracking", checkJwt, async (req, res) => {
   const historyData = JSON.parse(atob(req.body.message.data));
   const newHistoryId = historyData?.historyId;
   console.log(`/pushTracking/${newHistoryId} => Starting route.`);
@@ -188,7 +189,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
+router.get("/getAllOrders/:company/:entity?", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
@@ -797,8 +798,8 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 // router.get("/track/:number", async (req, res) => {
 //   const { number } = req.params;
 
-//   await trackPackage(number);
-
+//   // await trackPackage(number);
+//   await trackUPSPackage(number);
 //   res.send("Hello World");
 // });
 
@@ -822,21 +823,34 @@ const orderItemsDelivery = async (order, containerId) => {
     `orderItemDelivery(${order.client}) => Starting function:`,
     order.id
   );
-  const fedexFilter = order.items.filter(
-    (item) => item.courier === "Fedex" || item.courier === "FedEx"
-  );
-  if (fedexFilter.length > 0 && order.shipping_status !== "Completed") {
+
+  if (order.shipping_status !== "Completed") {
     let change = false;
     for await (const item of order.items) {
-      if (item.courier === "Fedex" || item.courier === "FedEx") {
-        if (
-          item.tracking_number.length > 0 &&
-          item.delivery_status !== "Delivered"
-        ) {
-          const deliveryResult = await trackPackage(item.tracking_number[0]);
-          if (deliveryResult.status === 200) {
-            change = true;
-            item.delivery_status = deliveryResult.data;
+      if (item.courier) {
+        if (item.courier.toLowerCase() === "fedex") {
+          if (
+            item.tracking_number.length > 0 &&
+            item.delivery_status !== "Delivered"
+          ) {
+            const deliveryResult = await trackPackage(item.tracking_number[0]);
+            if (deliveryResult.status === 200) {
+              change = true;
+              item.delivery_status = deliveryResult.data;
+            }
+          }
+        } else if (item.courier.toLowerCase() === "ups") {
+          if (
+            item.tracking_number.length > 0 &&
+            item.delivery_status !== "Delivered"
+          ) {
+            const deliveryResult = await trackUPSPackage(
+              item.tracking_number[0]
+            );
+            if (deliveryResult.status === 200) {
+              change = true;
+              item.delivery_status = deliveryResult.data;
+            }
           }
         }
       }
