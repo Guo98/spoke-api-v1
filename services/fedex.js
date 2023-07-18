@@ -5,25 +5,25 @@ async function getToken() {
   const data = {
     grant_type: "client_credentials",
     client_id: process.env.FEDEX_API_KEY,
-    client_secret: process.env.FEDEX_SECRET_KEY
+    client_secret: process.env.FEDEX_SECRET_KEY,
   };
 
   const options = {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     data: qs.stringify(data),
-    url: process.env.FEDEX_URL + "/oauth/token"
+    url: process.env.FEDEX_URL + "/oauth/token",
   };
 
   const result = await axios(options)
-    .then(data => {
+    .then((data) => {
       if (data.status && data.status === 200) {
         return { status: 200, data: data.data };
       } else {
         return { status: 500, data: data.data };
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return { status: 500, data: err };
     });
 
@@ -43,30 +43,30 @@ async function validateAddress(body) {
           city: body.city,
           stateOrProvinceCode: body.state,
           postalCode: body.zipcode,
-          countryCode: body.country
-        }
-      }
-    ]
+          countryCode: body.country,
+        },
+      },
+    ],
   };
 
   const result = await getToken()
-    .then(data => {
+    .then((data) => {
       if (data.status && data.status === 200) {
         const options = {
           method: "POST",
           headers: {
             "content-type": "application/json",
-            Authorization: `Bearer ${data.data && data.data.access_token}`
+            Authorization: `Bearer ${data.data && data.data.access_token}`,
           },
           data: JSON.stringify(postdata),
-          url: process.env.FEDEX_URL + "/address/v1/addresses/resolve"
+          url: process.env.FEDEX_URL + "/address/v1/addresses/resolve",
         };
         return axios(options);
       } else {
         throw new Error("Token not generated");
       }
     })
-    .then(nextData => {
+    .then((nextData) => {
       if (
         nextData.data.output.resolvedAddresses[0].customerMessages.length > 0 &&
         nextData.data.output.resolvedAddresses[0].customerMessages[0].code !==
@@ -84,7 +84,7 @@ async function validateAddress(body) {
         throw new Error("Invalid Address");
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.log("err :::::::::: ", err.response.data);
       return { status: 500, data: "Couldn't validate address." };
     });
@@ -92,4 +92,57 @@ async function validateAddress(body) {
   return result;
 }
 
-export { validateAddress, getToken };
+async function trackPackage(tracking_number) {
+  console.log(`trackPackage(${tracking_number}) => Starting function.`);
+  const postdata = {
+    includeDetailedScans: true,
+    trackingInfo: [
+      {
+        trackingNumberInfo: {
+          trackingNumber: tracking_number,
+        },
+      },
+    ],
+  };
+  const result = await getToken()
+    .then((data) => {
+      if (data.status && data.status === 200) {
+        const options = {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            Authorization: `Bearer ${data.data && data.data.access_token}`,
+          },
+          data: JSON.stringify(postdata),
+          url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
+        };
+        return axios(options);
+      } else {
+        throw new Error("Token not generated");
+      }
+    })
+    .then((trackResp) => {
+      const trackingStatus =
+        trackResp.data.output.completeTrackResults[0].trackResults[0]
+          .latestStatusDetail.description;
+      console.log(
+        `trackPackage(${tracking_number}) => Got tracking result:`,
+        trackingStatus
+      );
+      return { status: 200, data: trackingStatus };
+    })
+    .catch((err) => {
+      console.log(
+        `trackPackage(${tracking_number}) => Error in getting tracking info:`,
+        err
+      );
+      return {
+        status: 500,
+        data: "Error",
+      };
+    });
+  console.log(`trackPackage(${tracking_number}) => Finished function.`);
+  return result;
+}
+
+export { validateAddress, getToken, trackPackage };

@@ -78,12 +78,46 @@ class Orders {
       .read();
 
     resource.items = items;
+    if (containerId === "Received") {
+      let allDelivered = true;
 
-    const { resource: replaced } = await coResponse.container
-      .item(itemId, fullNameKey)
-      .replace(resource);
+      resource.items.forEach((item) => {
+        if (!item.delivery_status || item.delivery_status !== "Delivered") {
+          allDelivered = false;
+        }
+      });
 
-    return replaced;
+      if (allDelivered) {
+        resource.shipping_status = "Completed";
+        const newItem = { ...resource };
+        const clientResponse = await this.database
+          .container(
+            resource.client.toLowerCase() === "public"
+              ? "Mock"
+              : resource.client
+          )
+          .read();
+
+        const { resource: doc } = await clientResponse.container.items.create(
+          newItem
+        );
+
+        await this.removeFromReceived(itemId, fullNameKey);
+        return doc;
+      } else {
+        const { resource: replaced } = await coResponse.container
+          .item(itemId, fullNameKey)
+          .replace(resource);
+
+        return replaced;
+      }
+    } else {
+      const { resource: replaced } = await coResponse.container
+        .item(itemId, fullNameKey)
+        .replace(resource);
+
+      return replaced;
+    }
   }
 
   async updateMarketOrder(

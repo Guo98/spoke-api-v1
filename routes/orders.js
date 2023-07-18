@@ -20,6 +20,7 @@ import { exportOrders } from "../services/excel.js";
 // import { createYubikeyShipment } from "../utils/yubikey.js";
 import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
+import { trackPackage } from "../services/fedex.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -246,13 +247,20 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
           (order) => order.entity === req.params.entity
         );
       }
-      ordersRes.forEach((order) => {
+
+      for await (let order of ordersRes) {
         delete order._rid;
         delete order._self;
         delete order._etag;
         delete order._attachments;
         delete order._ts;
-      });
+
+        const delResult = await orderItemsDelivery(order, company);
+
+        if (delResult.status === 200 && delResult.data !== "No Change") {
+          order = { ...delResult.data };
+        }
+      }
       console.log(
         `/getAllOrders/${company} => Finished getting all orders from container: ${dbContainer}`
       );
@@ -260,14 +268,20 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
       console.log(
         `/getAllOrders/${company} => Getting all in progress orders for company: ${client}`
       );
-      const inProgRes = await orders.find(querySpec);
-      inProgRes.forEach((order) => {
+      let inProgRes = await orders.find(querySpec);
+
+      for await (let order of inProgRes) {
         delete order._rid;
         delete order._self;
         delete order._etag;
         delete order._attachments;
         delete order._ts;
-      });
+
+        const delResult = await orderItemsDelivery(order, "Received");
+        if (delResult.status === 200 && delResult.data !== "No Change") {
+          order = { ...delResult.data };
+        }
+      }
       console.log(
         `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
       );
@@ -780,6 +794,14 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 //   res.send({ result });
 // });
 
+// router.get("/track/:number", async (req, res) => {
+//   const { number } = req.params;
+
+//   await trackPackage(number);
+
+//   res.send("Hello World");
+// });
+
 const addMarketplaceOrder = async (request) => {
   await orders.addOrderByContainer("Marketplace", {
     ...request,
@@ -793,6 +815,63 @@ const updateMarketplaceFile = async (id, client, filename) => {
 
 const marketplaceSentApprovalEmail = async (id, client) => {
   await orders.sentMarketplaceEmail(id, client);
+};
+
+const orderItemsDelivery = async (order, containerId) => {
+  console.log(
+    `orderItemDelivery(${order.client}) => Starting function:`,
+    order.id
+  );
+  const fedexFilter = order.items.filter(
+    (item) => item.courier === "Fedex" || item.courier === "FedEx"
+  );
+  if (fedexFilter.length > 0 && order.shipping_status !== "Completed") {
+    let change = false;
+    for await (const item of order.items) {
+      if (item.courier === "Fedex" || item.courier === "FedEx") {
+        if (
+          item.tracking_number.length > 0 &&
+          item.delivery_status !== "Delivered"
+        ) {
+          const deliveryResult = await trackPackage(item.tracking_number[0]);
+          if (deliveryResult.status === 200) {
+            change = true;
+            item.delivery_status = deliveryResult.data;
+          }
+        }
+      }
+    }
+
+    if (change) {
+      try {
+        console.log(
+          `orderItemDelivery(${order.client}) => Updating shipping status:`,
+          order.id
+        );
+        const updateDelivery = await orders.updateOrderByContainer(
+          containerId,
+          order.id,
+          order.full_name,
+          order.items
+        );
+        console.log(
+          `orderItemDelivery(${order.client}) => Finished updating shipping status:`,
+          order.id
+        );
+        return { status: 200, data: updateDelivery };
+      } catch (e) {
+        console.log(
+          `orderItemDelivery(${order.client}) => Error in updating delivery status of order:`,
+          order.id
+        );
+        return { status: 500, data: "Error" };
+      }
+    } else {
+      return { status: 200, data: "No Change" };
+    }
+  } else {
+    return { status: 200, data: "No Change" };
+  }
 };
 
 export default router;
