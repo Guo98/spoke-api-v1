@@ -93,7 +93,12 @@ export async function createYubikeyShipment(body) {
             },
           ],
         },
-        { headers: { authorization: "", "Content-Type": "application/json" } }
+        {
+          headers: {
+            authorization: "Bearer " + process.env.YUBIKEY_KEY,
+            "Content-Type": "application/json",
+          },
+        }
       );
       console.log(
         "createYubikeyShipment() => Successfully ordered:",
@@ -111,4 +116,36 @@ export async function createYubikeyShipment(body) {
     );
     return "";
   }
+}
+
+export async function getYubikeyShipmentInfo(shipment_id) {
+  console.log(`getYubikeyShipmentInfo(${shipment_id}) => Starting function.`);
+  let getOpts = {
+    method: "GET",
+    url: process.env.YUBIKEY_API_URL + "/v1/shipments_exact/" + shipment_id,
+    headers: {
+      Authorization: "Bearer " + process.env.YUBIKEY_KEY,
+    },
+  };
+  let returnObj = {};
+  try {
+    console.log(
+      `getYubikeyShipmentInfo(${shipment_id}) => Getting shipment info.`
+    );
+    const resp = await axios.request(getOpts);
+    returnObj.tracking_number = resp.data.tracking_number;
+    returnObj.courier = resp.data.carrier;
+    returnObj.delivery_description = resp.data.shipment_state_message;
+    console.log(
+      `getYubikeyShipmentInfo(${shipment_id}) => Got shipment info:`,
+      returnObj
+    );
+    return returnObj;
+  } catch (e) {
+    console.log(
+      `getYubikeyShipmentInfo(${shipment_id}) => Error in getting shipment info:`,
+      e
+    );
+  }
+  console.log(`getYubikeyShipmentInfo(${shipment_id}) => Finished function.`);
 }

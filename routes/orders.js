@@ -21,6 +21,8 @@ import { exportOrders } from "../services/excel.js";
 import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 import { trackPackage } from "../services/fedex.js";
+import { trackUPSPackage } from "../services/ups.js";
+import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -797,8 +799,9 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 // router.get("/track/:number", async (req, res) => {
 //   const { number } = req.params;
 
-//   await trackPackage(number);
-
+//   // await trackPackage(number);
+//   // await trackUPSPackage(number);
+//   await getYubikeyShipmentInfo(number);
 //   res.send("Hello World");
 // });
 
@@ -822,21 +825,48 @@ const orderItemsDelivery = async (order, containerId) => {
     `orderItemDelivery(${order.client}) => Starting function:`,
     order.id
   );
-  const fedexFilter = order.items.filter(
-    (item) => item.courier === "Fedex" || item.courier === "FedEx"
-  );
-  if (fedexFilter.length > 0 && order.shipping_status !== "Completed") {
+
+  if (order.shipping_status !== "Completed") {
     let change = false;
     for await (const item of order.items) {
-      if (item.courier === "Fedex" || item.courier === "FedEx") {
-        if (
-          item.tracking_number.length > 0 &&
-          item.delivery_status !== "Delivered"
-        ) {
-          const deliveryResult = await trackPackage(item.tracking_number[0]);
-          if (deliveryResult.status === 200) {
+      if (item.courier) {
+        if (item.courier.toLowerCase() === "fedex") {
+          if (
+            item.tracking_number.length > 0 &&
+            item.delivery_status !== "Delivered"
+          ) {
+            const deliveryResult = await trackPackage(item.tracking_number[0]);
+            if (deliveryResult.status === 200) {
+              change = true;
+              item.delivery_status = deliveryResult.data;
+            }
+          }
+        } else if (item.courier.toLowerCase() === "ups") {
+          if (
+            item.tracking_number.length > 0 &&
+            item.delivery_status !== "Delivered"
+          ) {
+            const deliveryResult = await trackUPSPackage(
+              item.tracking_number[0]
+            );
+            if (deliveryResult.status === 200) {
+              change = true;
+              item.delivery_status = deliveryResult.data;
+            }
+          }
+        }
+      }
+      if (
+        item.name.toLowerCase().includes("yubikey 5c nfc (automox)") &&
+        !item.delivery_status
+      ) {
+        if (item.shipment_id) {
+          const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
+          if (yubiShipping.tracking_number) {
             change = true;
-            item.delivery_status = deliveryResult.data;
+            item.tracking_number = [yubiShipping.tracking_number];
+            item.courier = yubiShipping.courier;
+            item.delivery_status = yubiShipping.delivery_description;
           }
         }
       }
