@@ -791,11 +791,6 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 //   res.send("Hello World!");
 // });
 
-// router.get("/testyubikey", async (req, res) => {
-//   const result = await checkYubikeyQuantity();
-//   res.send({ result });
-// });
-
 // router.get("/track/:number", async (req, res) => {
 //   const { number } = req.params;
 
@@ -847,7 +842,7 @@ const orderItemsDelivery = async (order, containerId) => {
             item.delivery_status !== "Delivered"
           ) {
             const deliveryResult = await trackUPSPackage(
-              item.tracking_number[0]
+              item.tracking_number[0].trim()
             );
             if (deliveryResult.status === 200) {
               change = true;
@@ -903,6 +898,8 @@ const orderItemsDelivery = async (order, containerId) => {
     return { status: 200, data: "No Change" };
   }
 };
+
+const addItems = async (containerId, newItems) => {};
 
 export default router;
 
