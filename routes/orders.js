@@ -190,7 +190,7 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
+router.get("/getAllOrders/:company/:entity?", async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
@@ -862,7 +862,7 @@ const orderItemsDelivery = async (order, containerId) => {
       ) {
         if (item.shipment_id) {
           const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
-          if (yubiShipping.tracking_number) {
+          if (yubiShipping && yubiShipping.tracking_number) {
             change = true;
             item.tracking_number = [yubiShipping.tracking_number];
             item.courier = yubiShipping.courier;

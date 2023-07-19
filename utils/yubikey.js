@@ -130,7 +130,8 @@ export async function getYubikeyShipmentInfo(shipment_id) {
   let returnObj = {};
   try {
     console.log(
-      `getYubikeyShipmentInfo(${shipment_id}) => Getting shipment info.`
+      `getYubikeyShipmentInfo(${shipment_id}) => Getting shipment info.`,
+      getOpts
     );
     const resp = await axios.request(getOpts);
     returnObj.tracking_number = resp.data.tracking_number;
