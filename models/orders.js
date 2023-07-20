@@ -112,6 +112,17 @@ class Orders {
         return replaced;
       }
     } else {
+      let allDelivered = true;
+
+      resource.items.forEach((item) => {
+        if (!item.delivery_status || item.delivery_status !== "Delivered") {
+          allDelivered = false;
+        }
+      });
+
+      if (allDelivered) {
+        resource.shipping_status = "Completed";
+      }
       const { resource: replaced } = await coResponse.container
         .item(itemId, fullNameKey)
         .replace(resource);
