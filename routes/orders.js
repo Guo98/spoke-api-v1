@@ -492,41 +492,66 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
     console.log(`/completeOrder/${client} => Order result: ${receivedRes}`);
 
     if (receivedRes) {
-      try {
-        console.log(
-          `/completeOrder/${client} => Removing id: ${id} from Received container.`
-        );
-        await orders.removeFromReceived(id, full_name);
-        console.log(
-          `/completeOrder/${client} => Finished removing id: ${id} from Received container.`
-        );
-      } catch (e) {
-        console.log(
-          `/completeOrder/${client} => Error removing id: ${id} from Received container. Error: ${e}`
-        );
-        res
-          .status(500)
-          .json({ status: "Error in removing from Received container." });
-      }
-
-      if (!res.headersSent) {
+      if (shipping_status === "Completed") {
         try {
           console.log(
-            `/completeOrder/${client} => Adding order to ${client} container.`
+            `/completeOrder/${client} => Removing id: ${id} from Received container.`
           );
-          req.body.shipping_status = "Completed";
-          const updateResp = await orders.completeOrder(
-            client === "Public" ? "Mock" : client,
-            req.body
-          );
+          await orders.removeFromReceived(id, full_name);
           console.log(
-            `/completeOrder/${client} => Finished adding order to ${client} container`
+            `/completeOrder/${client} => Finished removing id: ${id} from Received container.`
           );
         } catch (e) {
           console.log(
-            `/completeOrder/${client} => Error in adding order to ${client} container. Error: ${e}`
+            `/completeOrder/${client} => Error removing id: ${id} from Received container. Error: ${e}`
           );
-          res.status(500).json({ status: "Error in moving to container" });
+          res
+            .status(500)
+            .json({ status: "Error in removing from Received container." });
+        }
+
+        if (!res.headersSent) {
+          try {
+            console.log(
+              `/completeOrder/${client} => Adding order to ${client} container.`
+            );
+            req.body.shipping_status = "Completed";
+            const updateResp = await orders.completeOrder(
+              client === "Public" ? "Mock" : client,
+              req.body
+            );
+            console.log(
+              `/completeOrder/${client} => Finished adding order to ${client} container`
+            );
+          } catch (e) {
+            console.log(
+              `/completeOrder/${client} => Error in adding order to ${client} container. Error: ${e}`
+            );
+            res.status(500).json({ status: "Error in moving to container" });
+          }
+        }
+      } else {
+        try {
+          console.log(
+            `/completeOrder/${client} => Updating order status in received container.`
+          );
+          // req.body.shipping_status = "Completed";
+          const updateResp = await orders.updateOrderStatusByContainer(
+            "Received",
+            id,
+            full_name,
+            shipping_status
+          );
+          console.log(
+            `/completeOrder/${client} => Finished updating order status in received container`
+          );
+        } catch (e) {
+          console.log(
+            `/completeOrder/${client} => Error in updating order status in received container. Error: ${e}`
+          );
+          res
+            .status(500)
+            .json({ status: "Error in updating status in container" });
         }
       }
     } else {
@@ -534,7 +559,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
         console.log(
           `/completeOrder/${client} => Updating order status in ${client} container.`
         );
-        req.body.shipping_status = "Completed";
+        // req.body.shipping_status = "Completed";
         const updateResp = await orders.updateOrderStatusByContainer(
           client === "Public" ? "Mock" : client,
           id,
