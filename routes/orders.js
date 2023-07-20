@@ -851,17 +851,24 @@ const orderItemsDelivery = async (order, containerId) => {
           }
         }
       }
-      if (
-        item.name.toLowerCase().includes("yubikey 5c nfc (automox)") &&
-        !item.delivery_status
-      ) {
+      if (item.name.toLowerCase().includes("yubikey 5c nfc (automox)")) {
         if (item.shipment_id) {
           const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
-          if (yubiShipping && yubiShipping.tracking_number) {
+          if (
+            yubiShipping &&
+            yubiShipping.tracking_number &&
+            item.delivery_status !== "Delivered"
+          ) {
             change = true;
-            item.tracking_number = [yubiShipping.tracking_number];
-            item.courier = yubiShipping.courier;
-            item.delivery_status = yubiShipping.delivery_description;
+            if (item.tracking_number === "") {
+              item.tracking_number = [yubiShipping.tracking_number];
+              item.courier = yubiShipping.courier;
+              item.delivery_status = yubiShipping.delivery_description;
+            } else if (
+              item.delivery_status !== yubiShipping.delivery_description
+            ) {
+              item.delivery_status = yubiShipping.delivery_description;
+            }
           }
         }
       }
