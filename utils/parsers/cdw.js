@@ -97,7 +97,10 @@ export default async function addCDWTrackingNumber(
           device_name = item.name;
 
           let aftershipObj = {
-            email: orders[index].email,
+            email:
+              orders[index].client === "Alma"
+                ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                : orders[index].email,
             title: orderNum,
             customer_name: orders[index].full_name,
             order_number: orders[index].items[ind].name,

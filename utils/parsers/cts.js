@@ -4,6 +4,16 @@ import { createAftershipCSV } from "../../services/aftership.js";
 import { trackingRegex } from "../constants.js";
 import { areAllShipped } from "../utility.js";
 
+function determineAftershipNumber(name) {
+  if (name === "Returning") {
+    return "Equipment Return Box";
+  } else if (name.indexOf('"') > -1) {
+    return item.name.split('"')[0];
+  } else {
+    return name;
+  }
+}
+
 function addCTSTrackingNumber(
   decodedMessage,
   orders,
@@ -38,11 +48,13 @@ function addCTSTrackingNumber(
           item.courier = "Fedex";
           const aftershipObj = {
             tracking_number: trackNum,
-            email: orders[index].email,
+            email:
+              orders[index].client === "Alma"
+                ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                : orders[index].email,
             title: orders[index].orderNo,
             customer_name: orders[index].full_name,
-            order_number:
-              item.name.indexOf('"') > -1 ? item.name.split('"')[0] : item.name,
+            order_number: determineAftershipNumber(item.name),
           };
           aftershipArray.push(aftershipObj);
           console.log(
