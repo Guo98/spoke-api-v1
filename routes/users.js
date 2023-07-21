@@ -40,7 +40,7 @@ router.post("/invites", checkJwt, async (req, res) => {
       if (err) {
         console.log(
           `[POST] /invites/${client} => Error in inviting ${invite_email}: `,
-          error
+          err
         );
         res.status(500).json({ status: "Error in inviting user" });
       }
