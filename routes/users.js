@@ -34,7 +34,13 @@ router.post("/invites", checkJwt, async (req, res) => {
       client_id: process.env.AUTH0_UI_CLIENT_ID,
       connection_id: hasIds ? connection : connectionsMappings[connection],
       send_invitation_email: true,
-      roles: hasIds ? (role ? role : []) : role ? [rolesMappings[role]] : [],
+      roles: hasIds
+        ? role
+          ? role
+          : undefined
+        : role
+        ? [rolesMappings[role]]
+        : undefined,
     },
     function (err) {
       if (err) {
