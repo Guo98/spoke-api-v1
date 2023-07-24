@@ -59,7 +59,7 @@ async function mapLineItems(customerInfo) {
   if (customerInfo?.items.length > 0) {
     for (const item of customerInfo.items) {
       if (suppliers[item.name]) {
-        if (item.name === "Offboarding") {
+        if (item.name === "Offboarding" || item.name === "Returning") {
           item.supplier = suppliers[item.name];
           customerInfo.client = customerInfo.note;
         } else if (
