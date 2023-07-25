@@ -826,9 +826,11 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
 // });
 
 const addMarketplaceOrder = async (request) => {
+  let orderRes = await orders.getAllOrders("Marketplace");
   await orders.addOrderByContainer("Marketplace", {
     ...request,
     status: "Received",
+    market_order: orderRes.length.toString().padStart(5, "0"),
   });
 };
 
