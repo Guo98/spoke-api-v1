@@ -10,7 +10,8 @@ export async function completeCTSReturn(body, ordersDB) {
     client: /Client:\s([\w\s]+)User: /,
     user: /User:\s([\w\s]+)Device Returned: /,
     device: /Device Returned:\s(.+?)Device Serial #: /,
-    serial: /Device Serial #: ([\w\d]+)/,
+    serial: /Device Serial #: ([\w\d]+)Specs: /,
+    specs: /Specs:\s(.+)$/,
   };
 
   const returnInfo = {};
@@ -41,6 +42,11 @@ export async function completeCTSReturn(body, ordersDB) {
     const serialMatch = text.match(emailPatterns.serial);
     if (serialMatch) {
       returnInfo.serial = serialMatch[1];
+    }
+
+    const specsMatch = text.match(emailPatterns.specs);
+    if (specsMatch) {
+      returnInfo.specs = specsMatch[1];
     }
   });
 

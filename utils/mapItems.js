@@ -79,7 +79,10 @@ async function mapLineItems(customerInfo) {
           lowerCaseName.indexOf("macbook") > -1 ||
           lowerCaseName.indexOf("lenovo") > -1 ||
           lowerCaseName.indexOf("asus") > -1 ||
-          lowerCaseName.indexOf("chromebook") > -1
+          lowerCaseName.indexOf("chromebook") > -1 ||
+          lowerCaseName.indexOf("xps") > -1 ||
+          lowerCaseName.indexOf("precision") > -1 ||
+          lowerCaseName.indexOf("latitude") > -1
         ) {
           item.type = "laptop";
         }
