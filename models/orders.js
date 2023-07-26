@@ -163,8 +163,6 @@ class Orders {
           .container(clientKey === "public" ? "Mock" : clientKey)
           .read();
 
-        const addrResp = await validateAddress(resource.address, "system");
-
         let orderItem = {
           client: clientKey === "public" ? "Public" : clientKey,
           full_name: resource.recipient_name,
@@ -182,18 +180,25 @@ class Orders {
           ],
           shipping_status: "Incomplete",
         };
+        if (resource.order_type === "Deploy Right Away") {
+          const addrResp = await validateAddress(resource.address, "system");
 
-        if (addrResp.status && addrResp.status === 200) {
-          orderItem.address = {
-            city: addrResp.data.city,
-            addressLine: addrResp.data.address_line1,
-            addressLine2: addrResp.data.address_line2
-              ? addrResp.data.address_line2
-              : "",
-            subdivision: addrResp.data.state,
-            postalCode: addrResp.data.zipCode,
-            country: addrResp.data.country,
-          };
+          if (addrResp.status && addrResp.status === 200) {
+            orderItem.address = {
+              city: addrResp.data.city,
+              addressLine: addrResp.data.address_line1,
+              addressLine2: addrResp.data.address_line2
+                ? addrResp.data.address_line2
+                : "",
+              subdivision: addrResp.data.state,
+              postalCode: addrResp.data.zipCode,
+              country: addrResp.data.country,
+            };
+          }
+        } else {
+          orderItem.full_name = resource.order_type;
+          orderItem.email = resource.requestor_email;
+          orderItem.items[0].quantity = resource.quantity;
         }
 
         const { resource: doc } = await ordersResponse.container.items.create(
