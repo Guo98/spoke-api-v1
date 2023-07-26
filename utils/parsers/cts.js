@@ -2,7 +2,6 @@ import cheerio from "cheerio";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
 import { createAftershipCSV } from "../../services/aftership.js";
 import { trackingRegex } from "../constants.js";
-import { areAllShipped } from "../utility.js";
 
 function determineAftershipNumber(name) {
   if (name === "Returning") {
@@ -78,7 +77,9 @@ function addCTSTrackingNumber(
       );
     }
   }
-  areAllShipped(orders[index]);
+  if (orders[index].shipping_status !== "Shipped") {
+    orders[index].shipping_status = "Shipped";
+  }
   console.log(`addCTSTrackingNumber(${orderNum}) => Ending function.`);
 }
 
