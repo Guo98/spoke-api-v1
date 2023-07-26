@@ -65,9 +65,6 @@ export async function createYubikeyShipment(body) {
   const areThereKeys = await checkYubikeyQuantity();
 
   if (areThereKeys) {
-    if (!email.includes("automox")) {
-      throw new Error("Not part of automox");
-    }
     try {
       const postResp = await axios.post(
         process.env.YUBIKEY_API_URL + "/v1/shipments_exact",

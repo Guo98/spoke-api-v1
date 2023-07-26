@@ -592,17 +592,7 @@ router.post("/completeOrder", checkJwt, async (req, res) => {
 router.post("/newPurchase", checkJwt, async (req, res) => {
   const {
     client,
-    device_type,
-    specs,
-    color,
     notes: { device, recipient },
-    order_type,
-    recipient_name,
-    address,
-    email,
-    phone_number,
-    shipping_rate,
-    requestor_email,
   } = req.body;
 
   try {
@@ -621,25 +611,6 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   } catch (e) {
     console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
     res.status(500).json({ status: "Error" });
-  }
-
-  if (req.body.includeYubikey) {
-    try {
-      console.log(
-        `/newPurchase/${client} => Requesting yubikeys for: `,
-        recipient_name
-      );
-      // const yubikeyResp = await createYubikeyShipment(req.body);
-      console.log(
-        `/newPurchase/${client} => Finished requesting yubikeys for:`,
-        recipient_name
-      );
-    } catch (e) {
-      console.log(
-        `/newPurchase/${client} => Error in requesting yubikeys: ${e}. For: ${recipient_name}`
-      );
-      // res.status(500).json({ status: "Error" });
-    }
   }
 
   try {
@@ -776,54 +747,6 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
-
-// router.post("/adminstuff", async (req, res) => {
-//   // const { client } = req.body;
-//   // const allOrders = await orders.getAllOrders(client);
-//   // const allInventory = await getAllInventory(client);
-
-//   // for await (const order of allOrders) {
-//   //   if (!isNaN(order.orderNo)) {
-//   //     for await (const device of allInventory) {
-//   //       for await (const d of device.serial_numbers) {
-//   //         if (d.status === "Deployed") {
-//   //           if (d.full_name === order.full_name) {
-//   //             order.items.forEach(async (item) => {
-//   //               if (
-//   //                 Object.keys(inventoryMappings).indexOf(item.name) > -1 &&
-//   //                 !item.serial_number
-//   //               ) {
-//   //                 item.serial_number = d.sn;
-//   //               }
-//   //             });
-//   //             await orders.updateOrderByContainer(
-//   //               client,
-//   //               order.id,
-//   //               order.full_name,
-//   //               order.items
-//   //             );
-//   //           }
-//   //         }
-//   //       }
-//   //     }
-//   //   }
-//   // }
-//   try {
-//     await sendConfirmation(req.body);
-//   } catch (e) {
-//     console.log("error in sending email :::::::: ", e);
-//   }
-//   res.send("Hello World!");
-// });
-
-// router.get("/track/:number", async (req, res) => {
-//   const { number } = req.params;
-
-//   // await trackPackage(number);
-//   // await trackUPSPackage(number);
-//   await getYubikeyShipmentInfo(number);
-//   res.send("Hello World");
-// });
 
 const addMarketplaceOrder = async (request) => {
   let orderRes = await orders.getAllOrders("Marketplace");
