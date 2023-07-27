@@ -1,5 +1,3 @@
-import { validateAddress } from "../services/address.js";
-
 const partitionKey = undefined;
 
 class Orders {
@@ -181,20 +179,9 @@ class Orders {
           shipping_status: "Incomplete",
         };
         if (resource.order_type === "Deploy Right Away") {
-          const addrResp = await validateAddress(resource.address, "system");
-
-          if (addrResp.status && addrResp.status === 200) {
-            orderItem.address = {
-              city: addrResp.data.city,
-              addressLine: addrResp.data.address_line1,
-              addressLine2: addrResp.data.address_line2
-                ? addrResp.data.address_line2
-                : "",
-              subdivision: addrResp.data.state,
-              postalCode: addrResp.data.zipCode,
-              country: addrResp.data.country,
-            };
-          }
+          orderItem.address = {
+            formatted: resource.address,
+          };
         } else {
           orderItem.full_name = resource.order_type;
           orderItem.email = resource.requestor_email;
