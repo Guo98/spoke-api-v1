@@ -103,6 +103,7 @@ class Orders {
         await this.removeFromReceived(itemId, fullNameKey);
         return doc;
       } else {
+        resource.shipping_status = "Shipped";
         const { resource: replaced } = await coResponse.container
           .item(itemId, fullNameKey)
           .replace(resource);
