@@ -190,6 +190,36 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
+router.get("/getAllOrders/All", checkJwt, async (req, res) => {
+  console.log(`/getAllOrders/All => Starting route.`);
+  const containedIdClients = [
+    "Received",
+    "Alma",
+    "Automox",
+    "Bowery",
+    "Flo Health",
+    "Hidden Road",
+    "Intersect Power",
+    "NurseDash",
+    "Roivant",
+  ];
+
+  let allOrders = { in_progress: [], completed: [] };
+
+  for await (const container of containedIdClients) {
+    let ordersRes = await orders.getAllOrders(container);
+
+    if (container === "Received") {
+      allOrders.in_progress = allOrders.in_progress.concat(ordersRes);
+    } else {
+      allOrders.completed = allOrders.completed.concat(ordersRes);
+    }
+  }
+
+  res.json({ data: allOrders });
+  console.log(`/getAllOrders/All => Finished route.`);
+});
+
 router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
