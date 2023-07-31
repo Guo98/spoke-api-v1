@@ -190,8 +190,8 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/All", checkJwt, async (req, res) => {
-  console.log(`/getAllOrders/All => Starting route.`);
+router.get("/orders/All", checkJwt, async (req, res) => {
+  console.log(`[GET] /orders/All => Starting route.`);
   const containedIdClients = [
     "Received",
     "Alma",
@@ -217,12 +217,12 @@ router.get("/getAllOrders/All", checkJwt, async (req, res) => {
   }
 
   res.json({ data: allOrders });
-  console.log(`/getAllOrders/All => Finished route.`);
+  console.log(`[GET] /orders/All => Finished route.`);
 });
 
-router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
+router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
+  // res.setHeader("Access-Control-Allow-Origin", "*");
+  // res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
   let dbContainer = "";
   let client = "";
@@ -242,7 +242,7 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
       break;
   }
 
-  console.log(`/getAllOrders/${company} => Starting route.`);
+  console.log(`[GET] /orders/${company} => Starting route.`);
 
   const querySpec = {
     query: req.params.entity
@@ -270,7 +270,7 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   if (dbContainer !== "") {
     try {
       console.log(
-        `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
+        `[GET] /orders/${company} => Getting all orders from container: ${dbContainer}`
       );
       let ordersRes = await orders.getAllOrders(dbContainer);
 
@@ -294,11 +294,11 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       console.log(
-        `/getAllOrders/${company} => Finished getting all orders from container: ${dbContainer}`
+        `[GET] /orders/${company} => Finished getting all orders from container: ${dbContainer}`
       );
 
       console.log(
-        `/getAllOrders/${company} => Getting all in progress orders for company: ${client}`
+        `[GET] /orders/${company} => Getting all in progress orders for company: ${client}`
       );
       let inProgRes = await orders.find(querySpec);
 
@@ -315,17 +315,17 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       console.log(
-        `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
+        `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
       );
       res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
     } catch (e) {
       console.log(
-        `/getAllOrders/${company} => Error in getting all orders: ${e}`
+        `[GET] /orders/${company} => Error in getting all orders: ${e}`
       );
       res.status(500).json({ status: "Error in getting info" });
     }
   } else {
-    console.log(`/getAllOrders/${company} => Company doesn't exist in DB.`);
+    console.log(`[GET] /orders/${company} => Company doesn't exist in DB.`);
     res.status(500).json({ status: "Error in DB" });
   }
   console.log(`/getAllOrders/${company} => Ending route.`);
