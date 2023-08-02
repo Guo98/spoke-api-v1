@@ -52,13 +52,18 @@ async function getTrackingNumber(emailBody, supplier, orders, subject) {
       console.log(`getTrackingNumber(${supplier}) => B&H order going to CTS.`);
       return [];
     }
+
     for (let i = 0; i < orders.length; i++) {
       if (
         supplier !== "CTS" &&
         decodedMessage
           .toLowerCase()
           .indexOf(orders[i].firstName.toLowerCase()) > -1 &&
-        decodedMessage.indexOf(orders[i].address?.city) > -1
+        decodedMessage
+          .toLowerCase()
+          .indexOf(orders[i].address?.city.toLowerCase()) > -1 &&
+        decodedMessage.toLowerCase().indexOf(orders[i].lastName.toLowerCase()) >
+          -1
       ) {
         console.log(
           `getTrackingNumber(${supplier}) => Matched shipment to order: ${orders[i].orderNo}`

@@ -89,23 +89,23 @@ router.post("/pushTracking", async (req, res) => {
   res.send({ message: "Successful!" });
 });
 
-// router.get("/getMessage/:messageid", async (req, res) => {
-//   const messageId = req.params.messageid;
-//   //const receivedOrders = await orders.getAllReceived();
-//   const updateItems = await getEmailBody(messageId, orders);
-//   // console.log("update items ::::::::: ", updateItems);
-//   // if (updateItems && updateItems[0]) {
-//   //   await orders.updateOrder(updateItems[0], updateItems[1]);
-//   // }
-//   // try {
-//   //   await sendAftershipCSV(btoa("testing this out"), "10800");
-//   // } catch (e) {
-//   //   console.log("testing out sending email error: ", e);
-//   // }
-//   const todayDate = new Date();
-//   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
-//   res.json({ "Hello world email!": todayDate.getMonth() });
-// });
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  //const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, orders);
+  // console.log("update items ::::::::: ", updateItems);
+  // if (updateItems && updateItems[0]) {
+  //   await orders.updateOrder(updateItems[0], updateItems[1]);
+  // }
+  // try {
+  //   await sendAftershipCSV(btoa("testing this out"), "10800");
+  // } catch (e) {
+  //   console.log("testing out sending email error: ", e);
+  // }
+  const todayDate = new Date();
+  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+  res.json({ "Hello world email!": todayDate.getMonth() });
+});
 
 /**
  * @param {string} body.customer_name
@@ -190,8 +190,8 @@ router.post("/createOrder", async (req, res) => {
   }
 });
 
-router.get("/getAllOrders/All", checkJwt, async (req, res) => {
-  console.log(`/getAllOrders/All => Starting route.`);
+router.get("/orders/All", checkJwt, async (req, res) => {
+  console.log(`[GET] /orders/All => Starting route.`);
   const containedIdClients = [
     "Received",
     "Alma",
@@ -217,12 +217,12 @@ router.get("/getAllOrders/All", checkJwt, async (req, res) => {
   }
 
   res.json({ data: allOrders });
-  console.log(`/getAllOrders/All => Finished route.`);
+  console.log(`[GET] /orders/All => Finished route.`);
 });
 
-router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
+router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
+  // res.setHeader("Access-Control-Allow-Origin", "*");
+  // res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
   let dbContainer = "";
   let client = "";
@@ -242,7 +242,7 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
       break;
   }
 
-  console.log(`/getAllOrders/${company} => Starting route.`);
+  console.log(`[GET] /orders/${company} => Starting route.`);
 
   const querySpec = {
     query: req.params.entity
@@ -270,7 +270,7 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
   if (dbContainer !== "") {
     try {
       console.log(
-        `/getAllOrders/${company} => Getting all orders from container: ${dbContainer}`
+        `[GET] /orders/${company} => Getting all orders from container: ${dbContainer}`
       );
       let ordersRes = await orders.getAllOrders(dbContainer);
 
@@ -294,11 +294,11 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       console.log(
-        `/getAllOrders/${company} => Finished getting all orders from container: ${dbContainer}`
+        `[GET] /orders/${company} => Finished getting all orders from container: ${dbContainer}`
       );
 
       console.log(
-        `/getAllOrders/${company} => Getting all in progress orders for company: ${client}`
+        `[GET] /orders/${company} => Getting all in progress orders for company: ${client}`
       );
       let inProgRes = await orders.find(querySpec);
 
@@ -315,17 +315,17 @@ router.get("/getAllOrders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       console.log(
-        `/getAllOrders/${company} => Finished getting all in progress orders for company: ${client}`
+        `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
       );
       res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
     } catch (e) {
       console.log(
-        `/getAllOrders/${company} => Error in getting all orders: ${e}`
+        `[GET] /orders/${company} => Error in getting all orders: ${e}`
       );
       res.status(500).json({ status: "Error in getting info" });
     }
   } else {
-    console.log(`/getAllOrders/${company} => Company doesn't exist in DB.`);
+    console.log(`[GET] /orders/${company} => Company doesn't exist in DB.`);
     res.status(500).json({ status: "Error in DB" });
   }
   console.log(`/getAllOrders/${company} => Ending route.`);
@@ -660,10 +660,12 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
 });
 
-router.get("/getmarketplace/:client?", checkJwt, async (req, res) => {
-  console.log("/getmarketplace => Starting route.");
+router.get("/marketplaceorders/:client?", checkJwt, async (req, res) => {
+  console.log("[GET] /marketplaceorders => Starting route.");
   try {
-    console.log("/getmarketplace => Getting all orders from marketplace.");
+    console.log(
+      "[GET] /marketplaceorders => Getting all orders from marketplace."
+    );
     let orderRes = await orders.getAllOrders("Marketplace");
     if (req.params.client) {
       orderRes = orderRes.filter((order) => order.client === req.params.client);
@@ -675,23 +677,23 @@ router.get("/getmarketplace/:client?", checkJwt, async (req, res) => {
       delete order._attachments;
       delete order._ts;
     });
-    console.log("/getmarkatplace => Got all orders from marketplace.");
+    console.log("[GET] /marketplaceorders => Got all orders from marketplace.");
     res.json({ status: "Successful", data: orderRes });
   } catch (e) {
     console.log(
-      `/getmarketplace => Error in getting all marketplace orders: ${JSON.stringify(
+      `[GET] /marketplaceorders => Error in getting all marketplace orders: ${JSON.stringify(
         e
       )}`
     );
     res.status(500).json({ status: "Error" });
   }
-  console.log("/getmarketplace => Finished route.");
+  console.log("[GET] /marketplaceorders => Finished route.");
 });
 
-router.post("/updateMarketOrder", checkJwt, async (req, res) => {
-  console.log("/updateMarketOrder => Starting route.");
+router.post("/marketplaceorders", checkJwt, async (req, res) => {
+  console.log("[POST] /marketplaceorders => Starting route.");
   try {
-    console.log("/updateMarketOrder => Starting update db function.");
+    console.log("[POST] /marketplaceorders => Starting update db function.");
     if (req.body.status) {
       const updateRes = await orders.updateMarketOrder(
         req.body.id,
@@ -742,23 +744,23 @@ router.post("/updateMarketOrder", checkJwt, async (req, res) => {
         req.body.requestor_email
       );
     }
-    console.log("/updateMarketOrder => Finished update db function.");
+    console.log("[POST] /marketplaceorders => Finished update db function.");
   } catch (e) {
-    console.log("/updateMarketOrder => Error in updating db: ", e);
+    console.log("[POST] /marketplaceorders => Error in updating db: ", e);
     res.status(500).json({ status: "Error" });
   }
-  console.log("/updateMarketOrder => Finished route.");
+  console.log("[POST] /marketplaceorders => Finished route.");
   if (!res.headersSent) res.json({ status: "Successful" });
 
   if (req.body.approved !== undefined) {
     try {
       await sendMarketplaceResponse(req.body);
       console.log(
-        `/updateMarketOrder => Successfully sent approval/denial email.`
+        `[POST] /marketplaceorders => Successfully sent approval/denial email.`
       );
     } catch (e) {
       console.log(
-        `/updateMarketOrder => Error in sending approval/denial email: `,
+        `[POST] /marketplaceorders => Error in sending approval/denial email: `,
         e
       );
     }

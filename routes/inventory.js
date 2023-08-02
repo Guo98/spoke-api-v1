@@ -440,10 +440,10 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     updated_status,
     grade,
   } = req.body;
-  console.log(`/updateinventory/${client} => Starting route.`);
+  console.log(`[PATCH] /inventory/${client} => Starting route.`);
 
   try {
-    console.log(`/updateinventory/${client} => Starting update function.`);
+    console.log(`[PATCH] /inventory/${client} => Starting update function.`);
     const updateResp = await inventory.opsUpdateInventory(
       client,
       device_index,
@@ -460,35 +460,37 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     } else {
       res.json({ status: "Successful", data: updateResp });
     }
-    console.log(`/updateinventory/${client} => Finished updating db function.`);
+    console.log(
+      `[PATCH] /inventory/${client} => Finished updating db function.`
+    );
   } catch (e) {
-    console.log(`/updateinventory/${client} => Error in updating:`, e);
+    console.log(`[PATCH] /inventory/${client} => Error in updating:`, e);
     res.status(500).json({ status: "Error" });
   }
 
   if (!res.headersSent) res.json({ status: "Nothing happened" });
-  console.log(`/updateinventory/${client} => Finished route.`);
+  console.log(`[PATCH] /inventory/${client} => Finished route.`);
 });
 
 // addInventory
 router.put("/inventory", checkJwt, async (req, res) => {
   const { client, device_id, new_devices } = req.body;
-  console.log(`/addinventory/${client} => Starting route.`);
+  console.log(`[PUT] /inventory/${client} => Starting route.`);
   try {
-    console.log(`/addinventory/${client} => Starting updating db function.`);
+    console.log(`[PUT] /inventory/${client} => Starting updating db function.`);
     const addResp = await inventory.opsAddInventory(
       client,
       device_id,
       new_devices
     );
-    console.log(`/addinventory/${client} => Finished updating db function.`);
+    console.log(`[PUT] /inventory/${client} => Finished updating db function.`);
     res.json({ status: "Successful", data: addResp });
   } catch (e) {
-    console.log(`/addinventory/${client} => Error in updating:`, e);
+    console.log(`[PUT] /inventory/${client} => Error in updating:`, e);
     res.status(500).json({ status: "Error" });
   }
   if (!res.headersSent) res.json({ status: "Nothing happened" });
-  console.log(`/updateinventory/${client} => Finished route.`);
+  console.log(`[PUT] /inventory/${client} => Finished route.`);
 });
 
 router.delete(
@@ -496,7 +498,7 @@ router.delete(
   checkJwt,
   async (req, res) => {
     const { client, device_id, device_index, serial_number } = req.params;
-    console.log(`/deleteinventory/${client} => Starting route.`);
+    console.log(`[DELETE] /inventory/${client} => Starting route.`);
     try {
       console.log(`/deleteinventory/${client} => Starting delete function.`);
       const deleteResp = await inventory.opsDeleteInventory(
@@ -512,25 +514,25 @@ router.delete(
         res.json({ status: "Successful", data: deleteResp });
       }
       console.log(
-        `/deleteinventory/${client} => Finished deleting ${serial_number} from ${device_id}.`
+        `[DELETE] /inventory/${client} => Finished deleting ${serial_number} from ${device_id}.`
       );
     } catch (e) {
       console.log(
-        `/deleteinventory/${client} => Error in deleting ${serial_number} from ${device_id}:`,
+        `[DELETE] /inventory/${client} => Error in deleting ${serial_number} from ${device_id}:`,
         e
       );
       res.status(500).json({ status: "Error" });
     }
-    console.log(`/deleteinventory/${client} => Finished route.`);
+    console.log(`[DELETE] /inventory/${client} => Finished route.`);
   }
 );
 
 router.post("/inventory", checkJwt, async (req, res) => {
   const { client, device, location, screen, cpu, ram, ssd, entity, sku } =
     req.body;
-  console.log(`/inventory/${client} => Starting function.`);
+  console.log(`[POST] /inventory/${client} => Starting function.`);
   try {
-    console.log(`/inventory/${client} => Updating db.`);
+    console.log(`[POST] /inventory/${client} => Updating db.`);
     const newItem = {
       name: device,
       location,
@@ -546,31 +548,34 @@ router.post("/inventory", checkJwt, async (req, res) => {
     };
     await inventory.opsAddNewDevice(client, newItem);
     res.json({ status: "Success" });
-    console.log(`/inventory/${client} => Finished updating db.`);
-  } catch (e) {
-    console.log(`/inventory/${client} => Error in adding item to db:`, e);
-    res.status(500).json({ status: "Error" });
-  }
-
-  console.log(`/inventory/${client} => Finished function.`);
-});
-
-router.patch("/marketplace", checkJwt, async (req, res) => {
-  const { client } = req.body;
-  console.log(`/marketplace/${client} => Starting route.`);
-  try {
-    console.log(`/marketplace/${client} => Starting update function.`);
-    const result = await inventory.opsUpdateMarketplace(req.body);
-    console.log(`/marketplace/${client} => Finished update function.`);
-    res.json({ status: "Successful", data: result });
+    console.log(`[POST] /inventory/${client} => Finished updating db.`);
   } catch (e) {
     console.log(
-      `/marketplace/${client} => Error in updating marketplace inventory:`,
+      `[POST] /inventory/${client} => Error in adding item to db:`,
       e
     );
     res.status(500).json({ status: "Error" });
   }
-  console.log(`/marketplace/${client} => Finished route.`);
+
+  console.log(`[POST] /inventory/${client} => Finished function.`);
+});
+
+router.patch("/marketplace", checkJwt, async (req, res) => {
+  const { client } = req.body;
+  console.log(`[PATCH] /marketplace/${client} => Starting route.`);
+  try {
+    console.log(`[PATCH] /marketplace/${client} => Starting update function.`);
+    const result = await inventory.opsUpdateMarketplace(req.body);
+    console.log(`[PATCH] /marketplace/${client} => Finished update function.`);
+    res.json({ status: "Successful", data: result });
+  } catch (e) {
+    console.log(
+      `[PATCH] /marketplace/${client} => Error in updating marketplace inventory:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`[PATCH] /marketplace/${client} => Finished route.`);
 });
 
 function resetDevice(item) {

@@ -103,7 +103,7 @@ export default async function addCDWTrackingNumber(
                 : orders[index].email,
             title: orderNum,
             customer_name: orders[index].full_name,
-            order_number: orders[index].items[ind].name,
+            order_number: orders[index].items[ind].name.replace(":", ","),
             tracking_number: tracking_number,
           };
           aftershipArray.push(aftershipObj);
