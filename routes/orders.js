@@ -89,23 +89,23 @@ router.post("/pushTracking", async (req, res) => {
   res.send({ message: "Successful!" });
 });
 
-// router.get("/getMessage/:messageid", async (req, res) => {
-//   const messageId = req.params.messageid;
-//   //const receivedOrders = await orders.getAllReceived();
-//   const updateItems = await getEmailBody(messageId, orders);
-//   // console.log("update items ::::::::: ", updateItems);
-//   // if (updateItems && updateItems[0]) {
-//   //   await orders.updateOrder(updateItems[0], updateItems[1]);
-//   // }
-//   // try {
-//   //   await sendAftershipCSV(btoa("testing this out"), "10800");
-//   // } catch (e) {
-//   //   console.log("testing out sending email error: ", e);
-//   // }
-//   const todayDate = new Date();
-//   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
-//   res.json({ "Hello world email!": todayDate.getMonth() });
-// });
+router.get("/getMessage/:messageid", async (req, res) => {
+  const messageId = req.params.messageid;
+  //const receivedOrders = await orders.getAllReceived();
+  const updateItems = await getEmailBody(messageId, orders);
+  // console.log("update items ::::::::: ", updateItems);
+  // if (updateItems && updateItems[0]) {
+  //   await orders.updateOrder(updateItems[0], updateItems[1]);
+  // }
+  // try {
+  //   await sendAftershipCSV(btoa("testing this out"), "10800");
+  // } catch (e) {
+  //   console.log("testing out sending email error: ", e);
+  // }
+  const todayDate = new Date();
+  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+  res.json({ "Hello world email!": todayDate.getMonth() });
+});
 
 /**
  * @param {string} body.customer_name
