@@ -211,7 +211,7 @@ class Inventory {
 
   async opsAddNewDevice(client, obj) {
     const coResponse = await this.database
-      .container(client === "public" ? "Mock" : containerId)
+      .container(client === "public" ? "Mock" : client)
       .read();
 
     const { resource: doc } = await coResponse.container.items.create(obj);
