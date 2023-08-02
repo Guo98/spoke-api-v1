@@ -89,23 +89,23 @@ router.post("/pushTracking", async (req, res) => {
   res.send({ message: "Successful!" });
 });
 
-router.get("/getMessage/:messageid", async (req, res) => {
-  const messageId = req.params.messageid;
-  //const receivedOrders = await orders.getAllReceived();
-  const updateItems = await getEmailBody(messageId, orders);
-  // console.log("update items ::::::::: ", updateItems);
-  // if (updateItems && updateItems[0]) {
-  //   await orders.updateOrder(updateItems[0], updateItems[1]);
-  // }
-  // try {
-  //   await sendAftershipCSV(btoa("testing this out"), "10800");
-  // } catch (e) {
-  //   console.log("testing out sending email error: ", e);
-  // }
-  const todayDate = new Date();
-  todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
-  res.json({ "Hello world email!": todayDate.getMonth() });
-});
+// router.get("/getMessage/:messageid", async (req, res) => {
+//   const messageId = req.params.messageid;
+//   //const receivedOrders = await orders.getAllReceived();
+//   const updateItems = await getEmailBody(messageId, orders);
+//   // console.log("update items ::::::::: ", updateItems);
+//   // if (updateItems && updateItems[0]) {
+//   //   await orders.updateOrder(updateItems[0], updateItems[1]);
+//   // }
+//   // try {
+//   //   await sendAftershipCSV(btoa("testing this out"), "10800");
+//   // } catch (e) {
+//   //   console.log("testing out sending email error: ", e);
+//   // }
+//   const todayDate = new Date();
+//   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
+//   res.json({ "Hello world email!": todayDate.getMonth() });
+// });
 
 /**
  * @param {string} body.customer_name
@@ -890,10 +890,33 @@ const orderItemsDelivery = async (order, containerId) => {
 
 const addItems = async (containerId, newItems) => {};
 
+const resetMockApprovals = async () => {
+  try {
+    let mockApproval = await orders.getItemByContainer(
+      "Marketplace",
+      "26b08ccb-d51c-4312-bd8c-20ae237e6bdd",
+      "public"
+    );
+
+    if (mockApproval.approved !== undefined) {
+      delete mockApproval.approved;
+      await orders.updateItemByContainer(
+        "Marketplace",
+        "26b08ccb-d51c-4312-bd8c-20ae237e6bdd",
+        "public",
+        mockApproval
+      );
+    }
+  } catch (e) {
+    console.log("resetMockApprovals() => Error in reseting approvals:", e);
+  }
+};
+
 export default router;
 
 export {
   addMarketplaceOrder,
   updateMarketplaceFile,
   marketplaceSentApprovalEmail,
+  resetMockApprovals,
 };
