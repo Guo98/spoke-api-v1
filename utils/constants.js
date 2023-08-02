@@ -118,6 +118,7 @@ const suppliers = {
   "Jabra Evolve2 65 Stereo Wireless On-Ear Headset": "Amazon",
   '14" MacBook Pro - Silver - 16GB': "B&H",
   Offboarding: "CTS",
+  Returning: "CTS",
   "10.2-Inch iPad with Wi-Fi - 64GB - Space Gray": "B&H",
   "Magic Mouse for Mac": "B&H",
   "Magic Keyboard with Touch ID and Numeric Keypad for Mac": "B&H",

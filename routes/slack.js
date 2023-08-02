@@ -81,6 +81,32 @@ router.post("/slackorder", slack, async (req, res) => {
           type: "input",
           element: {
             type: "plain_text_input",
+            action_id: "item_color_input",
+            min_length: 1,
+          },
+          label: {
+            type: "plain_text",
+            text: "Item Color",
+            emoji: true,
+          },
+        },
+        {
+          type: "input",
+          element: {
+            type: "plain_text_input",
+            action_id: "item_quantity_input",
+            min_length: 1,
+          },
+          label: {
+            type: "plain_text",
+            text: "Item Quantity",
+            emoji: true,
+          },
+        },
+        {
+          type: "input",
+          element: {
+            type: "plain_text_input",
             action_id: "req_specs_input",
             min_length: 1,
           },
@@ -228,6 +254,16 @@ router.post("/slackactions", slack, async (req, res) => {
   const inputKeys = [
     { key: "client_input", new_key: "client", field_name: "Client" },
     { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
+    {
+      key: "item_color_input",
+      new_key: "color",
+      field_name: "Item Color",
+    },
+    {
+      key: "item_quantity_input",
+      new_key: "quantity",
+      field_name: "Item Quantity",
+    },
     {
       key: "req_specs_input",
       new_key: "specs",
