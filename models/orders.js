@@ -247,6 +247,26 @@ class Orders {
     return resource;
   }
 
+  async getItemByContainer(containerId, itemId, partitionKey) {
+    const coResponse = await this.database.container(containerId).read();
+
+    const { resource } = await coResponse.container
+      .item(itemId, partitionKey)
+      .read();
+
+    return resource;
+  }
+
+  async updateItemByContainer(containerId, itemId, partitionKey, newItem) {
+    const coResponse = await this.database.container(containerId).read();
+
+    const { resource: replaced } = await coResponse.container
+      .item(itemId, partitionKey)
+      .replace(newItem);
+
+    return replaced;
+  }
+
   async getLastReadEmail() {
     const { resource } = await this.emailContainer
       .item("historyid", "historyid")

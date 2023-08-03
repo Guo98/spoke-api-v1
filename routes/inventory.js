@@ -12,6 +12,7 @@ import {
   sendNotificationEmail,
   sendOrderConfirmationEmail,
 } from "../services/sendEmail.js";
+import { resetMockApprovals } from "./orders.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -234,6 +235,13 @@ router.get("/resetdata", checkJwt, async (req, res) => {
     console.log(
       `/resetdata => Error getting all inventory to reset. Error: ${e}`
     );
+  }
+
+  try {
+    console.log(`/resetdata => Getting approvals to reset.`);
+    await resetMockApprovals();
+  } catch (e) {
+    console.log(`/resetdata => Error in reseting approvals:`, e);
   }
   console.log("/resetdata => Ending route.");
   res.json({ status: "Success" });
