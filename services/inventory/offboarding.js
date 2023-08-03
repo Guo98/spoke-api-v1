@@ -17,6 +17,7 @@ async function inventoryOffboard(res, body, inventoryDB) {
     requestor_email,
     note,
     id,
+    device_condition,
   } = body;
   try {
     console.log(
@@ -33,14 +34,15 @@ async function inventoryOffboard(res, body, inventoryDB) {
       shipping_address,
       phone_num,
       requestor_email,
-      note
+      note,
+      device_condition
     );
 
     const resp = addOrderRow(
       offboardValues,
       "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
       1831291341,
-      25
+      26
     );
     console.log(
       `/offboarding/${client} => Finished adding offboard order to offboarding sheet.`
