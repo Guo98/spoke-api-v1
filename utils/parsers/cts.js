@@ -4,7 +4,7 @@ import { createAftershipCSV } from "../../services/aftership.js";
 import { trackingRegex } from "../constants.js";
 
 function determineAftershipNumber(name) {
-  if (name === "Returning") {
+  if (name === "Returning" || name === "Offboarding") {
     return "Equipment Return Box";
   } else if (name.indexOf('"') > -1) {
     return item.name.split('"')[0];
