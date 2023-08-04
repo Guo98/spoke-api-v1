@@ -4,7 +4,7 @@ import { checkJwt } from "../services/auth0";
 
 const router = Router();
 
-router.post("/addNewClient", async (req, res) => {
+router.post("/newclient", async (req, res) => {
   const { client_name } = req.body;
 });
 

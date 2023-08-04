@@ -1,4 +1,4 @@
-import { cdwMappings } from "./cdwConstants.js";
+import { cdwMappings, aftershipMappings } from "./cdwConstants.js";
 import { Configuration, OpenAIApi } from "openai";
 import { addNewSerialNumber } from "../../routes/inventory.js";
 import { inventoryMappings } from "./cdwConstants.js";
@@ -95,7 +95,6 @@ export default async function addCDWTrackingNumber(
           item.serial_number = serial_number;
           item.date_shipped = new Date().toLocaleDateString("en-US");
           device_name = item.name;
-
           let aftershipObj = {
             email:
               orders[index].client === "Alma"
@@ -103,7 +102,9 @@ export default async function addCDWTrackingNumber(
                 : orders[index].email,
             title: orderNum,
             customer_name: orders[index].full_name,
-            order_number: orders[index].items[ind].name.replace(/[:,]/g, " "),
+            order_number: aftershipMappings[orders[index].items[ind].name]
+              ? aftershipMappings[orders[index].items[ind].name]
+              : orders[index].items[ind].name,
             tracking_number: tracking_number,
           };
           aftershipArray.push(aftershipObj);

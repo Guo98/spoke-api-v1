@@ -13,4 +13,11 @@ export const inventoryMappings = {
   "MacBook Pro M2 Chip 13”: 16GB (Alma)": "macbook_pro_16_usa",
 };
 
+export const aftershipMappings = {
+  'MacBook Air 13.6" M2, 8GB, 256GB SSD (Alma)': "MacBook Air 13.6 M2 8GB",
+  'Lenovo ThinkPad 14" E14 Gen 4, Ryzen 7 5825U, 16GB , 256GB SSD (Alma)':
+    "Lenovo ThinkPad 14 Ryzen 7 16GB",
+  "MacBook Pro M2 Chip 13”: 16GB (Alma)": "MacBook Pro 13 M2 16GB",
+};
+
 //APPLE MBP 13 M2 8C10C 16 16GB 512 SG
