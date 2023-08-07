@@ -912,6 +912,11 @@ const resetMockApprovals = async () => {
   }
 };
 
+const createOrdersContainer = async (client) => {
+  const newCoResponse = await orders.newContainer(client);
+  return newCoResponse;
+};
+
 export default router;
 
 export {
@@ -919,4 +924,5 @@ export {
   updateMarketplaceFile,
   marketplaceSentApprovalEmail,
   resetMockApprovals,
+  createOrdersContainer,
 };

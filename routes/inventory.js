@@ -447,6 +447,7 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     updated_ln,
     updated_status,
     grade,
+    updated_condition,
   } = req.body;
   console.log(`[PATCH] /inventory/${client} => Starting route.`);
 
@@ -461,7 +462,8 @@ router.patch("/inventory", checkJwt, async (req, res) => {
       updated_sn,
       updated_fn,
       updated_ln,
-      grade
+      grade,
+      updated_condition
     );
     if (updateResp === "Error") {
       throw new Error("Error in updating");
@@ -616,6 +618,11 @@ async function getAllInventory(client) {
   return allInventory;
 }
 
+async function createInventoryContainer(client) {
+  const newCoResponse = await inventory.newContainer(client);
+  return newCoResponse;
+}
+
 export default router;
 
-export { addNewSerialNumber, getAllInventory };
+export { addNewSerialNumber, getAllInventory, createInventoryContainer };

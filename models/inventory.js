@@ -23,6 +23,13 @@ class Inventory {
     this.container = coResponse.container;
   }
 
+  async newContainer(client) {
+    const newCoResponse = await this.database.containers.createIfNotExists({
+      id: client,
+    });
+    return newCoResponse;
+  }
+
   async find(querySpec) {
     if (!this.container) {
       throw new Error("Collection is not initialized.");
@@ -110,7 +117,8 @@ class Inventory {
     updated_sn = "",
     updated_fn = "",
     updated_ln = "",
-    grade = ""
+    grade = "",
+    updated_condition = ""
   ) {
     let verified_index = device_index;
     const coResponse = await this.database
@@ -147,6 +155,12 @@ class Inventory {
       }
       if (updated_ln !== "") {
         resource.serial_numbers[verified_index].last_name = updated_ln;
+      }
+      if (updated_condition !== "") {
+        resource.serial_numbers[verified_index].condition = updated_condition;
+      }
+      if (grade !== "") {
+        resource.serial_numbers[verified_index].grade = grade;
       }
 
       const { resource: replaced } = await coResponse.container
