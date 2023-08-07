@@ -29,6 +29,14 @@ class Orders {
     this.emailContainer = emailCoResponse.container;
   }
 
+  async newContainer(client) {
+    const newCoResponse = await this.database.containers.createIfNotExists({
+      id: client,
+    });
+
+    return newCoResponse;
+  }
+
   async find(querySpec) {
     if (!this.container) {
       throw new Error("Collection is not initialized.");
