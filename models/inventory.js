@@ -157,7 +157,10 @@ class Inventory {
         resource.serial_numbers[verified_index].last_name = updated_ln;
       }
       if (updated_condition !== "") {
-        resource.serial_numbers[verified_index].condition = updated_ln;
+        resource.serial_numbers[verified_index].condition = updated_condition;
+      }
+      if (grade !== "") {
+        resource.serial_numbers[verified_index].grade = grade;
       }
 
       const { resource: replaced } = await coResponse.container
