@@ -4,6 +4,17 @@ export const cdwMappings = {
   'Lenovo ThinkPad 14" E14 Gen 4, Ryzen 7 5825U, 16GB , 256GB SSD (Alma)':
     "LVO E14 G4 R7-5825U 256/16",
   "MacBook Pro M2 Chip 13”: 16GB (Alma)": "APPLE MBP 13 M2 8C10C 16 16GB 512",
+  "Dell 27in Monitor S2722DC (Automox)": "DELL ULTRASHARP 27IN MON U2722D",
+  "Elgato Key Light Air Lamp (Automox)": "ELGATO KEY LIGHT AIR",
+  "Samsung U28R550UQN - UR550 Series - LED monitor (Automox)":
+    "SAMSUNG UR55 28IN 4K LED MONITOR",
+  "Apple Magic Wireless Keyboard with Numeric Keypad (Automox)":
+    "APPLE MAGIC KEYBOARD W/ NUM KEYPAD",
+  "Logitech MX Master (Automox)": "LOGITECH MX MASTER",
+  "Dell Thunderbolt™ Dock (Automox)": "DELL THUNDERBOLT DOCK",
+  "USB Type-C to DisplayPort 4K Cable (Automox)":
+    "STARTECH 6FT USB-C/DP ADAPTER CABLE",
+  "Logitech HD Pro Webcam C920S (Automox)": "LOGITECH C920S PRO HD WEBCAM",
 };
 
 export const inventoryMappings = {
