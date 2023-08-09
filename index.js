@@ -63,6 +63,8 @@ app.use(routes.documents);
 
 app.use(routes.users);
 
+app.use(routes.ai);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });

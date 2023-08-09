@@ -588,6 +588,10 @@ router.patch("/marketplace", checkJwt, async (req, res) => {
   console.log(`[PATCH] /marketplace/${client} => Finished route.`);
 });
 
+router.post("/inventory/csv", async (req, res) => {
+  res.send("Hello World");
+});
+
 function resetDevice(item) {
   let resetItem = {
     sn: item.sn,
