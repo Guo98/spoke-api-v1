@@ -9,6 +9,7 @@ import slack from "./slack.js";
 import documents from "./documents.js";
 import users from "./users.js";
 import ai from "./ai.js";
+import client from "./client.js";
 
 export default {
   offboard,
@@ -22,4 +23,5 @@ export default {
   documents,
   users,
   ai,
+  client,
 };

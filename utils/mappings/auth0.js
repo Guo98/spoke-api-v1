@@ -9,6 +9,7 @@ export const orgMappings = {
   NurseDash: "org_ZQAwXjMDnevrYYIr",
   public: "org_2cr6d5b5cEsEEtsR",
   Roivant: "org_lgsM9ZWjP1GdrDoA",
+  Sona: "org_f0OJSheWDop7RPuc",
 };
 
 export const idToOrgMappings = {
@@ -21,6 +22,7 @@ export const idToOrgMappings = {
   org_gaFIEnwpsXXm8z0D: "Intersect Power",
   org_ZQAwXjMDnevrYYIr: "NurseDash",
   org_lgsM9ZWjP1GdrDoA: "Roivant",
+  org_f0OJSheWDop7RPuc: "Sona",
 };
 
 export const connectionsMappings = {
@@ -39,6 +41,7 @@ export const clientIdList = [
   "org_gaFIEnwpsXXm8z0D",
   "org_ZQAwXjMDnevrYYIr",
   "org_lgsM9ZWjP1GdrDoA",
+  "org_f0OJSheWDop7RPuc",
 ];
 export const rolesMappings = {
   "flo-uk-emp": "rol_MJ75jZI9Ixe1pQKO",
