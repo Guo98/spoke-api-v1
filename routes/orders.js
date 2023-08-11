@@ -888,6 +888,27 @@ const orderItemsDelivery = async (order, containerId) => {
   }
 };
 
+const addNewDocument = async (containerId, doc) => {
+  try {
+    console.log(
+      "addNewDocument() => Starting adding document to:",
+      containerId
+    );
+    const newDoc = await orders.addOrderByContainer(containerId, doc);
+    console.log(
+      "addNewDocument() => Finished adding document to:",
+      containerId
+    );
+    return newDoc;
+  } catch (e) {
+    console.log(
+      "addNewDocument() => Error in adding document to:",
+      containerId
+    );
+    return "Error";
+  }
+};
+
 const addItems = async (containerId, newItems) => {};
 
 const resetMockApprovals = async () => {
@@ -925,4 +946,5 @@ export {
   marketplaceSentApprovalEmail,
   resetMockApprovals,
   createOrdersContainer,
+  addNewDocument,
 };
