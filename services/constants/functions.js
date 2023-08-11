@@ -15,20 +15,6 @@ export const functions = [
     },
   },
   {
-    name: "getProductDesc",
-    description: "Get the item description of an item from a link",
-    parameters: {
-      type: "object",
-      properties: {
-        link: {
-          type: "string",
-          description: "Link that best matches item requested",
-        },
-      },
-      required: ["link"],
-    },
-  },
-  {
     name: "returnItemInfo",
     description:
       "Returns the price, stock level and url of item in a formatted response",
@@ -47,8 +33,49 @@ export const functions = [
           type: "string",
           description: "Url link to the item",
         },
+        product_name: {
+          type: "string",
+          description: 'Name of the product, e.g. MacBook Pro 14"',
+        },
       },
-      required: ["price", "stock_level", "url_link"],
+      required: ["price", "stock_level", "url_link", "product_name"],
+    },
+  },
+  {
+    name: "formattedRecommendations",
+    description:
+      "Returns the price, product description and url of recommended item in a formatted response.",
+    parameters: {
+      type: "object",
+      properties: {
+        price: {
+          type: "string",
+          description: 'Price of the item, e.g. "$1999.99"',
+        },
+        url_link: {
+          type: "string",
+          description: "Url link to the item",
+        },
+        product_desc: {
+          type: "string",
+          description: "Description of the product that is being recommended",
+        },
+        product_name: {
+          type: "string",
+          description: 'Name of the product, e.g. MacBook Pro 14"',
+        },
+        stock_level: {
+          type: "string",
+          description: 'Stock level of the item, e.g. "In Stock"',
+        },
+      },
+      required: [
+        "price",
+        "url_link",
+        "product_desc",
+        "product_name",
+        "stock_level",
+      ],
     },
   },
 ];

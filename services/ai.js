@@ -30,7 +30,7 @@ export async function checkStock(item_name) {
 
     if (functionName === "searchCDW") {
       const links = await searchCDW(args.search_text);
-      // console.log("links :::::::::: ", links);
+
       const funcresponse = await openai.createChatCompletion({
         model: "gpt-4",
         messages: [
@@ -62,11 +62,53 @@ export async function checkStock(item_name) {
         );
 
         if (retFuncName === "returnItemInfo") {
-          const formattedResponse = returnItemInfo(
+          let formattedResponse = returnItemInfo(
             retArgs.price,
             retArgs.stock_level,
-            retArgs.url_link
+            retArgs.url_link,
+            retArgs.product_name
           );
+          if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
+            const recresponse = await openai.createChatCompletion({
+              model: "gpt-4",
+              messages: [
+                prompts.recommendations,
+                {
+                  role: "function",
+                  name: "searchCDW",
+                  content: JSON.stringify(links.splice(0, 5)),
+                },
+                {
+                  role: "user",
+                  content:
+                    "Return the recommended item in a formatted response.",
+                },
+              ],
+              temperature: 0.3,
+              max_tokens: 500,
+              functions: functions,
+              function_call: "auto",
+            });
+
+            if (recresponse.data.choices[0].finish_reason === "function_call") {
+              const recFuncName =
+                recresponse.data.choices[0].message?.function_call?.name;
+
+              const recArgs = JSON.parse(
+                recresponse.data.choices[0].message?.function_call?.arguments
+              );
+
+              if (recFuncName === "formattedRecommendations") {
+                formattedResponse.recommendation = formattedRecommendations(
+                  recArgs.price,
+                  recArgs.url_link,
+                  recArgs.product_desc,
+                  recArgs.product_name,
+                  recArgs.stock_level
+                );
+              }
+            }
+          }
           return formattedResponse;
         }
       } else {
@@ -76,7 +118,27 @@ export async function checkStock(item_name) {
   }
 }
 
-export async function searchCDW(search_text) {
+export async function getRecommendations(item_name) {
+  const openai = new OpenAIApi(configuration);
+  const response = await openai.createChatCompletion({
+    model: "gpt-4",
+    messages: [
+      prompts.search,
+      {
+        role: "user",
+        content: "Give for me item recommendations similar to " + item_name,
+      },
+    ],
+    temperature: 0.5,
+    max_tokens: 300,
+    functions: functions,
+    function_call: "auto",
+  });
+
+  console.log("response ::::::::: ", response.data.choices[0]);
+}
+
+async function searchCDW(search_text) {
   let cheerioHtml = null;
   const openai = new OpenAIApi(configuration);
   const html = await axios.request({
@@ -116,18 +178,27 @@ export async function searchCDW(search_text) {
   return productLinks;
 }
 
-export async function getProductDesc(link) {
-  const html = await axios.request({
-    url: link,
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
-}
-
-function returnItemInfo(price, stock_level, url_link) {
+function returnItemInfo(price, stock_level, url_link, product_name) {
   return {
     price,
     stock_level,
     url_link,
+    product_name,
+  };
+}
+
+function formattedRecommendations(
+  price,
+  url_link,
+  product_desc,
+  product_name,
+  stock_level
+) {
+  return {
+    price,
+    url_link,
+    product_desc,
+    product_name,
+    stock_level,
   };
 }
