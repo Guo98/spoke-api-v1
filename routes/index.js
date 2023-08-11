@@ -8,6 +8,8 @@ import inventory from "./inventory.js";
 import slack from "./slack.js";
 import documents from "./documents.js";
 import users from "./users.js";
+import ai from "./ai.js";
+import client from "./client.js";
 
 export default {
   offboard,
@@ -20,4 +22,6 @@ export default {
   slack,
   documents,
   users,
+  ai,
+  client,
 };
