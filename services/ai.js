@@ -11,7 +11,7 @@ const configuration = new Configuration({
 export async function checkStock(item_name) {
   const openai = new OpenAIApi(configuration);
   const response = await openai.createChatCompletion({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo-0613",
     messages: [
       prompts.search,
       { role: "user", content: "Search CDW for: " + item_name },
@@ -32,7 +32,7 @@ export async function checkStock(item_name) {
       const links = await searchCDW(args.search_text);
 
       const funcresponse = await openai.createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo-0613",
         messages: [
           prompts.search,
           { role: "user", content: "Search CDW for: " + item_name },
@@ -70,13 +70,14 @@ export async function checkStock(item_name) {
           );
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
-              model: "gpt-4",
+              model: "gpt-3.5-turbo-0613",
               messages: [
                 prompts.recommendations,
                 {
-                  role: "function",
-                  name: "searchCDW",
-                  content: JSON.stringify(links.splice(0, 5)),
+                  role: "assistant",
+                  content:
+                    "Here is the list of related products from the search: " +
+                    JSON.stringify(links.splice(0, 5)),
                 },
                 {
                   role: "user",

@@ -70,7 +70,8 @@ export const functions = [
         },
         specs: {
           type: "string",
-          description: 'Specifications of the item, e.g. "16GB RAM, 512GB SSD"',
+          description:
+            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "16GB RAM, 512GB SSD"',
         },
       },
       required: [
