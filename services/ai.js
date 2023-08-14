@@ -32,7 +32,7 @@ export async function checkStock(item_name) {
       const links = await searchCDW(args.search_text);
 
       const funcresponse = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo-0613",
+        model: "gpt-4",
         messages: [
           prompts.search,
           { role: "user", content: "Search CDW for: " + item_name },
