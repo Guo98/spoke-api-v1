@@ -104,7 +104,8 @@ export async function checkStock(item_name) {
                   recArgs.url_link,
                   recArgs.product_desc,
                   recArgs.product_name,
-                  recArgs.stock_level
+                  recArgs.stock_level,
+                  recArgs.specs
                 );
               }
             }
@@ -192,7 +193,8 @@ function formattedRecommendations(
   url_link,
   product_desc,
   product_name,
-  stock_level
+  stock_level,
+  specs
 ) {
   return {
     price,
@@ -200,5 +202,6 @@ function formattedRecommendations(
     product_desc,
     product_name,
     stock_level,
+    specs,
   };
 }

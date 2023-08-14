@@ -68,6 +68,10 @@ export const functions = [
           type: "string",
           description: 'Stock level of the item, e.g. "In Stock"',
         },
+        specs: {
+          type: "string",
+          description: 'Specifications of the item, e.g. "16GB RAM, 512GB SSD"',
+        },
       },
       required: [
         "price",
@@ -75,6 +79,7 @@ export const functions = [
         "product_desc",
         "product_name",
         "stock_level",
+        "specs",
       ],
     },
   },
