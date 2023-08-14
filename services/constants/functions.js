@@ -37,8 +37,13 @@ export const functions = [
           type: "string",
           description: 'Name of the product, e.g. MacBook Pro 14"',
         },
+        specs: {
+          type: "string",
+          description:
+            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD"',
+        },
       },
-      required: ["price", "stock_level", "url_link", "product_name"],
+      required: ["price", "stock_level", "url_link", "product_name", "specs"],
     },
   },
   {

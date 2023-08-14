@@ -66,7 +66,8 @@ export async function checkStock(item_name) {
             retArgs.price,
             retArgs.stock_level,
             retArgs.url_link,
-            retArgs.product_name
+            retArgs.product_name,
+            retArgs.specs
           );
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
@@ -180,12 +181,13 @@ async function searchCDW(search_text) {
   return productLinks;
 }
 
-function returnItemInfo(price, stock_level, url_link, product_name) {
+function returnItemInfo(price, stock_level, url_link, product_name, specs) {
   return {
     price,
     stock_level,
     url_link,
     product_name,
+    specs,
   };
 }
 
