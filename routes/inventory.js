@@ -448,6 +448,7 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     updated_status,
     grade,
     updated_condition,
+    updated_warehouse,
   } = req.body;
   console.log(`[PATCH] /inventory/${client} => Starting route.`);
 
@@ -463,7 +464,8 @@ router.patch("/inventory", checkJwt, async (req, res) => {
       updated_fn,
       updated_ln,
       grade,
-      updated_condition
+      updated_condition,
+      updated_warehouse
     );
     if (updateResp === "Error") {
       throw new Error("Error in updating");

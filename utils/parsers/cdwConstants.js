@@ -3,6 +3,8 @@ export const cdwMappings = {
     "APPLE MBA 13 M2 8C8C 16 8GB 256",
   'Lenovo ThinkPad 14" E14 Gen 4, Ryzen 7 5825U, 16GB , 256GB SSD (Alma)':
     "LVO E14 G4 R7-5825U 256/16",
+  'Lenovo ThinkPad 14" E14 Gen 4, Core i5 1235U, 16GB , 256GB SSD (Alma)':
+    "LVO E14 G4 I5-1235U 256/16",
   "MacBook Pro M2 Chip 13”: 16GB (Alma)": "APPLE MBP 13 M2 8C10C 16 16GB 512",
   "Dell 27in Monitor S2722DC (Automox)": "DELL ULTRASHARP 27IN MON U2722D",
   "Elgato Key Light Air Lamp (Automox)": "ELGATO KEY LIGHT AIR",
