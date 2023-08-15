@@ -16,6 +16,8 @@ export async function sendMarketplaceRequestEmail(body) {
     requestor_email,
     type,
     quantity,
+    region,
+    ref_url,
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
@@ -40,7 +42,9 @@ export async function sendMarketplaceRequestEmail(body) {
           recipient,
           shipping_rate,
           quantity,
-          type
+          type,
+          region,
+          ref_url
         ),
       },
       recipients: {
@@ -126,9 +130,11 @@ function generateMarketplaceRequestEmail(
   emp_notes,
   shipping,
   quantity,
-  type
+  type,
+  region,
+  ref_url
 ) {
-  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div><div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div><div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div><div dir="ltr">Specs: ${specs}</div><div dir="ltr"><br></div><div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div><div dir="ltr">Quantity: ${quantity}</div><div dir="ltr"><br></div><div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div><div dir="ltr">Request Type: ${request_type}</div>${
+  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div><div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div><div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div><div dir="ltr">Specs: ${specs}</div><div dir="ltr"><br></div><div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div><div dir="ltr">Region: ${region}</div><div dir="ltr"><br></div><div dir="ltr">Reference URL: ${ref_url}</div><div dir="ltr"><br></div><div dir="ltr">Quantity: ${quantity}</div><div dir="ltr"><br></div><div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div><div dir="ltr">Request Type: ${request_type}</div>${
     request_type === "Hold in Inventory"
       ? ""
       : `<div dir="ltr"><br></div><div dir="ltr">Recipient Name: ${name}</div><div dir="ltr"><br></div><div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div><div dir="ltr">Email Address: <a href=${email} target="_blank">${email}</a></div><div dir="ltr"><br></div><div dir="ltr">Phone Number: ${phone}<br></div><div dir="ltr"><br></div><div dir="ltr">Shipping Rate: ${shipping}</div><div dir="ltr"><br></div><div dir="ltr">Employee Notes: ${emp_notes}</div>`

@@ -11,7 +11,7 @@ const configuration = new Configuration({
 export async function checkStock(item_name) {
   const openai = new OpenAIApi(configuration);
   const response = await openai.createChatCompletion({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo-0613",
     messages: [
       prompts.search,
       { role: "user", content: "Search CDW for: " + item_name },
@@ -66,17 +66,19 @@ export async function checkStock(item_name) {
             retArgs.price,
             retArgs.stock_level,
             retArgs.url_link,
-            retArgs.product_name
+            retArgs.product_name,
+            retArgs.specs
           );
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
-              model: "gpt-4",
+              model: "gpt-3.5-turbo-0613",
               messages: [
                 prompts.recommendations,
                 {
-                  role: "function",
-                  name: "searchCDW",
-                  content: JSON.stringify(links.splice(0, 5)),
+                  role: "assistant",
+                  content:
+                    "Here is the list of related products from the search: " +
+                    JSON.stringify(links.splice(0, 5)),
                 },
                 {
                   role: "user",
@@ -104,7 +106,8 @@ export async function checkStock(item_name) {
                   recArgs.url_link,
                   recArgs.product_desc,
                   recArgs.product_name,
-                  recArgs.stock_level
+                  recArgs.stock_level,
+                  recArgs.specs
                 );
               }
             }
@@ -178,12 +181,13 @@ async function searchCDW(search_text) {
   return productLinks;
 }
 
-function returnItemInfo(price, stock_level, url_link, product_name) {
+function returnItemInfo(price, stock_level, url_link, product_name, specs) {
   return {
     price,
     stock_level,
     url_link,
     product_name,
+    specs,
   };
 }
 
@@ -192,7 +196,8 @@ function formattedRecommendations(
   url_link,
   product_desc,
   product_name,
-  stock_level
+  stock_level,
+  specs
 ) {
   return {
     price,
@@ -200,5 +205,6 @@ function formattedRecommendations(
     product_desc,
     product_name,
     stock_level,
+    specs,
   };
 }

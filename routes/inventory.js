@@ -557,6 +557,8 @@ router.post("/inventory", checkJwt, async (req, res) => {
       serial_numbers: [],
       entity,
       sku,
+      image_source:
+        "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
     };
     await inventory.opsAddNewDevice(client, newItem);
     res.json({ status: "Success" });
