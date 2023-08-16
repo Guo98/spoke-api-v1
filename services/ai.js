@@ -160,6 +160,7 @@ async function searchCDW(search_text) {
   const links = $(".search-result-product-url");
   const prices = $(".price-type-price");
   const stockLevel = $(".is-available");
+  const imageLinks = $(".search-result-product-image");
 
   links.each((index, element) => {
     const linkElement = $(element);
@@ -168,6 +169,7 @@ async function searchCDW(search_text) {
       link: "https://www.cdw.com" + linkElement.attr("href"),
       price: $(prices[index]).text(),
       availability: $(stockLevel[index]).text(),
+      image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
     });
   });
 
