@@ -42,8 +42,19 @@ export const functions = [
           description:
             'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD"',
         },
+        image_source: {
+          type: "string",
+          description: "Url link of the image of the product",
+        },
       },
-      required: ["price", "stock_level", "url_link", "product_name", "specs"],
+      required: [
+        "price",
+        "stock_level",
+        "url_link",
+        "product_name",
+        "specs",
+        "image_source",
+      ],
     },
   },
   {
