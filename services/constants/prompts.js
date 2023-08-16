@@ -7,6 +7,6 @@ export const prompts = {
   recommendations: {
     role: "system",
     content:
-      "For the user inputted item, recommend a replacement item that is in stock from the given list.",
+      "For the user inputted item, recommend 3 replacement items that are in stock from the given list.",
   },
 };

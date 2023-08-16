@@ -4,7 +4,7 @@ import { checkStock, getRecommendations } from "../services/ai.js";
 
 const router = Router();
 
-router.get("/checkstock/:item_name", checkJwt, async (req, res) => {
+router.get("/checkstock/:item_name", async (req, res) => {
   const { item_name } = req.params;
   try {
     const aiResult = await checkStock(item_name);

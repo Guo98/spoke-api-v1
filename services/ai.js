@@ -78,20 +78,19 @@ export async function checkStock(item_name) {
                   role: "assistant",
                   content:
                     "Here is the list of related products from the search: " +
-                    JSON.stringify(links.splice(0, 5)),
+                    JSON.stringify(links.splice(0, 10)),
                 },
                 {
                   role: "user",
                   content:
-                    "Return the recommended item in a formatted response.",
+                    "Return the top 3 recommended items that are in stock in a formatted response.",
                 },
               ],
               temperature: 0.3,
-              max_tokens: 500,
+              max_tokens: 2000,
               functions: functions,
               function_call: "auto",
             });
-
             if (recresponse.data.choices[0].finish_reason === "function_call") {
               const recFuncName =
                 recresponse.data.choices[0].message?.function_call?.name;
@@ -100,15 +99,9 @@ export async function checkStock(item_name) {
                 recresponse.data.choices[0].message?.function_call?.arguments
               );
 
-              if (recFuncName === "formattedRecommendations") {
-                formattedResponse.recommendation = formattedRecommendations(
-                  recArgs.price,
-                  recArgs.url_link,
-                  recArgs.product_desc,
-                  recArgs.product_name,
-                  recArgs.stock_level,
-                  recArgs.specs
-                );
+              if (recFuncName === "formatMultipleRecommendations") {
+                formattedResponse.recommendations =
+                  formatMultipleRecommendations(recArgs.recommendations);
               }
             }
           }
@@ -191,20 +184,6 @@ function returnItemInfo(price, stock_level, url_link, product_name, specs) {
   };
 }
 
-function formattedRecommendations(
-  price,
-  url_link,
-  product_desc,
-  product_name,
-  stock_level,
-  specs
-) {
-  return {
-    price,
-    url_link,
-    product_desc,
-    product_name,
-    stock_level,
-    specs,
-  };
+function formatMultipleRecommendations(recommendations) {
+  return recommendations;
 }
