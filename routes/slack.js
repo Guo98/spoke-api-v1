@@ -47,12 +47,39 @@ const slack = (req, res, next) => {
 
 router.post("/message", checkJwt, async (req, res) => {
   console.log("/message => Starting route.");
-  const { message } = req.body;
+  const { rating, requested_item, recommended_item, recommended_link } =
+    req.body;
   try {
     const result = await app.client.chat.postMessage({
       token: process.env.SLACK_BOT_TOKEN,
       channel: "C05NMSAF4F3",
-      text: message,
+      text: "New Rating",
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: rating ? "*Good Selection*" : "*Bad Selection*",
+          },
+        },
+        {
+          type: "section",
+          fields: [
+            {
+              type: "mrkdwn",
+              text: "*Requested Item:*\n" + requested_item,
+            },
+            {
+              type: "mrkdwn",
+              text: "*Recommended Item:*\n" + recommended_item,
+            },
+            {
+              type: "mrkdwn",
+              text: "*Recommended Link:*\n" + recommended_link,
+            },
+          ],
+        },
+      ],
     });
     console.log("/message => Successfully sent message.");
     res.json({ status: "Successful" });
