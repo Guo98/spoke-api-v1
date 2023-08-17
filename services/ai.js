@@ -70,6 +70,7 @@ export async function checkStock(item_name) {
             retArgs.specs,
             retArgs.image_source
           );
+          console.log("formatted response :::::::::: ", formattedResponse);
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
               model: "gpt-3.5-turbo-0613",
