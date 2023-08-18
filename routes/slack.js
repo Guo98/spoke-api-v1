@@ -53,6 +53,7 @@ router.post("/message", checkJwt, async (req, res) => {
     recommended_item,
     recommended_link,
     add_to_marketplace,
+    requestor_email,
   } = req.body;
   try {
     const result = await app.client.chat.postMessage({
@@ -88,6 +89,10 @@ router.post("/message", checkJwt, async (req, res) => {
             {
               type: "mrkdwn",
               text: "*Recommended Link:*\n" + recommended_link,
+            },
+            {
+              type: "mrkdwn",
+              text: "*Submitted By:*\n" + requestor_email,
             },
           ],
         },
