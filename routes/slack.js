@@ -56,47 +56,51 @@ router.post("/message", checkJwt, async (req, res) => {
     requestor_email,
   } = req.body;
   try {
+    let blocks = [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: rating ? "*Good Selection*" : "*Bad Selection*",
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: "*Requested Item:*\n" + requested_item,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Recommended Item:*\n" + recommended_item,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Recommended Link:*\n" + recommended_link,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Submitted By:*\n" + requestor_email,
+          },
+        ],
+      },
+    ];
+
+    if (add_to_marketplace) {
+      blocks.splice(1, 0, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "*Add to Marketplace*",
+        },
+      });
+    }
     const result = await app.client.chat.postMessage({
       token: process.env.SLACK_BOT_TOKEN,
       channel: "C05NMSAF4F3",
       text: "New Rating",
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: rating ? "*Good Selection*" : "*Bad Selection*",
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: add_to_marketplace ? "*Add To Marketplace*" : "",
-          },
-        },
-        {
-          type: "section",
-          fields: [
-            {
-              type: "mrkdwn",
-              text: "*Requested Item:*\n" + requested_item,
-            },
-            {
-              type: "mrkdwn",
-              text: "*Recommended Item:*\n" + recommended_item,
-            },
-            {
-              type: "mrkdwn",
-              text: "*Recommended Link:*\n" + recommended_link,
-            },
-            {
-              type: "mrkdwn",
-              text: "*Submitted By:*\n" + requestor_email,
-            },
-          ],
-        },
-      ],
+      blocks: blocks,
     });
     console.log("/message => Successfully sent message.");
     res.json({ status: "Successful" });
