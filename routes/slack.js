@@ -3,8 +3,16 @@ import axios from "axios";
 import crypto from "crypto";
 import { sendSlackRequestEmail } from "../services/sendEmail.js";
 import { addMarketplaceOrder } from "./orders.js";
+import { checkJwt } from "../services/auth0.js";
 
+import pkg from "@slack/bolt";
+const { App } = pkg;
 const router = Router();
+
+const app = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+});
 
 const slack = (req, res, next) => {
   if (
@@ -28,12 +36,80 @@ const slack = (req, res, next) => {
     .digest("hex")}`;
 
   if (expectedSignature !== receivedSignature) {
-    console.log("signature mismatch :::::::::::: ");
+    console.log("slack() => Error: signature mismatch.");
     return res.status(400).send("Signature mismatched.");
   }
 
   next();
 };
+
+// C05NMSAF4F3
+
+router.post("/message", checkJwt, async (req, res) => {
+  console.log("/message => Starting route.");
+  const {
+    rating,
+    requested_item,
+    recommended_item,
+    recommended_link,
+    add_to_marketplace,
+    requestor_email,
+  } = req.body;
+  try {
+    let blocks = [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: rating ? "*Good Selection*" : "*Bad Selection*",
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: "*Requested Item:*\n" + requested_item,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Recommended Item:*\n" + recommended_item,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Recommended Link:*\n" + recommended_link,
+          },
+          {
+            type: "mrkdwn",
+            text: "*Submitted By:*\n" + requestor_email,
+          },
+        ],
+      },
+    ];
+
+    if (add_to_marketplace) {
+      blocks.splice(1, 0, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "*Add to Marketplace*",
+        },
+      });
+    }
+    const result = await app.client.chat.postMessage({
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: "C05NMSAF4F3",
+      text: "New Rating",
+      blocks: blocks,
+    });
+    console.log("/message => Successfully sent message.");
+    res.json({ status: "Successful" });
+  } catch (e) {
+    console.log("/message => Error in sending message: ", e);
+    res.status(500).json({ status: "Error" });
+  }
+  console.log("/message => Finished route.");
+});
 
 router.post("/slackorder", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");

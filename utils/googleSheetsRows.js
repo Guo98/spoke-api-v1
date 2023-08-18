@@ -22,9 +22,13 @@ function createConsolidatedRow(
     },
     {
       userEnteredValue: {
-        formulaValue: `=DATE(${todayDate.getFullYear()}, ${
-          todayDate.getMonth() + 1
-        }, ${todayDate.getDate()})`,
+        stringValue:
+          todayDate.getMonth() +
+          1 +
+          "/" +
+          todayDate.getDate() +
+          "/" +
+          todayDate.getFullYear(),
       },
     },
     {

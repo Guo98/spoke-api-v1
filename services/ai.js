@@ -67,8 +67,10 @@ export async function checkStock(item_name) {
             retArgs.stock_level,
             retArgs.url_link,
             retArgs.product_name,
-            retArgs.specs
+            retArgs.specs,
+            retArgs.image_source
           );
+
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
               model: "gpt-3.5-turbo-0613",
@@ -78,20 +80,19 @@ export async function checkStock(item_name) {
                   role: "assistant",
                   content:
                     "Here is the list of related products from the search: " +
-                    JSON.stringify(links.splice(0, 5)),
+                    JSON.stringify(links.splice(0, 10)),
                 },
                 {
                   role: "user",
                   content:
-                    "Return the recommended item in a formatted response.",
+                    "Return the top 3 recommended items that are in stock in a formatted response.",
                 },
               ],
               temperature: 0.3,
-              max_tokens: 500,
+              max_tokens: 2000,
               functions: functions,
               function_call: "auto",
             });
-
             if (recresponse.data.choices[0].finish_reason === "function_call") {
               const recFuncName =
                 recresponse.data.choices[0].message?.function_call?.name;
@@ -100,15 +101,9 @@ export async function checkStock(item_name) {
                 recresponse.data.choices[0].message?.function_call?.arguments
               );
 
-              if (recFuncName === "formattedRecommendations") {
-                formattedResponse.recommendation = formattedRecommendations(
-                  recArgs.price,
-                  recArgs.url_link,
-                  recArgs.product_desc,
-                  recArgs.product_name,
-                  recArgs.stock_level,
-                  recArgs.specs
-                );
+              if (recFuncName === "formatMultipleRecommendations") {
+                formattedResponse.recommendations =
+                  formatMultipleRecommendations(recArgs.recommendations);
               }
             }
           }
@@ -167,6 +162,7 @@ async function searchCDW(search_text) {
   const links = $(".search-result-product-url");
   const prices = $(".price-type-price");
   const stockLevel = $(".is-available");
+  const imageLinks = $(".search-result-product-image");
 
   links.each((index, element) => {
     const linkElement = $(element);
@@ -175,36 +171,31 @@ async function searchCDW(search_text) {
       link: "https://www.cdw.com" + linkElement.attr("href"),
       price: $(prices[index]).text(),
       availability: $(stockLevel[index]).text(),
+      image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
     });
   });
 
   return productLinks;
 }
 
-function returnItemInfo(price, stock_level, url_link, product_name, specs) {
-  return {
-    price,
-    stock_level,
-    url_link,
-    product_name,
-    specs,
-  };
-}
-
-function formattedRecommendations(
+function returnItemInfo(
   price,
-  url_link,
-  product_desc,
-  product_name,
   stock_level,
-  specs
+  url_link,
+  product_name,
+  specs,
+  image_source
 ) {
   return {
     price,
-    url_link,
-    product_desc,
-    product_name,
     stock_level,
+    url_link,
+    product_name,
     specs,
+    image_source,
   };
+}
+
+function formatMultipleRecommendations(recommendations) {
+  return recommendations;
 }
