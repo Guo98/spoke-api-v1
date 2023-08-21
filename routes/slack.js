@@ -61,7 +61,7 @@ router.post("/message", checkJwt, async (req, res) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: rating ? "*Good Selection*" : "*Bad Selection*",
+          text: rating ? "*Good Recommendation*" : "*Bad Recommendation*",
         },
       },
       {
