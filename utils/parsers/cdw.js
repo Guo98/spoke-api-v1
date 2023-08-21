@@ -90,28 +90,30 @@ export default async function addCDWTrackingNumber(
     orders[index].items.forEach((item, ind) => {
       if (cdwMappings[item.name] && matches.length > 0) {
         if (decodedMessage.indexOf(cdwMappings[item.name]) > -1) {
-          item.tracking_number = [tracking_number];
-          item.courier = courier;
-          item.serial_number = serial_number;
-          item.date_shipped = new Date().toLocaleDateString("en-US");
-          device_name = item.name;
-          let aftershipObj = {
-            email:
-              orders[index].client === "Alma"
-                ? '"' + orders[index].email + ',it-team@helloalma.com"'
-                : orders[index].email,
-            title: orderNum,
-            customer_name: orders[index].full_name,
-            order_number: aftershipMappings[orders[index].items[ind].name]
-              ? aftershipMappings[orders[index].items[ind].name]
-              : orders[index].items[ind].name,
-            tracking_number: tracking_number,
-          };
-          aftershipArray.push(aftershipObj);
-          console.log(
-            `addCDWTrackingNumber(${orderNum}) => Updated item:`,
-            item
-          );
+          if (item.tracking_number === "") {
+            item.tracking_number = [tracking_number];
+            item.courier = courier;
+            item.serial_number = serial_number;
+            item.date_shipped = new Date().toLocaleDateString("en-US");
+            device_name = item.name;
+            let aftershipObj = {
+              email:
+                orders[index].client === "Alma"
+                  ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                  : orders[index].email,
+              title: orderNum,
+              customer_name: orders[index].full_name,
+              order_number: aftershipMappings[orders[index].items[ind].name]
+                ? aftershipMappings[orders[index].items[ind].name]
+                : orders[index].items[ind].name,
+              tracking_number: tracking_number,
+            };
+            aftershipArray.push(aftershipObj);
+            console.log(
+              `addCDWTrackingNumber(${orderNum}) => Updated item:`,
+              item
+            );
+          }
         }
       } else {
         console.log(
