@@ -8,6 +8,56 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
 });
 
+export async function checkItemStock(product_link, item_name, specs) {
+  const openai = new OpenAIApi(configuration);
+  const productInfo = await scrapeLink(product_link);
+  console.log("product info :::::::::::::::: ", productInfo);
+  if (!productInfo.availability.toLowerCase().includes("in stock")) {
+    let search_text = item_name.toLowerCase().includes("apple")
+      ? item_name + " " + specs
+      : item_name;
+
+    const product_links = await searchCDW(search_text);
+    console.log("product links >>>>>>>>>>>>>>> ", product_links);
+    const response = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages: [
+        prompts.recommendations,
+        {
+          role: "assistant",
+          content:
+            "Here is the list of related products from the search: " +
+            product_links,
+        },
+        {
+          role: "user",
+          content:
+            "Give me replacments in a formatted response for " +
+            item_name +
+            " " +
+            specs,
+        },
+      ],
+      temperature: 0.5,
+      max_tokens: 2000,
+      functions: functions,
+      function_call: "auto",
+    });
+
+    if (response.data.choices[0].finish_reason === "function_call") {
+      const functionName =
+        response.data.choices[0].message?.function_call?.name;
+
+      const args = JSON.parse(
+        response.data.choices[0].message?.function_call?.arguments
+      );
+      console.log("response :::::::::::::::: ", functionName);
+    }
+  } else {
+    return productInfo;
+  }
+}
+
 export async function checkStock(item_name, specs) {
   const openai = new OpenAIApi(configuration);
   const response = await openai.createChatCompletion({
@@ -51,7 +101,7 @@ export async function checkStock(item_name, specs) {
           {
             role: "function",
             name: "searchCDW",
-            content: JSON.stringify(links.splice(0, 10)),
+            content: JSON.stringify(links),
           },
           {
             role: "user",
@@ -132,6 +182,8 @@ export async function checkStock(item_name, specs) {
   }
 }
 
+export async function getProductInfo(product_link, item_name, spec) {}
+
 export async function getRecommendations(item_name) {
   const openai = new OpenAIApi(configuration);
   const response = await openai.createChatCompletion({
@@ -186,12 +238,41 @@ async function searchCDW(search_text) {
       name: linkElement.text(),
       link: "https://www.cdw.com" + linkElement.attr("href"),
       price: $(prices[index]).text(),
-      availability: $(stockLevel[index]).text(),
+      availability: $(stockLevel[index])
+        .text()
+        .replace(/(\r\n|\n|\r)/gm, "")
+        .trim(),
       image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
     });
   });
 
   return productLinks;
+}
+
+async function scrapeLink(product_link) {
+  let html = await axios.request({
+    url: product_link,
+    method: "get",
+    headers: { "Content-Type": "text/html" },
+  });
+
+  const $ = load(html.data);
+
+  const availability = $(".short-message-block")
+    .text()
+    .replace(/(\r\n|\n|\r)/gm, "")
+    .trim();
+  const price = $(".price-type-selected").text();
+  const name = $("#primaryProductNameStickyHeader").text();
+  const image_source = $(".main-image").children("img").eq(0).attr("src");
+
+  return {
+    availability,
+    price,
+    name,
+    image_source,
+    product_link,
+  };
 }
 
 function returnItemInfo(
