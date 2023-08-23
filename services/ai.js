@@ -14,7 +14,14 @@ export async function checkStock(item_name, specs) {
     model: "gpt-3.5-turbo-0613",
     messages: [
       prompts.search,
-      { role: "user", content: "Search CDW for: " + item_name },
+      {
+        role: "user",
+        content:
+          "Search CDW for: " +
+          (item_name.toLowerCase().includes("Apple")
+            ? item_name + " " + specs
+            : item_name),
+      },
     ],
     temperature: 0.5,
     max_tokens: 300,
@@ -33,7 +40,14 @@ export async function checkStock(item_name, specs) {
         model: "gpt-3.5-turbo-0613",
         messages: [
           prompts.search,
-          { role: "user", content: "Search CDW for: " + item_name },
+          {
+            role: "user",
+            content:
+              "Search CDW for: " +
+              (item_name.toLowerCase().includes("Apple")
+                ? item_name + " " + specs
+                : item_name),
+          },
           {
             role: "function",
             name: "searchCDW",
