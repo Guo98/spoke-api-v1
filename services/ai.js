@@ -37,7 +37,7 @@ export async function checkStock(item_name, specs) {
           {
             role: "function",
             name: "searchCDW",
-            content: JSON.stringify(links.splice(0, 7)),
+            content: JSON.stringify(links.splice(0, 10)),
           },
           {
             role: "user",
