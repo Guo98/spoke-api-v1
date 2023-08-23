@@ -68,7 +68,7 @@ export async function checkStock(item_name, specs) {
         role: "user",
         content:
           "Search CDW for: " +
-          (item_name.toLowerCase().includes("Apple")
+          (item_name.toLowerCase().includes("apple")
             ? item_name + " " + specs
             : item_name),
       },
@@ -94,7 +94,7 @@ export async function checkStock(item_name, specs) {
             role: "user",
             content:
               "Search CDW for: " +
-              (item_name.toLowerCase().includes("Apple")
+              (item_name.toLowerCase().includes("apple")
                 ? item_name + " " + specs
                 : item_name),
           },
