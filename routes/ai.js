@@ -19,21 +19,21 @@ router.get("/checkstock/:item_name", checkJwt, async (req, res) => {
   }
 });
 
-router.post("/checkstock", async (req, res) => {
+router.post("/checkstock", checkJwt, async (req, res) => {
   const { item_name, specs } = req.body;
-  //   try {
-  //     const aiResult = await checkStock(item_name, specs);
-  //     res.json({ status: "Successful", data: aiResult });
-  //   } catch (e) {
-  //     console.log(`/checkstock/${item_name} => Error in checking stock: `, e);
-  //     res.status(500).json({ status: "Error" });
-  //   }
-  if (req.body.product_link) {
-    await checkItemStock(req.body.product_link, item_name, specs);
-    res.send("Hello World");
-  } else {
-    res.send("right here");
+  try {
+    const aiResult = await checkStock(item_name, specs);
+    res.json({ status: "Successful", data: aiResult });
+  } catch (e) {
+    console.log(`/checkstock/${item_name} => Error in checking stock: `, e);
+    res.status(500).json({ status: "Error" });
   }
+  //   if (req.body.product_link) {
+  //     await checkItemStock(req.body.product_link, item_name, specs);
+  //     res.send("Hello World");
+  //   } else {
+  //     res.send("right here");
+  //   }
 });
 
 router.get("/recommendations/:item_name", checkJwt, async (req, res) => {
