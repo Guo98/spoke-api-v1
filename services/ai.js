@@ -8,7 +8,7 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
 });
 
-export async function checkStock(item_name) {
+export async function checkStock(item_name, specs) {
   const openai = new OpenAIApi(configuration);
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
@@ -27,19 +27,21 @@ export async function checkStock(item_name) {
     const args = JSON.parse(
       response.data.choices[0].message?.function_call?.arguments
     );
-
     if (functionName === "searchCDW") {
       const links = await searchCDW(args.search_text);
-
       const funcresponse = await openai.createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo-0613",
         messages: [
           prompts.search,
           { role: "user", content: "Search CDW for: " + item_name },
           {
             role: "function",
             name: "searchCDW",
-            content: JSON.stringify(links.splice(0, 5)),
+            content: JSON.stringify(links.splice(0, 7)),
+          },
+          {
+            role: "user",
+            content: `Find the product that best matches these specs: ${specs} for item: ${item_name}`,
           },
           {
             role: "system",
