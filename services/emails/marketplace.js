@@ -44,7 +44,8 @@ export async function sendMarketplaceRequestEmail(body) {
           quantity,
           type,
           region,
-          ref_url
+          ref_url,
+          ai_specs
         ),
       },
       recipients: {
@@ -132,13 +133,61 @@ function generateMarketplaceRequestEmail(
   quantity,
   type,
   region,
-  ref_url
+  ref_url,
+  ai_specs
 ) {
-  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div><div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div><div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div><div dir="ltr">Specs: ${specs}</div><div dir="ltr"><br></div><div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div><div dir="ltr">Region: ${region}</div><div dir="ltr"><br></div><div dir="ltr">Reference URL: ${ref_url}</div><div dir="ltr"><br></div><div dir="ltr">Quantity: ${quantity}</div><div dir="ltr"><br></div><div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div><div dir="ltr">Request Type: ${request_type}</div>${
-    request_type === "Hold in Inventory"
-      ? ""
-      : `<div dir="ltr"><br></div><div dir="ltr">Recipient Name: ${name}</div><div dir="ltr"><br></div><div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div><div dir="ltr">Email Address: <a href=${email} target="_blank">${email}</a></div><div dir="ltr"><br></div><div dir="ltr">Phone Number: ${phone}<br></div><div dir="ltr"><br></div><div dir="ltr">Shipping Rate: ${shipping}</div><div dir="ltr"><br></div><div dir="ltr">Employee Notes: ${emp_notes}</div>`
-  }</div>`;
+  const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
+  const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
+  const specs_blk = `<div dir="ltr">Requested Specs: ${specs}</div><div dir="ltr"><br></div>`;
+  const color_blk = `<div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div>`;
+  const req_type_blk = `<div dir="ltr">Request Type: ${request_type}</div><div dir="ltr"><br></div>`; // Hold in Inventory
+  const item_note_blk = `<div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div>`;
+  const recipient_name_blk = `<div dir="ltr">Recipient Name: ${name}</div><div dir="ltr"><br></div>`;
+  const address_blk = `<div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div>`;
+  const email_blk = `<div dir="ltr">Recipient Email: ${email}</div><div dir="ltr"><br></div>`;
+  const phone_blk = `<div dir="ltr">Recipient Phone: ${phone}</div><div dir="ltr"><br></div>`;
+  const emp_note_blk = `<div dir="ltr">Employee Notes: ${emp_notes}</div><div dir="ltr"><br></div>`;
+  const shipping_blk = `<div dir="ltr">Shipping: ${shipping}</div><div dir="ltr"><br></div>`;
+  const quantity_blk = `<div dir="ltr">Quantity: ${quantity}</div><div dir="ltr"><br></div>`;
+  const region_blk = `<div dir="ltr">Region: ${region}</div><div dir="ltr"><br></div>`;
+  const ref_url_blk = `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
+  const ai_specs_blk = `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
+
+  let emailBody =
+    '<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div>';
+
+  if (request_type === "Hold in Inventory") {
+    emailBody =
+      emailBody +
+      req_type_blk +
+      item_name_blk +
+      specs_blk +
+      ai_specs_blk +
+      color_blk +
+      ref_url_blk +
+      region_blk +
+      quantity_blk +
+      shipping_blk +
+      req_email_blk +
+      item_note_blk;
+  } else {
+    emailBody =
+      emailBody +
+      req_type_blk +
+      item_name_blk +
+      specs_blk +
+      ai_specs_blk +
+      color_blk +
+      ref_url_blk +
+      region_blk +
+      shipping_blk +
+      req_email_blk +
+      recipient_name_blk +
+      address_blk +
+      email_blk +
+      phone_blk +
+      emp_note_blk;
+  }
 
   if (type === "approvalemail") {
     let approvalEmailBody =
