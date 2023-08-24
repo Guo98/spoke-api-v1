@@ -10,6 +10,7 @@ import documents from "./documents.js";
 import users from "./users.js";
 import ai from "./ai.js";
 import client from "./client.js";
+import cdw from "./cdw.js";
 
 export default {
   offboard,
@@ -24,4 +25,5 @@ export default {
   users,
   ai,
   client,
+  cdw,
 };

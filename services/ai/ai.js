@@ -1,8 +1,9 @@
 import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import axios from "axios";
-import { functions } from "./constants/functions.js";
-import { prompts } from "./constants/prompts.js";
+import { returnItemInfo, formatMultipleRecommendations } from "./functions.js";
+import { functions } from "../constants/functions.js";
+import { prompts } from "../constants/prompts.js";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
@@ -11,14 +12,45 @@ const configuration = new Configuration({
 export async function checkItemStock(product_link, item_name, specs) {
   const openai = new OpenAIApi(configuration);
   const productInfo = await scrapeLink(product_link);
-  console.log("product info :::::::::::::::: ", productInfo);
+  let return_response = {};
+  const openairesp = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo-0613",
+    messages: [
+      {
+        role: "system",
+        content:
+          "Given item info return in a formatted response. Parse out specs from the item name.",
+      },
+      {
+        role: "user",
+        content: "Here is the item info: " + JSON.stringify(productInfo),
+      },
+    ],
+    temperature: 0.5,
+    max_tokens: 3000,
+    functions: functions,
+    function_call: "auto",
+  });
+
+  if (openairesp.data.choices[0].finish_reason === "function_call") {
+    const funcName = openairesp.data.choices[0].message?.function_call?.name;
+
+    const retargs = JSON.parse(
+      openairesp.data.choices[0].message?.function_call?.arguments
+    );
+
+    if (funcName === "returnItemInfo") {
+      return_response = returnItemInfo(retargs);
+    }
+  }
+
   if (!productInfo.availability.toLowerCase().includes("in stock")) {
     let search_text = item_name.toLowerCase().includes("apple")
       ? item_name + " " + specs
       : item_name;
 
     const product_links = await searchCDW(search_text);
-    console.log("product links >>>>>>>>>>>>>>> ", product_links);
+
     const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo-0613",
       messages: [
@@ -27,15 +59,16 @@ export async function checkItemStock(product_link, item_name, specs) {
           role: "assistant",
           content:
             "Here is the list of related products from the search: " +
-            product_links,
+            JSON.stringify(product_links.splice(0, 10)),
         },
         {
           role: "user",
           content:
-            "Give me replacments in a formatted response for " +
+            "Give me in stock recommendations for " +
             item_name +
             " " +
-            specs,
+            specs +
+            " that in a formatted response.",
         },
       ],
       temperature: 0.5,
@@ -51,10 +84,17 @@ export async function checkItemStock(product_link, item_name, specs) {
       const args = JSON.parse(
         response.data.choices[0].message?.function_call?.arguments
       );
-      console.log("response :::::::::::::::: ", functionName);
+
+      if (functionName === "formatMultipleRecommendations") {
+        return_response.recommendations = formatMultipleRecommendations(
+          args.recommendations
+        );
+
+        return return_response;
+      }
     }
   } else {
-    return productInfo;
+    return return_response;
   }
 }
 
@@ -128,14 +168,7 @@ export async function checkStock(item_name, specs) {
         );
 
         if (retFuncName === "returnItemInfo") {
-          let formattedResponse = returnItemInfo(
-            retArgs.price,
-            retArgs.stock_level,
-            retArgs.url_link,
-            retArgs.product_name,
-            retArgs.specs,
-            retArgs.image_source
-          );
+          let formattedResponse = returnItemInfo(retArgs);
 
           if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
             const recresponse = await openai.createChatCompletion({
@@ -273,26 +306,4 @@ async function scrapeLink(product_link) {
     image_source,
     product_link,
   };
-}
-
-function returnItemInfo(
-  price,
-  stock_level,
-  url_link,
-  product_name,
-  specs,
-  image_source
-) {
-  return {
-    price,
-    stock_level,
-    url_link,
-    product_name,
-    specs,
-    image_source,
-  };
-}
-
-function formatMultipleRecommendations(recommendations) {
-  return recommendations;
 }
