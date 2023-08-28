@@ -1,6 +1,8 @@
 import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import axios from "axios";
+import { wrapper } from "axios-cookiejar-support";
+import { CookieJar } from "tough-cookie";
 import { returnItemInfo, formatMultipleRecommendations } from "./functions.js";
 import { functions } from "../constants/functions.js";
 import { prompts } from "../constants/prompts.js";
@@ -10,6 +12,9 @@ const configuration = new Configuration({
 });
 
 const openai = new OpenAIApi(configuration);
+
+const jar = new CookieJar();
+const client = wrapper(axios.create({ jar }));
 
 export async function checkItemStock(product_link, item_name, specs) {
   const productInfo = await scrapeLink(product_link);
@@ -341,23 +346,48 @@ async function searchInsight(search_text) {
       search_text +
       "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
   );
-  let html = await axios.request({
-    url: "https://www.insight.com/en_US/search.html?country=US&q=Lenovo+ThinkPad+E14+Gen+4&instockOnly=false&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&start=0&salesOrg=2400&sessionId=1DB6C377582995C6FD8C54D6A06A7D07.appprd6-1%2C1DB6C377582995C6FD8C54D6A06A7D07.appprd6-1&lang=en_US&rows=50&userSegment=CES%2CCES&tabType=products",
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
+  // let html = await axios.request({
+  //   url:
+  //     "https://www.insight.com/en_US/search.html?country=US&q=" +
+  //     search_text +
+  //     "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k",
+  //   //method: "get",
+  //   // headers: { "Content-Type": "text/html" },
+  // });
+  // console.log("html data :::::::::::::: ", html);
+  // const productLinks = [];
+  // const $ = load(html.data);
 
-  const productLinks = [];
-  const $ = load(html.data);
+  // const names_and_links = $(".c-currency__value");
 
-  const names_and_links = $(".c-currency__value");
-  console.log("names and links ???????????? ", names_and_links.text());
-  names_and_links.each((index, element) => {
-    const nal_element = $(element);
-    productLinks.push({ name: nal_element.text() });
-  });
+  // names_and_links.each((index, element) => {
+  //   const nal_element = $(element);
+  //   console.log("names and links ???????????? ", nal_element);
+  //   productLinks.push({ name: nal_element.text() });
+  // });
 
-  console.log("testing in here :::::::::: ", productLinks);
+  // axios
+  //   .get(
+  //     "https://www.insight.com/en_US/search.html?country=US&q=" +
+  //       search_text +
+  //       "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
+  //   )
+  //   .then((response) =>
+  //     console.log("lets see data in here :::::::: ", response.data)
+  //   )
+  //   .catch((err) => {
+  //     console.log("caught err ::::::::::: ", err);
+  //   });
+
+  // console.log("testing in here :::::::::: ", productLinks);
+
+  const html = await client.get(
+    "https://www.insight.com/en_US/search.html?country=US&q=" +
+      search_text +
+      "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
+  );
+
+  console.log("html data :::::::::::: ", html.data);
 }
 
 async function searchCDW(search_text) {

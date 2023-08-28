@@ -20,7 +20,7 @@ router.post("/cdw/order", async (req, res) => {
     console.log("/cdw/order => Route authenticated.");
     const cdwRes = await addNewDocument("CDW", req.body);
     console.log("/cdw/order => Finished adding req body to CDW container.");
-    res.send("Hello World");
+    if (!res.headersSent) res.send("Hello World");
   } else {
     res.status(401).json({ status: "Unauthorized" });
   }
