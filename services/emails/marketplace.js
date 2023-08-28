@@ -18,6 +18,7 @@ export async function sendMarketplaceRequestEmail(body) {
     quantity,
     region,
     ref_url,
+    ai_specs,
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);

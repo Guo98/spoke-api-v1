@@ -4,6 +4,7 @@ import {
   checkStock,
   getRecommendations,
   checkItemStock,
+  newCheckStock,
 } from "../services/ai/ai.js";
 
 const router = Router();
@@ -30,11 +31,14 @@ router.post("/checkstock", async (req, res) => {
       );
       res.json({ status: "Successful", data: aiResult });
     } else {
-      const aiResult = await checkStock(item_name, specs);
+      const aiResult = await newCheckStock(item_name, specs, "cdw");
       res.json({ status: "Successful", data: aiResult });
     }
   } catch (e) {
-    console.log(`/checkstock/${item_name} => Error in checking stock: `, e);
+    console.log(
+      `/checkstock/${item_name} => Error in checking stock: `,
+      e.message
+    );
     res.status(500).json({ status: "Error" });
   }
 });
