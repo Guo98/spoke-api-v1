@@ -17,8 +17,8 @@ const openai = new OpenAIApi(configuration);
 const jar = new CookieJar();
 const client = wrapper(axios.create({ jar }));
 
-export async function checkItemStock(product_link, item_name, specs) {
-  const productInfo = await scrapeLink(product_link);
+export async function checkItemStock(product_link, item_name, specs, supplier) {
+  const productInfo = await scrapeLink(product_link, supplier);
   let return_response = {};
   const openairesp = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
@@ -128,7 +128,9 @@ export async function newCheckStock(item_name, specs, supplier = "cdw") {
       l.product_link =
         "https://www.insight.com/en_US/shop/product/" +
         l.sku +
-        "/lenovo/" +
+        "/" +
+        l.manufacturerName.toLowerCase() +
+        "/" +
         l.sku +
         "/" +
         l.description
@@ -423,28 +425,74 @@ async function searchCDW(search_text) {
   return productLinks;
 }
 
-async function scrapeLink(product_link) {
-  let html = await axios.request({
-    url: product_link,
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
+async function scrapeLink(product_link, supplier) {
+  if (supplier === "cdw") {
+    let html = await axios.request({
+      url: product_link,
+      method: "get",
+      headers: { "Content-Type": "text/html" },
+    });
 
-  const $ = load(html.data);
+    const $ = load(html.data);
+    const availability = $(".short-message-block")
+      .text()
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .trim();
+    const price = $(".price-type-selected").text();
+    const name = $("#primaryProductNameStickyHeader").text();
+    const image_source = $(".main-image").children("img").eq(0).attr("src");
 
-  const availability = $(".short-message-block")
-    .text()
-    .replace(/(\r\n|\n|\r)/gm, "")
-    .trim();
-  const price = $(".price-type-selected").text();
-  const name = $("#primaryProductNameStickyHeader").text();
-  const image_source = $(".main-image").children("img").eq(0).attr("src");
+    return {
+      availability,
+      price,
+      name,
+      image_source,
+      product_link,
+    };
+  } else if (supplier === "insight") {
+    const split = product_link.split("?");
+    let postOpts = {
+      method: "POST",
+      url: split[0],
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        includeSpecifications: true,
+        includeVariants: true,
+        locale: "en_US",
+        materialId: split[1],
+        salesOrg: "2400",
+      },
+    };
+    console.log("split ::::::::::: ", split[1]);
+    try {
+      const product_resp = await axios.request(postOpts);
 
-  return {
-    availability,
-    price,
-    name,
-    image_source,
-    product_link,
-  };
+      return {
+        availability:
+          product_resp.data.product.availability.availabilityMessage,
+        price: product_resp.data.product.price.listPrice,
+        name: product_resp.data.product.descriptions.shortDescription,
+        image_source: product_resp.data.product.primaryImage,
+        product_link:
+          "https://www.insight.com/en_US/shop/product/" +
+          split[1] +
+          "/" +
+          product_resp.data.product.manufacturer.name.toLowerCase() +
+          "/" +
+          split[1] +
+          "/" +
+          product_resp.data.product.descriptions.shortDescription
+            .replace(/-/g, " ")
+            .replace(/["]/g, " ")
+            .replace(/ +(?= )/g, "")
+            .replace(/\s+/g, "-") +
+          "/",
+      };
+    } catch (e) {
+      console.log("scrapeLink() => Error in getting insight api:", e);
+      return {};
+    }
+  }
 }

@@ -20,14 +20,15 @@ router.get("/checkstock/:item_name", checkJwt, async (req, res) => {
   }
 });
 
-router.post("/checkstock", checkJwt, async (req, res) => {
+router.post("/checkstock", async (req, res) => {
   const { item_name, specs, supplier } = req.body;
   try {
     if (req.body.product_link) {
       const aiResult = await checkItemStock(
         req.body.product_link,
         item_name,
-        specs
+        specs,
+        supplier
       );
       res.json({ status: "Successful", data: aiResult });
     } else {
