@@ -154,7 +154,7 @@ export async function newCheckStock(item_name, specs, supplier = "cdw") {
             role: "assistant",
             content:
               "Here is the list of devices: " +
-              JSON.stringify(links.splice(0, 10)),
+              JSON.stringify(links.splice(0, 7)),
           },
           {
             role: "user",
@@ -194,7 +194,7 @@ export async function newCheckStock(item_name, specs, supplier = "cdw") {
                   role: "assistant",
                   content:
                     "Here is the list of related products from the search: " +
-                    JSON.stringify(links.splice(0, 10)),
+                    JSON.stringify(links.splice(0, 7)),
                 },
                 {
                   role: "user",
