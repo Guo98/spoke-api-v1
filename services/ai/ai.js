@@ -465,10 +465,10 @@ async function scrapeLink(product_link, supplier) {
         salesOrg: "2400",
       },
     };
-    console.log("split ::::::::::: ", split[1]);
+
     try {
       const product_resp = await axios.request(postOpts);
-
+      console.log("split ::::::::::: ", product_resp);
       return {
         availability:
           product_resp.data.product.availability.availabilityMessage,
