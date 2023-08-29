@@ -1,6 +1,7 @@
 import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import axios from "axios";
+import request from "request";
 import { wrapper } from "axios-cookiejar-support";
 import { CookieJar } from "tough-cookie";
 import { returnItemInfo, formatMultipleRecommendations } from "./functions.js";
@@ -104,7 +105,7 @@ export async function checkItemStock(product_link, item_name, specs) {
   }
 }
 
-export async function newCheckStock(item_name, specs, supplier) {
+export async function newCheckStock(item_name, specs, supplier = "cdw") {
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
     : item_name;
@@ -112,92 +113,121 @@ export async function newCheckStock(item_name, specs, supplier) {
   if (supplier === "cdw") {
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
-    await searchInsight(search_text);
+    links = await searchInsight(search_text);
+    links.forEach((l) => {
+      delete l.availabilityMessage;
+      delete l.alternateImage;
+      delete l.searchProductId;
+      delete l.manufacturerImage;
+      delete l.longDescription;
+      delete l.bullet5;
+      delete l.bullet4;
+      delete l.reviewCount;
+      delete l.averageRating;
+      delete l.insightPrice;
+      l.product_link =
+        "https://www.insight.com/en_US/shop/product/" +
+        l.sku +
+        "/lenovo/" +
+        l.sku +
+        "/" +
+        l.description
+          .replace(/-/g, " ")
+          .replace(/["]/g, " ")
+          .replace(/ +(?= )/g, "")
+          .replace(/\s+/g, "-") +
+        "/";
+    });
   }
 
   if (links.length > 0) {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-0613",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
-        },
-        {
-          role: "assistant",
-          content:
-            "Here is the list of devices: " +
-            JSON.stringify(links.splice(0, 10)),
-        },
-        {
-          role: "user",
-          content: `Find the product that best matches these specs: ${specs} for item: ${item_name}`,
-        },
-        {
-          role: "system",
-          content:
-            "Given the matched info to the item and return the item's price, stock level and url in a formatted response.",
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 500,
-      functions: functions,
-      function_call: "auto",
-    });
+    try {
+      const response = await openai.createChatCompletion({
+        model: "gpt-3.5-turbo-0613",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
+          },
+          {
+            role: "assistant",
+            content:
+              "Here is the list of devices: " +
+              JSON.stringify(links.splice(0, 10)),
+          },
+          {
+            role: "user",
+            content: `Find the product that best matches these specs: ${specs} for item: ${item_name}`,
+          },
+          {
+            role: "system",
+            content:
+              "Given the matched info to the item and return the item's price, stock level and url in a formatted response.",
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 500,
+        functions: functions,
+        function_call: "auto",
+      });
 
-    if (response.data.choices[0].finish_reason === "function_call") {
-      const functionName =
-        response.data.choices[0].message?.function_call?.name;
+      if (response.data.choices[0].finish_reason === "function_call") {
+        const functionName =
+          response.data.choices[0].message?.function_call?.name;
 
-      const args = JSON.parse(
-        response.data.choices[0].message?.function_call?.arguments
-      );
+        const args = JSON.parse(
+          response.data.choices[0].message?.function_call?.arguments
+        );
 
-      if (functionName === "returnItemInfo") {
-        let formattedResponse = returnItemInfo(args);
+        if (functionName === "returnItemInfo") {
+          let formattedResponse = returnItemInfo(args);
 
-        if (!formattedResponse.stock_level.toLowerCase().includes("in stock")) {
-          const recresponse = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo-0613",
-            messages: [
-              prompts.recommendations,
-              {
-                role: "assistant",
-                content:
-                  "Here is the list of related products from the search: " +
-                  JSON.stringify(links.splice(0, 10)),
-              },
-              {
-                role: "user",
-                content:
-                  "Return the top 3 recommended items that are in stock in a formatted response.",
-              },
-            ],
-            temperature: 0.3,
-            max_tokens: 2000,
-            functions: functions,
-            function_call: "auto",
-          });
-          if (recresponse.data.choices[0].finish_reason === "function_call") {
-            const recFuncName =
-              recresponse.data.choices[0].message?.function_call?.name;
+          if (
+            !formattedResponse.stock_level.toLowerCase().includes("in stock")
+          ) {
+            const recresponse = await openai.createChatCompletion({
+              model: "gpt-3.5-turbo-0613",
+              messages: [
+                prompts.recommendations,
+                {
+                  role: "assistant",
+                  content:
+                    "Here is the list of related products from the search: " +
+                    JSON.stringify(links.splice(0, 10)),
+                },
+                {
+                  role: "user",
+                  content:
+                    "Return the top 3 recommended items that are in stock in a formatted response.",
+                },
+              ],
+              temperature: 0.3,
+              max_tokens: 2000,
+              functions: functions,
+              function_call: "auto",
+            });
+            if (recresponse.data.choices[0].finish_reason === "function_call") {
+              const recFuncName =
+                recresponse.data.choices[0].message?.function_call?.name;
 
-            const recArgs = JSON.parse(
-              recresponse.data.choices[0].message?.function_call?.arguments
-            );
-            if (recFuncName === "formatMultipleRecommendations") {
-              formattedResponse.recommendations = formatMultipleRecommendations(
-                recArgs.recommendations
+              const recArgs = JSON.parse(
+                recresponse.data.choices[0].message?.function_call?.arguments
               );
+              if (recFuncName === "formatMultipleRecommendations") {
+                formattedResponse.recommendations =
+                  formatMultipleRecommendations(recArgs.recommendations);
 
-              return formattedResponse;
+                return formattedResponse;
+              }
             }
+          } else {
+            return formattedResponse;
           }
-        } else {
-          return formattedResponse;
         }
       }
+    } catch (e) {
+      console.log("Error :::::::::::::::: ", e.response.request);
     }
   }
 }
@@ -340,54 +370,13 @@ export async function getRecommendations(item_name) {
 }
 
 async function searchInsight(search_text) {
-  console.log(
-    "should reach here >>>>>>>>>>>>>> " +
-      "https://www.insight.com/en_US/search.html?country=US&q=" +
+  let insight_api_result = await axios.get(
+    "https://www.insight.com/api/product-search/search?q=" +
       search_text +
-      "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
-  );
-  // let html = await axios.request({
-  //   url:
-  //     "https://www.insight.com/en_US/search.html?country=US&q=" +
-  //     search_text +
-  //     "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k",
-  //   //method: "get",
-  //   // headers: { "Content-Type": "text/html" },
-  // });
-  // console.log("html data :::::::::::::: ", html);
-  // const productLinks = [];
-  // const $ = load(html.data);
-
-  // const names_and_links = $(".c-currency__value");
-
-  // names_and_links.each((index, element) => {
-  //   const nal_element = $(element);
-  //   console.log("names and links ???????????? ", nal_element);
-  //   productLinks.push({ name: nal_element.text() });
-  // });
-
-  // axios
-  //   .get(
-  //     "https://www.insight.com/en_US/search.html?country=US&q=" +
-  //       search_text +
-  //       "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
-  //   )
-  //   .then((response) =>
-  //     console.log("lets see data in here :::::::: ", response.data)
-  //   )
-  //   .catch((err) => {
-  //     console.log("caught err ::::::::::: ", err);
-  //   });
-
-  // console.log("testing in here :::::::::: ", productLinks);
-
-  const html = await client.get(
-    "https://www.insight.com/en_US/search.html?country=US&q=" +
-      search_text +
-      "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
+      "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=h&country=US&instockOnly=false&lang=en_US&locale=en_US&rows=50&start=0&salesOrg=2400&userSegment=CES"
   );
 
-  console.log("html data :::::::::::: ", html.data);
+  return insight_api_result.data.products;
 }
 
 async function searchCDW(search_text) {

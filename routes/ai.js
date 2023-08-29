@@ -31,7 +31,7 @@ router.post("/checkstock", checkJwt, async (req, res) => {
       );
       res.json({ status: "Successful", data: aiResult });
     } else {
-      const aiResult = await newCheckStock(item_name, specs, "cdw");
+      const aiResult = await newCheckStock(item_name, specs, supplier);
       res.json({ status: "Successful", data: aiResult });
     }
   } catch (e) {
