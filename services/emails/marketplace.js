@@ -19,6 +19,7 @@ export async function sendMarketplaceRequestEmail(body) {
     region,
     ref_url,
     ai_specs,
+    supplier,
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
@@ -46,7 +47,8 @@ export async function sendMarketplaceRequestEmail(body) {
           type,
           region,
           ref_url,
-          ai_specs
+          ai_specs,
+          supplier
         ),
       },
       recipients: {
@@ -135,7 +137,8 @@ function generateMarketplaceRequestEmail(
   type,
   region,
   ref_url,
-  ai_specs
+  ai_specs,
+  supplier
 ) {
   const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
   const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
@@ -153,6 +156,7 @@ function generateMarketplaceRequestEmail(
   const region_blk = `<div dir="ltr">Region: ${region}</div><div dir="ltr"><br></div>`;
   const ref_url_blk = `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
   const ai_specs_blk = `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
+  const supplier_blk = `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
 
   let emailBody =
     '<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div>';
@@ -161,6 +165,7 @@ function generateMarketplaceRequestEmail(
     emailBody =
       emailBody +
       req_type_blk +
+      supplier_blk +
       item_name_blk +
       specs_blk +
       ai_specs_blk +
@@ -175,6 +180,7 @@ function generateMarketplaceRequestEmail(
     emailBody =
       emailBody +
       req_type_blk +
+      supplier_blk +
       item_name_blk +
       specs_blk +
       ai_specs_blk +
