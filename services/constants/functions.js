@@ -1,20 +1,5 @@
 export const functions = [
   {
-    name: "searchCDW",
-    description: "Gets the item links from CDW for an item",
-    parameters: {
-      type: "object",
-      properties: {
-        search_text: {
-          type: "string",
-          description:
-            'The device. E.g. "macbook pro 13" m2" or "dell xps 15"".',
-        },
-      },
-      required: ["search_text"],
-    },
-  },
-  {
     name: "returnItemInfo",
     description:
       "Returns the price, stock level and url of item in a formatted response",
