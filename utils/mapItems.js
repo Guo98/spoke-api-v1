@@ -116,6 +116,8 @@ async function mapLineItems(customerInfo) {
         }
       } else if (item.name.toLowerCase().indexOf("roivant") > -1) {
         customerInfo.client = "Roivant";
+      } else if (item.name.toLowerCase().indexOf("sona") > -1) {
+        customerInfo.client = "Sona";
       }
 
       if (item.name.toLowerCase().includes("yubikey 5c")) {
