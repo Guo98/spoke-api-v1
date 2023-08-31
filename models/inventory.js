@@ -119,7 +119,8 @@ class Inventory {
     updated_ln = "",
     grade = "",
     updated_condition = "",
-    updated_warehouse = ""
+    updated_warehouse = "",
+    updated_date = ""
   ) {
     let verified_index = device_index;
     const coResponse = await this.database
@@ -165,6 +166,9 @@ class Inventory {
       }
       if (updated_warehouse !== "") {
         resource.serial_numbers[verified_index].warehouse = updated_warehouse;
+      }
+      if (updated_date !== "") {
+        resource.serial_numbers[verified_index].date_deployed = updated_date;
       }
 
       const { resource: replaced } = await coResponse.container
