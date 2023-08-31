@@ -15,8 +15,8 @@ const router = Router();
 //   }
 // });
 
-router.post("/checkstock", async (req, res) => {
-  const { item_name, specs, supplier } = req.body;
+router.post("/checkstock", checkJwt, async (req, res) => {
+  const { item_name, specs, supplier, others } = req.body;
   try {
     if (req.body.product_link) {
       const aiResult = await checkItemStock(
@@ -27,7 +27,7 @@ router.post("/checkstock", async (req, res) => {
       );
       res.json({ status: "Successful", data: aiResult });
     } else {
-      const aiResult = await newCheckStock(item_name, specs, supplier);
+      const aiResult = await newCheckStock(item_name, specs, supplier, others);
       res.json({ status: "Successful", data: aiResult });
     }
   } catch (e) {

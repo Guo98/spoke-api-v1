@@ -131,7 +131,12 @@ export async function checkItemStock(product_link, item_name, specs, supplier) {
   }
 }
 
-export async function newCheckStock(item_name, specs, supplier = "cdw") {
+export async function newCheckStock(
+  item_name,
+  specs,
+  supplier = "cdw",
+  others
+) {
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
     : item_name;
@@ -182,7 +187,8 @@ export async function newCheckStock(item_name, specs, supplier = "cdw") {
           let formattedResponse = returnItemInfo(args);
 
           if (
-            !formattedResponse.stock_level.toLowerCase().includes("in stock")
+            !formattedResponse.stock_level.toLowerCase().includes("in stock") ||
+            others
           ) {
             const recommendations = await getRecommendations(
               links,
