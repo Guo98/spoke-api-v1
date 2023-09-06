@@ -692,58 +692,20 @@ router.get("/marketplaceorders/:client?", checkJwt, async (req, res) => {
 
 router.post("/marketplaceorders", checkJwt, async (req, res) => {
   console.log("[POST] /marketplaceorders => Starting route.");
+  const { id, client } = req.body;
   try {
     console.log("[POST] /marketplaceorders => Starting update db function.");
-    if (req.body.status) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        req.body.status
-      );
-    } else if (req.body.price) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        req.body.price
-      );
-    } else if (req.body.approved !== undefined) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        req.body.approved
-      );
-    } else if (req.body.updateClient) {
-      const updateRes = await orders.updateMarketplaceClient(
-        req.body.id,
-        req.body.updateClient
-      );
-    } else if (req.body.entity) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        "",
-        req.body.entity
-      );
-    } else if (req.body.requestor_email) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        "",
-        "",
-        req.body.requestor_email
-      );
-    }
+    const updateRes = await orders.updateMarketOrder(
+      id,
+      req.body.updateClient ? req.body.updateClient : client,
+      req.body.status || "",
+      "",
+      req.body.price || "",
+      req.body.approved !== undefined ? req.body.approved : "",
+      req.body.entity || "",
+      req.body.requestor_email || ""
+    );
+
     console.log("[POST] /marketplaceorders => Finished update db function.");
   } catch (e) {
     console.log("[POST] /marketplaceorders => Error in updating db: ", e);
