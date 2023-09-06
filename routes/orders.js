@@ -767,6 +767,22 @@ router.post("/marketplaceorders", checkJwt, async (req, res) => {
   }
 });
 
+router.delete("/marketplaceorders/:client/:id", checkJwt, async (req, res) => {
+  const { client, id } = req.params;
+  console.log(`[DELETE] /marketplaceorders => Starting route for ${client}`);
+  try {
+    await orders.deleteOrder("Marketplace", id, client);
+  } catch (e) {
+    console.log(
+      `[DELETE] /marketplaceorders => Error in deleting marketplace order for ${client}:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  if (!res.headersSent) res.json({ status: "Successful" });
+  console.log(`[DELETE] /marketplaceorders => Finishing route for ${client}`);
+});
+
 router.post("/deleteOrder", checkJwt, async (req, res) => {
   const { client, id, full_name } = req.body;
   console.log(`/deleteOrder => Starting route for ${client}`);

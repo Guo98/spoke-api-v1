@@ -26,6 +26,7 @@ class Inventory {
   async newContainer(client) {
     const newCoResponse = await this.database.containers.createIfNotExists({
       id: client,
+      partitionKey: "/id",
     });
     return newCoResponse;
   }

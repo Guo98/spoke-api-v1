@@ -29,7 +29,7 @@ async function getRecommendations(links, item_name, specs) {
           item_name +
           " " +
           specs +
-          " that ideally are in stock in a formatted response from the list.",
+          " that are in stock in a formatted response from the list.",
       },
     ],
     temperature: 0.5,
@@ -251,6 +251,7 @@ async function searchInsight(search_text, sku = "") {
       delete l.reviewCount;
       delete l.averageRating;
       delete l.insightPrice;
+      delete l.callForPrice;
       l.product_link = getInsightProductLink(l);
     });
 

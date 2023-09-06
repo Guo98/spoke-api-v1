@@ -8,7 +8,7 @@ export const functions = [
       properties: {
         price: {
           type: "string",
-          description: 'Price of the item, e.g. "$1999.99"',
+          description: 'Price of the item in currency form, e.g. "$1999.99"',
         },
         stock_level: {
           type: "string",
@@ -57,7 +57,8 @@ export const functions = [
             properties: {
               price: {
                 type: "string",
-                description: 'Price of the item, e.g. "$1999.99"',
+                description:
+                  'Price of the item in currency form, e.g. "$1999.99"',
               },
               url_link: {
                 type: "string",

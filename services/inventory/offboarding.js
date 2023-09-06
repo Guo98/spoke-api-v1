@@ -35,14 +35,15 @@ async function inventoryOffboard(res, body, inventoryDB) {
       phone_num,
       requestor_email,
       note,
-      device_condition
+      device_condition,
+      body.activation_key ? body.activation_key : ""
     );
 
     const resp = addOrderRow(
       offboardValues,
       "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
       1831291341,
-      26
+      27
     );
     console.log(
       `/offboarding/${client} => Finished adding offboard order to offboarding sheet.`

@@ -232,7 +232,8 @@ function createOffboardRow(
   phone_num,
   requestor_email,
   note,
-  device_condition
+  device_condition,
+  activation_key = ""
 ) {
   const todayDate = new Date();
   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
@@ -367,6 +368,11 @@ function createOffboardRow(
     {
       userEnteredValue: {
         stringValue: device_condition,
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: activation_key,
       },
     },
   ];
