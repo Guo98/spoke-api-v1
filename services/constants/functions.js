@@ -8,7 +8,8 @@ export const functions = [
       properties: {
         price: {
           type: "string",
-          description: 'Price of the item in currency form, e.g. "$1999.99"',
+          description:
+            'Price of the item in currency format with dollar sign in front and cents, e.g. "$1999.99", "$9.99',
         },
         stock_level: {
           type: "string",
