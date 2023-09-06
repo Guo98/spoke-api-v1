@@ -695,16 +695,23 @@ router.post("/marketplaceorders", checkJwt, async (req, res) => {
   const { id, client } = req.body;
   try {
     console.log("[POST] /marketplaceorders => Starting update db function.");
-    const updateRes = await orders.updateMarketOrder(
-      id,
-      req.body.updateClient ? req.body.updateClient : client,
-      req.body.status || "",
-      "",
-      req.body.price || "",
-      req.body.approved !== undefined ? req.body.approved : "",
-      req.body.entity || "",
-      req.body.requestor_email || ""
-    );
+    if (!req.body.updateClient) {
+      const updateRes = await orders.updateMarketOrder(
+        id,
+        client,
+        req.body.status || "",
+        "",
+        req.body.price || "",
+        req.body.approved !== undefined ? req.body.approved : "",
+        req.body.entity || "",
+        req.body.requestor_email || ""
+      );
+    } else {
+      const updateRes = await orders.updateMarketplaceClient(
+        id,
+        req.body.updateClient
+      );
+    }
 
     console.log("[POST] /marketplaceorders => Finished update db function.");
   } catch (e) {
