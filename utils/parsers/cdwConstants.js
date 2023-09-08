@@ -17,6 +17,8 @@ export const cdwMappings = {
   "USB Type-C to DisplayPort 4K Cable (Automox)":
     "STARTECH 6FT USB-C/DP ADAPTER CABLE",
   "Logitech HD Pro Webcam C920S (Automox)": "LOGITECH C920S PRO HD WEBCAM",
+  'Lenovo ThinkPad 14" E14 Gen 5, Ryzen 7 7730U: 16GB RAM, 512GB SSD (Alma)':
+    'Lenovo ThinkPad E14 Gen 5 - 14" - AMD Ryzen 7 7730U - 16 GB RAM - 512 GB SS',
 };
 
 export const inventoryMappings = {
@@ -31,6 +33,8 @@ export const aftershipMappings = {
   'Lenovo ThinkPad 14" E14 Gen 4, Ryzen 7 5825U, 16GB , 256GB SSD (Alma)':
     "Lenovo ThinkPad 14 Ryzen 7 16GB",
   "MacBook Pro M2 Chip 13”: 16GB (Alma)": "MacBook Pro 13 M2 16GB",
+  'Lenovo ThinkPad 14" E14 Gen 5, Ryzen 7 7730U: 16GB RAM, 512GB SSD (Alma)':
+    "Lenovo ThinkPad E14 Gen 5",
 };
 
 //APPLE MBP 13 M2 8C10C 16 16GB 512 SG

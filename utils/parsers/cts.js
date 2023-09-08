@@ -50,6 +50,8 @@ function addCTSTrackingNumber(
             email:
               orders[index].client === "Alma"
                 ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                : orders[index].client === "Roivant"
+                ? '"' + orders[index].email + ',ronald.estime@roivant.com"'
                 : orders[index].email,
             title: orders[index].orderNo,
             customer_name: orders[index].full_name,
