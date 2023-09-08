@@ -18,7 +18,9 @@ export const cdwMappings = {
     "STARTECH 6FT USB-C/DP ADAPTER CABLE",
   "Logitech HD Pro Webcam C920S (Automox)": "LOGITECH C920S PRO HD WEBCAM",
   'Lenovo ThinkPad 14" E14 Gen 5, Ryzen 7 7730U: 16GB RAM, 512GB SSD (Alma)':
-    'Lenovo ThinkPad E14 Gen 5 - 14" - AMD Ryzen 7 7730U - 16 GB RAM - 512 GB SS',
+    "LVO E14 G5 R7-7730U 512/16 W11P",
+  "MacBook Pro 13” M2 Chip: 16GB RAM, 1TB SSD (Roivant) - Non-Technical":
+    "APPLE MBP 13 M2 8C10C 16 16GB 1TB",
 };
 
 export const inventoryMappings = {

@@ -200,6 +200,37 @@ class Inventory {
     return replaced;
   }
 
+  async autoAddInventory(containerId, device_name, new_devices) {
+    const coResponse = await this.database.container(containerId).read();
+    const { resources: receivedList } = await coResponse.container.items
+      .readAll()
+      .fetchAll();
+    let id = "";
+    receivedList.forEach((device) => {
+      const lc_name = device_name.toLowerCase();
+      if (
+        lc_name.includes(device.specs.screen_size) &&
+        lc_name.includes(device.specs.ram.toLowerCase()) &&
+        lc_name.includes(device.specs.cpu.toLowerCase()) &&
+        lc_name.includes(device.specs.hard_drive.toLowerCase())
+      ) {
+        id = device.id;
+      }
+    });
+    if (id !== "") {
+      const { resource } = await coResponse.container.item(id, id).read();
+      resource.serial_numbers = [...resource.serial_numbers, ...new_devices];
+
+      const { resource: replaced } = await coResponse.container
+        .item(id, id)
+        .replace(resource);
+
+      return replaced;
+    } else {
+      return undefined;
+    }
+  }
+
   async opsDeleteInventory(
     containerId,
     device_id,

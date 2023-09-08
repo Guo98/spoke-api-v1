@@ -6,6 +6,7 @@ const trackingEmails = [
   { email: "donotreply@buy.logitech.com", id: "logitech" },
   { email: "automation@app.smartsheet.com", id: "CTS" },
   { email: "cdwsales@cdwemail.com", id: "CDW" },
+  { email: "notification@insight.com", id: "insight" },
 ];
 
 const trackingRegex = {
