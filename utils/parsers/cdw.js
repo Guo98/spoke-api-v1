@@ -4,6 +4,7 @@ import { addNewSerialNumber } from "../../routes/inventory.js";
 import { inventoryMappings } from "./cdwConstants.js";
 import { createAftershipCSV } from "../../services/aftership.js";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
+import determineTrackingNumber from "./common/tracking.js";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
@@ -18,41 +19,21 @@ export default async function addCDWTrackingNumber(
   const orderNum = orders[index].orderNo;
   const openai = new OpenAIApi(configuration);
   console.log(`addCDWTrackingNumber(${orderNum}) => Starting function.`);
-  const trackingPatterns = {
-    UPS: /\b1Z[A-HJ-NP-Z0-9]{16}\b/g,
-    FedEx: /\b(\d{12}|\d{15})\b/g,
-  };
 
   const cdwOrderPattern = /Order #([^/]+)/;
   const cdwOrderMatch = subject.match(cdwOrderPattern);
 
   let tracking_number = "";
-  let matches = [];
   let courier = "";
   let aftershipArray = [];
   let serial_number = "";
   let device_name = "";
 
-  if (decodedMessage.match(trackingPatterns.FedEx)) {
-    matches = decodedMessage.match(trackingPatterns.FedEx);
-    console.log(
-      `addCDWTrackingNumber(${orderNum}) => Matched to FedEx: `,
-      matches
-    );
-    if (matches.length > 0) {
-      courier = "FedEx";
-      tracking_number = matches[0];
-    }
-  } else if (decodedMessage.match(trackingPatterns.UPS)) {
-    matches = decodedMessage.match(trackingPatterns.UPS);
-    console.log(
-      `addCDWTrackingNumber(${orderNum}) => Matched to UPS: `,
-      matches
-    );
-    if (matches.length > 0) {
-      courier = "UPS";
-      tracking_number = matches[0];
-    }
+  const tn_result = determineTrackingNumber(decodedMessage, orderNum);
+
+  if (tn_result) {
+    courier = tn_result.courier;
+    tracking_number = tn_result.tracking_number;
   }
 
   try {
@@ -88,7 +69,7 @@ export default async function addCDWTrackingNumber(
 
   if (tracking_number !== "") {
     orders[index].items.forEach((item, ind) => {
-      if (cdwMappings[item.name] && matches.length > 0) {
+      if (cdwMappings[item.name]) {
         if (decodedMessage.indexOf(cdwMappings[item.name]) > -1) {
           if (item.tracking_number === "") {
             item.tracking_number = [tracking_number];

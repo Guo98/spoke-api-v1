@@ -26,6 +26,7 @@ class Inventory {
   async newContainer(client) {
     const newCoResponse = await this.database.containers.createIfNotExists({
       id: client,
+      partitionKey: "/id",
     });
     return newCoResponse;
   }
@@ -119,7 +120,8 @@ class Inventory {
     updated_ln = "",
     grade = "",
     updated_condition = "",
-    updated_warehouse = ""
+    updated_warehouse = "",
+    updated_date = ""
   ) {
     let verified_index = device_index;
     const coResponse = await this.database
@@ -166,6 +168,9 @@ class Inventory {
       if (updated_warehouse !== "") {
         resource.serial_numbers[verified_index].warehouse = updated_warehouse;
       }
+      if (updated_date !== "") {
+        resource.serial_numbers[verified_index].date_deployed = updated_date;
+      }
 
       const { resource: replaced } = await coResponse.container
         .item(device_id, device_id)
@@ -193,6 +198,37 @@ class Inventory {
       .replace(resource);
 
     return replaced;
+  }
+
+  async autoAddInventory(containerId, device_name, new_devices) {
+    const coResponse = await this.database.container(containerId).read();
+    const { resources: receivedList } = await coResponse.container.items
+      .readAll()
+      .fetchAll();
+    let id = "";
+    receivedList.forEach((device) => {
+      const lc_name = device_name.toLowerCase();
+      if (
+        lc_name.includes(device.specs.screen_size) &&
+        lc_name.includes(device.specs.ram.toLowerCase()) &&
+        lc_name.includes(device.specs.cpu.toLowerCase()) &&
+        lc_name.includes(device.specs.hard_drive.toLowerCase())
+      ) {
+        id = device.id;
+      }
+    });
+    if (id !== "") {
+      const { resource } = await coResponse.container.item(id, id).read();
+      resource.serial_numbers = [...resource.serial_numbers, ...new_devices];
+
+      const { resource: replaced } = await coResponse.container
+        .item(id, id)
+        .replace(resource);
+
+      return replaced;
+    } else {
+      return undefined;
+    }
   }
 
   async opsDeleteInventory(

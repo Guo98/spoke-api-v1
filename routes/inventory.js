@@ -449,6 +449,7 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     grade,
     updated_condition,
     updated_warehouse,
+    updated_date,
   } = req.body;
   console.log(`[PATCH] /inventory/${client} => Starting route.`);
 
@@ -465,7 +466,8 @@ router.patch("/inventory", checkJwt, async (req, res) => {
       updated_ln,
       grade,
       updated_condition,
-      updated_warehouse
+      updated_warehouse,
+      updated_date
     );
     if (updateResp === "Error") {
       throw new Error("Error in updating");
@@ -621,6 +623,19 @@ async function addNewSerialNumber(client, device_id, new_device) {
   }
 }
 
+async function autoAddNewSerialNumber(client, device_name, new_device) {
+  try {
+    await inventory.autoAddInventory(client, device_name, [new_device]);
+  } catch (e) {
+    console.log(
+      `autoAddNewSerialNumber(${client}) => Error in adding new serial number: ${JSON.stringify(
+        new_device
+      )}. Error: `,
+      e
+    );
+  }
+}
+
 async function getAllInventory(client) {
   const allInventory = await inventory.getAll(client);
   return allInventory;
@@ -633,4 +648,9 @@ async function createInventoryContainer(client) {
 
 export default router;
 
-export { addNewSerialNumber, getAllInventory, createInventoryContainer };
+export {
+  addNewSerialNumber,
+  getAllInventory,
+  createInventoryContainer,
+  autoAddNewSerialNumber,
+};

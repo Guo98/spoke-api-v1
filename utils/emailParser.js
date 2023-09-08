@@ -4,6 +4,7 @@ import { addBHTrackingNumber } from "./parsers/bh.js";
 import { addFullyTrackingNumber } from "./parsers/fully.js";
 import { addCTSTrackingNumber } from "./parsers/cts.js";
 import addCDWTrackingNumber from "./parsers/cdw.js";
+import parseInsight from "./parsers/insight/insight.js";
 import cheerio from "cheerio";
 
 /**
@@ -127,6 +128,15 @@ async function getTrackingNumber(emailBody, supplier, orders, subject) {
         orderIndex: orderIndex,
         items: orders[orderIndex]?.items,
       });
+    } else if (supplier === "insight") {
+      console.log(
+        `getTrackingNUmber(${supplier}) => Adding Insight tracking number.`
+      );
+      parseInsight(decodedMessage, orders, orderIndex);
+      // updateResult.push({
+      //   orderIndex: orderIndex,
+      //   items: orders[orderIndex]?.items,
+      // });
     }
   }
 

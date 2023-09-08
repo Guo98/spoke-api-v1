@@ -32,6 +32,7 @@ class Orders {
   async newContainer(client) {
     const newCoResponse = await this.database.containers.createIfNotExists({
       id: client,
+      partitionKey: "/full_name",
     });
 
     return newCoResponse;

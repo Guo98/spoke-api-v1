@@ -11,9 +11,71 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-export async function checkItemStock(product_link, item_name, specs) {
-  const productInfo = await scrapeLink(product_link);
+async function getRecommendations(links, item_name, specs) {
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo-0613",
+    messages: [
+      prompts.recommendations,
+      {
+        role: "assistant",
+        content:
+          "Here is the list of related products from the search: " +
+          JSON.stringify(links.splice(0, 10)),
+      },
+      {
+        role: "user",
+        content:
+          "Recommend replacements for " +
+          item_name +
+          " " +
+          specs +
+          " that are in stock in a formatted response from the list.",
+      },
+    ],
+    temperature: 0.5,
+    max_tokens: 1000,
+    functions: functions,
+    function_call: "auto",
+  });
+
+  if (response.data.choices[0].finish_reason === "function_call") {
+    const functionName = response.data.choices[0].message?.function_call?.name;
+
+    const args = JSON.parse(
+      response.data.choices[0].message?.function_call?.arguments
+    );
+
+    if (functionName === "formatMultipleRecommendations") {
+      const recommendations = formatMultipleRecommendations(
+        args.recommendations
+      );
+
+      return recommendations;
+    } else {
+      return [];
+    }
+  } else {
+    return [];
+  }
+}
+
+export async function checkItemStock(product_link, item_name, specs, supplier) {
+  let search_text = item_name.toLowerCase().includes("apple")
+    ? item_name + " " + specs
+    : item_name;
+
+  let productInfo = {};
+  let product_links = [];
   let return_response = {};
+
+  if (supplier !== "insight") {
+    productInfo = await scrapeLink(product_link, supplier);
+  } else {
+    const insight_search = await searchInsight(search_text, product_link);
+    productInfo = insight_search.info;
+    product_links = insight_search.links;
+  }
+
   const openairesp = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
     messages: [
@@ -45,61 +107,36 @@ export async function checkItemStock(product_link, item_name, specs) {
     }
   }
 
-  if (!productInfo.availability.toLowerCase().includes("in stock")) {
-    let search_text = item_name.toLowerCase().includes("apple")
-      ? item_name + " " + specs
-      : item_name;
-
-    const product_links = await searchCDW(search_text);
-
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-0613",
-      messages: [
-        prompts.recommendations,
-        {
-          role: "assistant",
-          content:
-            "Here is the list of related products from the search: " +
-            JSON.stringify(product_links.splice(0, 10)),
-        },
-        {
-          role: "user",
-          content:
-            "Give me in stock recommendations for " +
-            item_name +
-            " " +
-            specs +
-            " that in a formatted response.",
-        },
-      ],
-      temperature: 0.5,
-      max_tokens: 2000,
-      functions: functions,
-      function_call: "auto",
-    });
-
-    if (response.data.choices[0].finish_reason === "function_call") {
-      const functionName =
-        response.data.choices[0].message?.function_call?.name;
-
-      const args = JSON.parse(
-        response.data.choices[0].message?.function_call?.arguments
-      );
-
-      if (functionName === "formatMultipleRecommendations") {
-        return_response.recommendations = formatMultipleRecommendations(
-          args.recommendations
-        );
-
-        return return_response;
-      }
+  if (
+    productInfo === {} ||
+    (productInfo.availability &&
+      !productInfo.availability.toLowerCase().includes("in stock"))
+  ) {
+    if (supplier !== "insight") {
+      product_links = await searchCDW(search_text);
     }
+
+    const recommendations = await getRecommendations(
+      product_links,
+      item_name,
+      specs
+    );
+
+    if (recommendations.length > 0) {
+      return_response.recommendations = recommendations;
+    }
+    return return_response;
   } else {
     return return_response;
   }
 }
 
-export async function newCheckStock(item_name, specs, supplier) {
+export async function newCheckStock(
+  item_name,
+  specs,
+  supplier = "cdw",
+  others
+) {
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
     : item_name;
@@ -107,257 +144,138 @@ export async function newCheckStock(item_name, specs, supplier) {
   if (supplier === "cdw") {
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
-    await searchInsight(search_text);
+    links = await searchInsight(search_text);
   }
 
   if (links.length > 0) {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-0613",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
-        },
-        {
-          role: "assistant",
-          content:
-            "Here is the list of devices: " +
-            JSON.stringify(links.splice(0, 10)),
-        },
-        {
-          role: "user",
-          content: `Find the product that best matches these specs: ${specs} for item: ${item_name}`,
-        },
-        {
-          role: "system",
-          content:
-            "Given the matched info to the item and return the item's price, stock level and url in a formatted response.",
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 500,
-      functions: functions,
-      function_call: "auto",
-    });
-
-    if (response.data.choices[0].finish_reason === "function_call") {
-      const functionName =
-        response.data.choices[0].message?.function_call?.name;
-
-      const args = JSON.parse(
-        response.data.choices[0].message?.function_call?.arguments
-      );
-
-      if (functionName === "returnItemInfo") {
-        let formattedResponse = returnItemInfo(args);
-
-        if (!formattedResponse.stock_level.toLowerCase().includes("in stock")) {
-          const recresponse = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo-0613",
-            messages: [
-              prompts.recommendations,
-              {
-                role: "assistant",
-                content:
-                  "Here is the list of related products from the search: " +
-                  JSON.stringify(links.splice(0, 10)),
-              },
-              {
-                role: "user",
-                content:
-                  "Return the top 3 recommended items that are in stock in a formatted response.",
-              },
-            ],
-            temperature: 0.3,
-            max_tokens: 2000,
-            functions: functions,
-            function_call: "auto",
-          });
-          if (recresponse.data.choices[0].finish_reason === "function_call") {
-            const recFuncName =
-              recresponse.data.choices[0].message?.function_call?.name;
-
-            const recArgs = JSON.parse(
-              recresponse.data.choices[0].message?.function_call?.arguments
-            );
-            if (recFuncName === "formatMultipleRecommendations") {
-              formattedResponse.recommendations = formatMultipleRecommendations(
-                recArgs.recommendations
-              );
-
-              return formattedResponse;
-            }
-          }
-        } else {
-          return formattedResponse;
-        }
-      }
-    }
-  }
-}
-
-export async function checkStock(item_name, specs) {
-  //const openai = new OpenAIApi(configuration);
-  const response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-0613",
-    messages: [
-      prompts.search,
-      {
-        role: "user",
-        content:
-          "Search CDW for: " +
-          (item_name.toLowerCase().includes("apple")
-            ? item_name + " " + specs
-            : item_name),
-      },
-    ],
-    temperature: 0.5,
-    max_tokens: 300,
-    functions: functions,
-    function_call: "auto",
-  });
-  if (response.data.choices[0].finish_reason === "function_call") {
-    const functionName = response.data.choices[0].message?.function_call?.name;
-
-    const args = JSON.parse(
-      response.data.choices[0].message?.function_call?.arguments
-    );
-    if (functionName === "searchCDW") {
-      const links = await searchCDW(args.search_text);
-      const funcresponse = await openai.createChatCompletion({
+    try {
+      const temp_links = [...links];
+      const response = await openai.createChatCompletion({
         model: "gpt-3.5-turbo-0613",
         messages: [
-          prompts.search,
-          {
-            role: "user",
-            content:
-              "Search CDW for: " +
-              (item_name.toLowerCase().includes("apple")
-                ? item_name + " " + specs
-                : item_name),
-          },
-          {
-            role: "function",
-            name: "searchCDW",
-            content: JSON.stringify(links),
-          },
-          {
-            role: "user",
-            content: `Find the product that best matches these specs: ${specs} for item: ${item_name}`,
-          },
           {
             role: "system",
             content:
-              "Given the matched info to the item and return the item's price, stock level and url in a formatted response.",
+              "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
+          },
+          {
+            role: "assistant",
+            content:
+              "Here is the list of devices: " +
+              JSON.stringify(temp_links.splice(0, 10)),
+          },
+          {
+            role: "user",
+            content: `Match specs: ${specs} for item: ${item_name} to one in the list and return the info in a formatted response.`,
           },
         ],
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 1000,
         functions: functions,
         function_call: "auto",
       });
 
-      if (funcresponse.data.choices[0].finish_reason === "function_call") {
-        const retFuncName =
-          funcresponse.data.choices[0].message?.function_call?.name;
+      if (response.data.choices[0].finish_reason === "function_call") {
+        const functionName =
+          response.data.choices[0].message?.function_call?.name;
 
-        const retArgs = JSON.parse(
-          funcresponse.data.choices[0].message?.function_call?.arguments
+        const args = JSON.parse(
+          response.data.choices[0].message?.function_call?.arguments
         );
 
-        if (retFuncName === "returnItemInfo") {
-          let formattedResponse = returnItemInfo(retArgs);
+        if (functionName === "returnItemInfo") {
+          let formattedResponse = returnItemInfo(args);
 
-          if (!retArgs.stock_level.toLowerCase().includes("in stock")) {
-            const recresponse = await openai.createChatCompletion({
-              model: "gpt-3.5-turbo-0613",
-              messages: [
-                prompts.recommendations,
-                {
-                  role: "assistant",
-                  content:
-                    "Here is the list of related products from the search: " +
-                    JSON.stringify(links.splice(0, 10)),
-                },
-                {
-                  role: "user",
-                  content:
-                    "Return the top 3 recommended items that are in stock in a formatted response.",
-                },
-              ],
-              temperature: 0.3,
-              max_tokens: 2000,
-              functions: functions,
-              function_call: "auto",
-            });
-            if (recresponse.data.choices[0].finish_reason === "function_call") {
-              const recFuncName =
-                recresponse.data.choices[0].message?.function_call?.name;
+          if (
+            !formattedResponse.stock_level.toLowerCase().includes("in stock") ||
+            others
+          ) {
+            const recommendations = await getRecommendations(
+              links,
+              item_name,
+              specs
+            );
 
-              const recArgs = JSON.parse(
-                recresponse.data.choices[0].message?.function_call?.arguments
-              );
-
-              if (recFuncName === "formatMultipleRecommendations") {
-                formattedResponse.recommendations =
-                  formatMultipleRecommendations(recArgs.recommendations);
-              }
+            if (recommendations.length > 0) {
+              formattedResponse.recommendations = recommendations;
             }
+            return formattedResponse;
+          } else {
+            return formattedResponse;
           }
-          return formattedResponse;
         }
-      } else {
-        return funcresponse;
       }
+    } catch (e) {
+      console.log("Error :::::::::::::::: ", e.response.data);
     }
   }
 }
 
-export async function getRecommendations(item_name) {
-  const openai = new OpenAIApi(configuration);
-  const response = await openai.createChatCompletion({
-    model: "gpt-4",
-    messages: [
-      prompts.search,
-      {
-        role: "user",
-        content: "Give for me item recommendations similar to " + item_name,
-      },
-    ],
-    temperature: 0.5,
-    max_tokens: 300,
-    functions: functions,
-    function_call: "auto",
-  });
-
-  console.log("response ::::::::: ", response.data.choices[0]);
+function getInsightProductLink(product) {
+  return (
+    "https://www.insight.com/en_US/shop/product/" +
+    encodeURIComponent(product.sku) +
+    "/" +
+    product.manufacturerName.toLowerCase() +
+    "/" +
+    encodeURIComponent(product.sku) +
+    "/" +
+    product.description
+      .replace(/-/g, " ")
+      .replace(/["]/g, " ")
+      .replace(/ +(?= )/g, "")
+      .replace(/\s+/g, "-") +
+    "/"
+  );
 }
 
-async function searchInsight(search_text) {
-  console.log(
-    "should reach here >>>>>>>>>>>>>> " +
-      "https://www.insight.com/en_US/search.html?country=US&q=" +
+async function searchInsight(search_text, sku = "") {
+  let insight_api_result = await axios.get(
+    "https://www.insight.com/api/product-search/search?q=" +
       search_text +
-      "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&qsrc=k"
+      (!search_text.toLowerCase().includes("apple") &&
+        "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops") +
+      "&qsrc=h&country=US&instockOnly=false&lang=en_US&locale=en_US&rows=50&start=0&salesOrg=2400&userSegment=CES"
   );
-  let html = await axios.request({
-    url: "https://www.insight.com/en_US/search.html?country=US&q=Lenovo+ThinkPad+E14+Gen+4&instockOnly=false&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops&start=0&salesOrg=2400&sessionId=1DB6C377582995C6FD8C54D6A06A7D07.appprd6-1%2C1DB6C377582995C6FD8C54D6A06A7D07.appprd6-1&lang=en_US&rows=50&userSegment=CES%2CCES&tabType=products",
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
 
-  const productLinks = [];
-  const $ = load(html.data);
+  let links = insight_api_result.data.products;
+  if (sku === "") {
+    links.forEach((l) => {
+      delete l.availabilityMessage;
+      delete l.alternateImage;
+      delete l.searchProductId;
+      delete l.manufacturerImage;
+      delete l.longDescription;
+      delete l.bullet5;
+      delete l.bullet4;
+      delete l.reviewCount;
+      delete l.averageRating;
+      delete l.insightPrice;
+      delete l.callForPrice;
+      l.product_link = getInsightProductLink(l);
+    });
 
-  const names_and_links = $(".c-currency__value");
-  console.log("names and links ???????????? ", names_and_links.text());
-  names_and_links.each((index, element) => {
-    const nal_element = $(element);
-    productLinks.push({ name: nal_element.text() });
-  });
-
-  console.log("testing in here :::::::::: ", productLinks);
+    return links;
+  } else {
+    const filtered_links = links.filter((l) => l.sku === sku);
+    if (filtered_links.length > 0) {
+      return {
+        info: {
+          availability:
+            filtered_links[0].availability === "AVAILABLE"
+              ? "In Stock"
+              : filtered_links[0].availability,
+          price: filtered_links[0].listPrice,
+          name: filtered_links[0].description,
+          image_source: filtered_links[0].image,
+          product_link: getInsightProductLink(filtered_links[0]),
+        },
+        links,
+      };
+    } else {
+      return { info: {}, links };
+    }
+  }
 }
 
 async function searchCDW(search_text) {
@@ -404,28 +322,29 @@ async function searchCDW(search_text) {
   return productLinks;
 }
 
-async function scrapeLink(product_link) {
-  let html = await axios.request({
-    url: product_link,
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
+async function scrapeLink(product_link, supplier) {
+  if (supplier === "cdw") {
+    let html = await axios.request({
+      url: product_link,
+      method: "get",
+      headers: { "Content-Type": "text/html" },
+    });
 
-  const $ = load(html.data);
+    const $ = load(html.data);
+    const availability = $(".short-message-block")
+      .text()
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .trim();
+    const price = $(".price-type-selected").text();
+    const name = $("#primaryProductNameStickyHeader").text();
+    const image_source = $(".main-image").children("img").eq(0).attr("src");
 
-  const availability = $(".short-message-block")
-    .text()
-    .replace(/(\r\n|\n|\r)/gm, "")
-    .trim();
-  const price = $(".price-type-selected").text();
-  const name = $("#primaryProductNameStickyHeader").text();
-  const image_source = $(".main-image").children("img").eq(0).attr("src");
-
-  return {
-    availability,
-    price,
-    name,
-    image_source,
-    product_link,
-  };
+    return {
+      availability,
+      price,
+      name,
+      image_source,
+      product_link,
+    };
+  }
 }

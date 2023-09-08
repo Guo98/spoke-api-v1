@@ -692,58 +692,27 @@ router.get("/marketplaceorders/:client?", checkJwt, async (req, res) => {
 
 router.post("/marketplaceorders", checkJwt, async (req, res) => {
   console.log("[POST] /marketplaceorders => Starting route.");
+  const { id, client } = req.body;
   try {
     console.log("[POST] /marketplaceorders => Starting update db function.");
-    if (req.body.status) {
+    if (!req.body.updateClient) {
       const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        req.body.status
+        id,
+        client,
+        req.body.status || "",
+        "",
+        req.body.price || "",
+        req.body.approved !== undefined ? req.body.approved : "",
+        req.body.entity || "",
+        req.body.requestor_email || ""
       );
-    } else if (req.body.price) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        req.body.price
-      );
-    } else if (req.body.approved !== undefined) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        req.body.approved
-      );
-    } else if (req.body.updateClient) {
+    } else {
       const updateRes = await orders.updateMarketplaceClient(
-        req.body.id,
+        id,
         req.body.updateClient
       );
-    } else if (req.body.entity) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        "",
-        req.body.entity
-      );
-    } else if (req.body.requestor_email) {
-      const updateRes = await orders.updateMarketOrder(
-        req.body.id,
-        req.body.client,
-        "",
-        "",
-        "",
-        "",
-        "",
-        req.body.requestor_email
-      );
     }
+
     console.log("[POST] /marketplaceorders => Finished update db function.");
   } catch (e) {
     console.log("[POST] /marketplaceorders => Error in updating db: ", e);
@@ -765,6 +734,22 @@ router.post("/marketplaceorders", checkJwt, async (req, res) => {
       );
     }
   }
+});
+
+router.delete("/marketplaceorders/:client/:id", checkJwt, async (req, res) => {
+  const { client, id } = req.params;
+  console.log(`[DELETE] /marketplaceorders => Starting route for ${client}`);
+  try {
+    await orders.deleteOrder("Marketplace", id, client);
+  } catch (e) {
+    console.log(
+      `[DELETE] /marketplaceorders => Error in deleting marketplace order for ${client}:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  if (!res.headersSent) res.json({ status: "Successful" });
+  console.log(`[DELETE] /marketplaceorders => Finishing route for ${client}`);
 });
 
 router.post("/deleteOrder", checkJwt, async (req, res) => {

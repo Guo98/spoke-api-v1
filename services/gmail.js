@@ -111,6 +111,12 @@ async function getEmailBody(messageId, orders) {
         )[0].value;
         body = res?.data?.payload?.parts[1]?.body?.data;
         break;
+      case "insight":
+        subject = res.data.payload.headers.filter(
+          (header) => header.name === "Subject"
+        )[0].value;
+        body = res?.data?.payload?.parts[0]?.parts[0]?.body?.data;
+        break;
       default:
         // body = res?.data?.payload?.parts[1].body;
         break;
@@ -121,7 +127,9 @@ async function getEmailBody(messageId, orders) {
       (isTrackingEmail.id === "CTS" && subject.indexOf("Has Shipped") > -1) ||
       (isTrackingEmail.id === "bh" && subject.indexOf("Shipped") > -1) ||
       (isTrackingEmail.id === "CDW" &&
-        subject.includes("CDW Shipping Confirmation"))
+        subject.includes("CDW Shipping Confirmation")) ||
+      (isTrackingEmail.id === "insight" &&
+        subject.toLowerCase().includes("has shipped"))
     ) {
       console.log(
         `getEmailBody(${messageId}) => Starting getTrackingNumber(supplier: ${isTrackingEmail.id}) function.`
