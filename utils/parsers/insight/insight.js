@@ -7,7 +7,7 @@ import { sendAftershipCSV } from "../../../services/sendEmail.js";
 
 export default async function parseInsight(message, orders, index) {
   const orderNum = orders[index].orderNo;
-
+  console.log(`parseInsight(${orderNum}) => Starting function.`);
   let courier = "";
   let tracking_number = "";
 
@@ -18,10 +18,14 @@ export default async function parseInsight(message, orders, index) {
   let aftershipArray = [];
 
   let device_name = "";
-
+  console.log(`parseInsight(${orderNum}) => Getting tracking number.`);
   const tn_result = determineTrackingNumber(message, orderNum);
 
   if (tn_result) {
+    console.log(
+      `parseInsight(${orderNum}) => Got tracking result:`,
+      tn_result.tracking_number
+    );
     courier = tn_result.courier;
     tracking_number = tn_result.tracking_number;
   }
@@ -54,6 +58,10 @@ export default async function parseInsight(message, orders, index) {
   });
 
   if (tracking_number !== "") {
+    console.log(
+      `parseInsight(${orderNum}) => Matching item in order to:`,
+      insight_product_name
+    );
     orders[index].items.forEach((item, ind) => {
       if (insightProductMappings[item.name]) {
         if (
@@ -61,7 +69,10 @@ export default async function parseInsight(message, orders, index) {
             .toLowerCase()
             .includes(insightProductMappings[item.name])
         ) {
-          if (item.tracking_number !== "") {
+          if (item.tracking_number === "" || item.tracking_number === " ") {
+            console.log(
+              `parseInsight(${orderNum}) => Matched item, adding tracking number.`
+            );
             item.tracking_number = [tracking_number];
             item.courier = courier;
             item.serial_number = serial_number;
@@ -93,6 +104,7 @@ export default async function parseInsight(message, orders, index) {
   }
 
   if (device_name !== "") {
+    console.log(`parseInsight(${orderNum}) => Adding to inventory.`);
     const new_device = {
       sn: serial_number,
       status: "Shipping",
@@ -121,4 +133,5 @@ export default async function parseInsight(message, orders, index) {
       );
     }
   }
+  console.log(`parseInsight(${orderNum}) => Finished function.`);
 }
