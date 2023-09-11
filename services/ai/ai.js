@@ -28,7 +28,7 @@ async function getRecommendations(links, item_name, specs) {
           "Recommend replacements for " +
           item_name +
           " " +
-          specs +
+          specs.replace('"', " inch") +
           " that are in stock in a formatted response from the list.",
       },
     ],
@@ -71,7 +71,10 @@ export async function checkItemStock(product_link, item_name, specs, supplier) {
   if (supplier !== "insight") {
     productInfo = await scrapeLink(product_link, supplier);
   } else {
-    const insight_search = await searchInsight(search_text, product_link);
+    const insight_search = await searchInsight(
+      item_name + " " + specs,
+      product_link
+    );
     productInfo = insight_search.info;
     product_links = insight_search.links;
   }
@@ -108,7 +111,7 @@ export async function checkItemStock(product_link, item_name, specs, supplier) {
   }
 
   if (
-    productInfo === {} ||
+    Object.keys(productInfo).length === 0 ||
     (productInfo.availability &&
       !productInfo.availability.toLowerCase().includes("in stock"))
   ) {
@@ -144,7 +147,8 @@ export async function newCheckStock(
   if (supplier === "cdw") {
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
-    links = await searchInsight(search_text);
+    links = await searchInsight(item_name + " " + specs);
+    // console.log("links :::::::::::: ", links);
   }
 
   if (links.length > 0) {
@@ -166,7 +170,10 @@ export async function newCheckStock(
           },
           {
             role: "user",
-            content: `Match specs: ${specs} for item: ${item_name} to one in the list and return the info in a formatted response.`,
+            content: `Match specs: ${specs.replace(
+              '"',
+              " inch"
+            )} for item: ${item_name} to one in the list and return the info in a formatted response.`,
           },
         ],
         temperature: 0.3,
@@ -232,7 +239,7 @@ function getInsightProductLink(product) {
 async function searchInsight(search_text, sku = "") {
   let insight_api_result = await axios.get(
     "https://www.insight.com/api/product-search/search?q=" +
-      search_text +
+      search_text.replace('"', " inch") +
       (!search_text.toLowerCase().includes("apple") &&
         "&selectedFacet=CategoryPath_en_US_ss_lowest_s%3ALaptops") +
       "&qsrc=h&country=US&instockOnly=false&lang=en_US&locale=en_US&rows=50&start=0&salesOrg=2400&userSegment=CES"
