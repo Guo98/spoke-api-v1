@@ -77,7 +77,7 @@ export async function createYubikeyShipment(body) {
           channelpartner_id: 1,
           delivery_type: 1,
           country_code_2: "US",
-          recipient: "Automox",
+          recipient: firstname + " " + lastname,
           recipient_email: email,
           recipient_firstname: firstname,
           recipient_lastname: lastname,
@@ -97,37 +97,7 @@ export async function createYubikeyShipment(body) {
         },
       };
       const postResp = await axios.request(postOpts);
-      // const postResp = await axios.post(
-      //   process.env.YUBIKEY_API_URL + "/v1/shipments_exact",
-      //   {
-      //     channelpartner_id: 1,
-      //     delivery_type: 1,
-      //     country_code_2: "US",
-      //     recipient: "Automox",
-      //     recipient_email: email,
-      //     recipient_firstname: firstname,
-      //     recipient_lastname: lastname,
-      //     recipient_telephone: phone_number,
-      //     street_line1: address.addressLine,
-      //     street_line2: "",
-      //     city: address.city,
-      //     region: address.subdivision,
-      //     postal_code: address.postalCode,
-      //     shipment_items: [
-      //       {
-      //         product_id: 29,
-      //         inventory_product_id: 29,
-      //         shipment_product_quantity: 2,
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     headers: {
-      //       Authorization: "Bearer " + process.env.YUBIKEY_KEY,
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
+
       console.log(
         "createYubikeyShipment() => Successfully ordered:",
         postResp.data
@@ -135,7 +105,10 @@ export async function createYubikeyShipment(body) {
 
       return postResp.data.shipment_id;
     } catch (err) {
-      console.log("createYubikeyShipment() => Error in ordering keys:", err);
+      console.log(
+        "createYubikeyShipment() => Error in ordering keys:",
+        err.response?.data?.errors
+      );
       return "";
     }
   } else {

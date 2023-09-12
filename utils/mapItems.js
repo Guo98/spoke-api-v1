@@ -125,7 +125,7 @@ async function mapLineItems(customerInfo) {
           firstname: customerInfo.firstName,
           lastname: customerInfo.lastName,
           email: customerInfo.email,
-          phonenumber: customerInfo.phone,
+          phone_number: customerInfo.phone,
           address: customerInfo.address,
         };
         try {

@@ -22,7 +22,10 @@ import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
 import { trackPackage } from "../services/fedex.js";
 import { trackUPSPackage } from "../services/ups.js";
-import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
+import {
+  getYubikeyShipmentInfo,
+  createYubikeyShipment,
+} from "../utils/yubikey.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
@@ -764,6 +767,16 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Successful" });
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
+
+// router.post("/orderyubikey", async (req, res) => {
+//   // const { firstname, lastname, address, email, phone_number } = body;
+//   try {
+//     const result = await createYubikeyShipment(req.body);
+//     res.send("hello world");
+//   } catch (e) {
+//     console.log("error in ordering :::::::: ", e);
+//   }
+// });
 
 const addMarketplaceOrder = async (request) => {
   let orderRes = await orders.getAllOrders("Marketplace");
