@@ -39,26 +39,49 @@ router.post("/cdw/order", async (req, res) => {
 
   if (isAuthenticated) {
     console.log("/cdw/order => Route authenticated.");
-    const {
-      po_customer_name,
-      po_number,
-      cdw_order_no,
-      serial_number,
-      cdw_tracking_no,
-      cdw_shipping_carrier,
-      cdw_part_no,
-      date,
-    } = req.body;
+    const { date } = req.body;
+
+    let update_order_obj = {
+      client: "",
+      order_no: "",
+      serial_number: "",
+      tracking_number: "",
+      part_number: "",
+      courier: "",
+      supplier_order_no: "",
+    };
+
+    if (req.body.records) {
+      req.body.records.forEach((record) => {
+        if (record.cdw_item_type === "Notebook/Mobile Devices") {
+          update_order_obj.client = record.po_customer_name;
+          update_order_obj.order_no = record.po_number;
+          update_order_obj.serial_number = record.serial_number;
+          update_order_obj.tracking_number = record.cdw_tracking_no;
+          update_order_obj.part_number = record.cdw_part_no;
+          update_order_obj.courier = record.cdw_shipping_carrier;
+          update_order_obj.supplier_order_no = record.cdw_order_no;
+        }
+      });
+    } else {
+      update_order_obj.client = req.body.po_customer_name;
+      update_order_obj.order_no = req.body.po_number;
+      update_order_obj.serial_number = req.body.serial_number;
+      update_order_obj.tracking_number = req.body.cdw_tracking_no;
+      update_order_obj.part_number = req.body.cdw_part_no;
+      update_order_obj.courier = req.body.cdw_shipping_carrier;
+      update_order_obj.supplier_order_no = req.body.cdw_order_no;
+    }
 
     const addresult = await addNewDocument("CDW", req.body);
 
     const updateRes = await cdwUpdateOrder(
-      client_title_case[po_customer_name],
-      po_number,
-      serial_number,
-      cdw_tracking_no,
-      cdw_part_no,
-      cdw_shipping_carrier,
+      client_title_case[update_order_obj.client],
+      update_order_obj.order_no,
+      update_order_obj.serial_number,
+      update_order_obj.tracking_number,
+      update_order_obj.part_number,
+      update_order_obj.courier,
       date
     );
 
@@ -66,17 +89,17 @@ router.post("/cdw/order", async (req, res) => {
       console.log("/cdw/order => Successfully updated order.");
 
       const updateInvRes = await autoAddNewSerialNumber(
-        client_title_case[po_customer_name],
+        client_title_case[update_order_obj.client],
         order_to_inventory[updateRes.item_name],
         {
-          sn: serial_number,
+          sn: update_order_obj.serial_number,
           status: "Shipping",
           condition: "New",
           first_name: updateRes.first_name,
           last_name: updateRes.last_name,
           full_name: updateRes.full_name,
           supplier: "CDW",
-          supplier_order_no: cdw_order_no,
+          supplier_order_no: update_order_obj.supplier_order_no,
         }
       );
     } else {

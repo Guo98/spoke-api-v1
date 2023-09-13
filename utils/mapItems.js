@@ -64,7 +64,7 @@ async function mapLineItems(customerInfo) {
           customerInfo.client = customerInfo.note;
 
           customerInfo.items.push({
-            name: "Offboarding - (Return Box)",
+            name: item.name + " - (Return Box)",
             price: 0,
             variant: [],
             quantity: 1,
