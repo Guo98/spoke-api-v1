@@ -105,4 +105,13 @@ const skuMapping = {
   'MacBook Air 13.6" M2, 8GB, 256GB SSD': "MLXW3LL/A",
 };
 
-export { inventoryDBMapping };
+const order_to_inventory = {
+  'MacBook Air 13.6" M2, 8GB, 256GB SSD (Alma)': "macbook_air_8_usa",
+  'Lenovo ThinkPad 14" E14 Gen 4, Ryzen 7 5825U, 16GB , 256GB SSD (Alma)':
+    "lenovo_thinkpad_e14_usa",
+  "MacBook Pro M2 Chip 13”: 16GB (Alma)": "macbook_pro_16_usa",
+  'Lenovo ThinkPad 14" E14 Gen 5, Ryzen 7 7730U: 16GB RAM, 512GB SSD (Alma)':
+    "lenovo_thinkpad_e14_gen5_usa",
+};
+
+export { inventoryDBMapping, order_to_inventory };

@@ -4,6 +4,9 @@ import { ClientCredentials } from "simple-oauth2";
 import { cdwBasicAuth } from "../services/basicAuth.js";
 import { addNewDocument } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
+import { cdwUpdateOrder } from "./orders.js";
+import { autoAddNewSerialNumber } from "./inventory.js";
+import { order_to_inventory } from "../utils/mappings/inventory.js";
 
 const router = Router();
 
@@ -16,6 +19,10 @@ const cdw_config = {
     tokenHost: "https://pre-prod-apihub.cdw.com",
     tokenPath: "/v2/oauth/ClientCredentialAcessToken",
   },
+};
+
+const client_title_case = {
+  ALMA: "Alma",
 };
 
 router.post("/cdw/order", async (req, res) => {
@@ -32,8 +39,51 @@ router.post("/cdw/order", async (req, res) => {
 
   if (isAuthenticated) {
     console.log("/cdw/order => Route authenticated.");
-    const cdwRes = await addNewDocument("CDW", req.body);
-    console.log("/cdw/order => Finished adding req body to CDW container.");
+    const {
+      po_customer_name,
+      po_number,
+      cdw_order_no,
+      serial_number,
+      cdw_tracking_no,
+      cdw_shipping_carrier,
+      cdw_part_no,
+      date,
+    } = req.body;
+
+    const addresult = await addNewDocument("CDW", req.body);
+
+    const updateRes = await cdwUpdateOrder(
+      client_title_case[po_customer_name],
+      po_number,
+      serial_number,
+      cdw_tracking_no,
+      cdw_part_no,
+      cdw_shipping_carrier,
+      date
+    );
+
+    if (updateRes !== "") {
+      console.log("/cdw/order => Successfully updated order.");
+
+      const updateInvRes = await autoAddNewSerialNumber(
+        client_title_case[po_customer_name],
+        order_to_inventory[updateRes.item_name],
+        {
+          sn: serial_number,
+          status: "Shipping",
+          condition: "New",
+          first_name: updateRes.first_name,
+          last_name: updateRes.last_name,
+          full_name: updateRes.full_name,
+          supplier: "CDW",
+          supplier_order_no: cdw_order_no,
+        }
+      );
+    } else {
+      console.log("/cdw/order => Error in updating order.");
+    }
+
+    console.log("/cdw/order => Finished updateing CDW order.");
     if (!res.headersSent) res.send("Hello World");
   } else {
     res.status(401).json({ status: "Unauthorized" });

@@ -626,6 +626,7 @@ async function addNewSerialNumber(client, device_id, new_device) {
 async function autoAddNewSerialNumber(client, device_name, new_device) {
   try {
     await inventory.autoAddInventory(client, device_name, [new_device]);
+    return true;
   } catch (e) {
     console.log(
       `autoAddNewSerialNumber(${client}) => Error in adding new serial number: ${JSON.stringify(
@@ -633,6 +634,7 @@ async function autoAddNewSerialNumber(client, device_name, new_device) {
       )}. Error: `,
       e
     );
+    return false;
   }
 }
 
