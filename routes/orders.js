@@ -949,12 +949,12 @@ const cdwUpdateOrder = async (
     const parsed_order_no = parseInt(order_no);
 
     try {
-      const all_orders = await orders.getAllOrders(client);
+      const all_received = await orders.getAllReceived();
 
-      if (all_orders.length > 0) {
-        for await (let o of all_orders) {
+      if (all_received.length > 0) {
+        for await (let o of all_received) {
           if (o.orderNo === parsed_order_no) {
-            const item_keyword = cdw_to_item_name(cdw_part_number);
+            const item_keyword = cdw_to_item_name[cdw_part_number];
             let item_name = "";
             o.items.forEach((i) => {
               if (i.name.toLowerCase().includes(item_keyword)) {
@@ -967,7 +967,7 @@ const cdwUpdateOrder = async (
             });
 
             const replaced = await orders.updateOrderByContainer(
-              client,
+              "Received",
               o.id,
               o.full_name,
               o.items
@@ -979,10 +979,41 @@ const cdwUpdateOrder = async (
               full_name: o.full_name,
             };
           }
-          return "";
         }
       }
 
+      const all_orders = await orders.getAllOrders(client);
+
+      if (all_orders.length > 0) {
+        for await (let o of all_orders) {
+          if (o.orderNo === parsed_order_no) {
+            const item_keyword = cdw_to_item_name[cdw_part_number];
+            let item_name = "";
+            o.items.forEach((i) => {
+              if (i.name.toLowerCase().includes(item_keyword)) {
+                i.serial_number = serial_no;
+                i.tracking_number = [tracking_no];
+                i.courier = carrier;
+                i.date_shipped = date_shipped;
+                item_name = i.name;
+              }
+            });
+
+            const replaced = await orders.updateOrderByContainer(
+              "Received",
+              o.id,
+              o.full_name,
+              o.items
+            );
+            return {
+              item_name,
+              first_name: o.firstName,
+              last_name: o.lastName,
+              full_name: o.full_name,
+            };
+          }
+        }
+      }
       return "";
     } catch (e) {
       console.log(`cdwUpdateOrder() => Error in function:`, e);

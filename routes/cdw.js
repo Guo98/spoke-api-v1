@@ -90,7 +90,7 @@ router.post("/cdw/order", async (req, res) => {
 
       const updateInvRes = await autoAddNewSerialNumber(
         client_title_case[update_order_obj.client],
-        order_to_inventory[updateRes.item_name],
+        updateRes.item_name,
         {
           sn: update_order_obj.serial_number,
           status: "Shipping",
