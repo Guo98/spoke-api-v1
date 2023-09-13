@@ -50,6 +50,8 @@ router.post("/cdw/order", async (req, res) => {
       date,
     } = req.body;
 
+    const addresult = await addNewDocument("CDW", req.body);
+
     const updateRes = await cdwUpdateOrder(
       client_title_case[po_customer_name],
       po_number,
