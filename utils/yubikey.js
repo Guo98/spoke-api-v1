@@ -61,7 +61,7 @@ export async function checkYubikeyQuantity() {
 }
 
 export async function createYubikeyShipment(body) {
-  const { firstname, lastname, address, email, phone_number } = body;
+  const { firstname, lastname, address, email, phone_number, quantity } = body;
   const areThereKeys = await checkYubikeyQuantity();
 
   if (areThereKeys) {
@@ -91,7 +91,7 @@ export async function createYubikeyShipment(body) {
             {
               product_id: 29,
               inventory_product_id: 29,
-              shipment_product_quantity: 2,
+              shipment_product_quantity: 2 * quantity,
             },
           ],
         },
