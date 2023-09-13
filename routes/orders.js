@@ -27,6 +27,8 @@ import {
   createYubikeyShipment,
 } from "../utils/yubikey.js";
 
+import { cdw_to_item_name } from "../utils/mappings/cdw_part_numbers.js";
+
 const cosmosClient = new CosmosClient({
   endpoint: config.endpoint,
   key: config.key,
@@ -907,8 +909,6 @@ const addNewDocument = async (containerId, doc) => {
   }
 };
 
-const addItems = async (containerId, newItems) => {};
-
 const resetMockApprovals = async () => {
   try {
     let mockApproval = await orders.getItemByContainer(
@@ -936,6 +936,61 @@ const createOrdersContainer = async (client) => {
   return newCoResponse;
 };
 
+const cdwUpdateOrder = async (
+  client,
+  order_no,
+  serial_no,
+  tracking_no,
+  cdw_part_number,
+  carrier,
+  date_shipped
+) => {
+  if (!isNaN(order_no)) {
+    const parsed_order_no = parseInt(order_no);
+
+    try {
+      const all_orders = await orders.getAllOrders(client);
+
+      if (all_orders.length > 0) {
+        for await (let o of all_orders) {
+          if (o.orderNo === parsed_order_no) {
+            const item_keyword = cdw_to_item_name(cdw_part_number);
+            let item_name = "";
+            o.items.forEach((i) => {
+              if (i.name.toLowerCase().includes(item_keyword)) {
+                i.serial_number = serial_no;
+                i.tracking_number = [tracking_no];
+                i.courier = carrier;
+                i.date_shipped = date_shipped;
+                item_name = i.name;
+              }
+            });
+
+            const replaced = await orders.updateOrderByContainer(
+              client,
+              o.id,
+              o.full_name,
+              o.items
+            );
+            return {
+              item_name,
+              first_name: o.firstName,
+              last_name: o.lastName,
+              full_name: o.full_name,
+            };
+          }
+          return "";
+        }
+      }
+
+      return "";
+    } catch (e) {
+      console.log(`cdwUpdateOrder() => Error in function:`, e);
+      return "";
+    }
+  }
+};
+
 export default router;
 
 export {
@@ -945,4 +1000,5 @@ export {
   resetMockApprovals,
   createOrdersContainer,
   addNewDocument,
+  cdwUpdateOrder,
 };
