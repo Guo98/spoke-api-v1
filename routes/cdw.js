@@ -70,7 +70,7 @@ router.post("/cdw/order", async (req, res) => {
         order_to_inventory[updateRes.item_name],
         {
           sn: serial_number,
-          status: "Deployed",
+          status: "Shipping",
           condition: "New",
           first_name: updateRes.first_name,
           last_name: updateRes.last_name,
