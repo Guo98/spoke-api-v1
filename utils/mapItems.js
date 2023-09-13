@@ -62,6 +62,14 @@ async function mapLineItems(customerInfo) {
         if (item.name === "Offboarding" || item.name === "Returning") {
           item.supplier = suppliers[item.name];
           customerInfo.client = customerInfo.note;
+
+          customerInfo.items.push({
+            name: "Offboarding - (Return Box)",
+            price: 0,
+            variant: [],
+            quantity: 1,
+            supplier: "CTS",
+          });
         } else if (
           typeof suppliers[item.name] === "object" &&
           suppliers[item.name] !== null
@@ -127,6 +135,7 @@ async function mapLineItems(customerInfo) {
           email: customerInfo.email,
           phone_number: customerInfo.phone,
           address: customerInfo.address,
+          quantity: item.quantity,
         };
         try {
           console.log(
