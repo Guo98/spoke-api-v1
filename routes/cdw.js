@@ -7,6 +7,8 @@ import { checkJwt } from "../services/auth0.js";
 import { cdwUpdateOrder } from "./orders.js";
 import { autoAddNewSerialNumber } from "./inventory.js";
 import { order_to_inventory } from "../utils/mappings/inventory.js";
+import { createAftershipCSV } from "../services/aftership.js";
+import { sendAftershipCSV } from "../services/sendEmail.js";
 
 const router = Router();
 
@@ -85,6 +87,8 @@ router.post("/cdw/order", async (req, res) => {
       date
     );
 
+    // aftserhip
+
     if (updateRes !== "") {
       console.log("/cdw/order => Successfully updated order.");
 
@@ -108,6 +112,40 @@ router.post("/cdw/order", async (req, res) => {
 
     console.log("/cdw/order => Finished updateing CDW order.");
     if (!res.headersSent) res.send("Hello World");
+
+    if (updateRes !== "") {
+      let aftershipArray = [
+        {
+          email:
+            client_title_case[update_order_obj.client] === "Alma"
+              ? '"' + updateRes.email + ',it-team@helloalma.com"'
+              : client_title_case[update_order_obj.client] === "Roivant"
+              ? '"' + updateRes.email + ',ronald.estime@roivant.com"'
+              : updateRes.email,
+          title: updateRes.order_no,
+          customer_name: updateRes.full_name,
+          order_number: updateRes.item_name,
+          tracking_number: update_order_obj.tracking_number,
+        },
+      ];
+
+      if (aftershipArray.length > 0) {
+        console.log(
+          `addCDWTrackingNumber(${orderNum}) => Sending Aftership CSV file.`
+        );
+        const base64csv = createAftershipCSV(aftershipArray);
+        try {
+          sendAftershipCSV(base64csv, orderNum);
+          console.log(
+            `addCDWTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
+          );
+        } catch (e) {
+          console.log(
+            `addCDWTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
+          );
+        }
+      }
+    }
   } else {
     res.status(401).json({ status: "Unauthorized" });
   }
