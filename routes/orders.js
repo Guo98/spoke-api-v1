@@ -946,8 +946,13 @@ const cdwHelperFunction = async (
 ) => {
   const item_keyword = cdw_to_item_name[cdw_part_number];
   let item_name = "";
+  let items_changed = false;
   o.items.forEach((i) => {
-    if (i.name.toLowerCase().includes(item_keyword)) {
+    if (
+      i.name.toLowerCase().includes(item_keyword) &&
+      !Array.isArray(i.tracking_number)
+    ) {
+      items_changed = true;
       i.serial_number = serial_no;
       i.tracking_number = [tracking_no];
       i.courier = carrier;
@@ -955,21 +960,24 @@ const cdwHelperFunction = async (
       item_name = i.name;
     }
   });
-
-  const replaced = await orders.updateOrderByContainer(
-    "Received",
-    o.id,
-    o.full_name,
-    o.items
-  );
-  return {
-    item_name,
-    first_name: o.firstName,
-    last_name: o.lastName,
-    full_name: o.full_name,
-    email: o.email,
-    order_no: o.orderNo,
-  };
+  if (items_changed) {
+    const replaced = await orders.updateOrderByContainer(
+      "Received",
+      o.id,
+      o.full_name,
+      o.items
+    );
+    return {
+      item_name,
+      first_name: o.firstName,
+      last_name: o.lastName,
+      full_name: o.full_name,
+      email: o.email,
+      order_no: o.orderNo,
+    };
+  } else {
+    return "";
+  }
 };
 
 const cdwUpdateOrder = async (
