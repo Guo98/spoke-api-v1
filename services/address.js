@@ -55,7 +55,6 @@ async function validateAddress(address, source) {
 
         if (
           features.properties.country === "United States" ||
-          source !== "wix" ||
           euCountryCodes.indexOf(
             features.properties.country_code.toUpperCase()
           ) > -1
@@ -95,8 +94,6 @@ async function validateAddress(address, source) {
             };
             return { status: 200, data: addressObj };
           }
-        } else {
-          return { status: 500, data: "not in the united states" };
         }
       } else {
         return { status: 500, data: data.data };

@@ -13,7 +13,7 @@ router.post("/validateAddress2", async (req, res) => {
     res.status(401).json({ message: "Missing Authorization Header" });
   }
 
-  if (req.body && req.body !== {}) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
@@ -44,7 +44,7 @@ router.post("/autocompleteAddress", async (req, res) => {
     res.status(401).json({ message: "Missing Authorization Header" });
   }
 
-  if (req.body && req.body !== {}) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
@@ -75,7 +75,7 @@ router.post("/validateAddress", async (req, res) => {
     res.status(401).json({ message: "Missing Authorization Header" });
   }
 
-  if (req.body && req.body !== {}) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const isAuthenticated = await basicAuth(req.headers.authorization);
 
     if (isAuthenticated) {
@@ -105,7 +105,7 @@ router.post("/validateAddress", async (req, res) => {
 
 router.post("/validateAddressUI", checkJwt, async (req, res) => {
   console.log("/validateAddressUI => Starting route");
-  if (req.body && req.body !== {}) {
+  if (req.body && Object.keys(req.body).length > 0) {
     validateAddress(req.body.address, "portal")
       .then((data) => {
         // console.log("address data ::::: ", data);

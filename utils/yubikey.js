@@ -134,9 +134,15 @@ export async function getYubikeyShipmentInfo(shipment_id) {
       `getYubikeyShipmentInfo(${shipment_id}) => Getting shipment info.`
     );
     const resp = await axios.request(getOpts);
-    returnObj.tracking_number = resp.data.tracking_number;
-    returnObj.courier = resp.data.carrier;
-    returnObj.delivery_description = resp.data.shipment_state_message;
+    if (resp.data.shipment_state_code === "ShipmentStateAddressFail") {
+      console.log(
+        `getYubikeyShipmentInfo(${shipment_id}) => Shipment address failed validation.`
+      );
+    } else {
+      returnObj.tracking_number = resp.data.tracking_number;
+      returnObj.courier = resp.data.carrier;
+      returnObj.delivery_description = resp.data.shipment_state_message;
+    }
     console.log(
       `getYubikeyShipmentInfo(${shipment_id}) => Got shipment info:`,
       returnObj
