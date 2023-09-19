@@ -61,7 +61,11 @@ router.post("/cdw/order", async (req, res) => {
           update_order_obj.serial_number = record.serial_number;
           update_order_obj.tracking_number = record.cdw_tracking_no;
           update_order_obj.part_number = record.cdw_part_no;
-          update_order_obj.courier = record.cdw_shipping_carrier;
+          if (record.cdw_shipping_carrier === "UPSN") {
+            update_order_obj.courier = "UPS";
+          } else {
+            update_order_obj.courier = record.cdw_shipping_carrier;
+          }
           update_order_obj.supplier_order_no = record.cdw_order_no;
         }
       });
@@ -71,7 +75,11 @@ router.post("/cdw/order", async (req, res) => {
       update_order_obj.serial_number = req.body.serial_number;
       update_order_obj.tracking_number = req.body.cdw_tracking_no;
       update_order_obj.part_number = req.body.cdw_part_no;
-      update_order_obj.courier = req.body.cdw_shipping_carrier;
+      if (req.body.cdw_shipping_carrier === "UPSN") {
+        update_order_obj.courier = "UPS";
+      } else {
+        update_order_obj.courier = req.body.cdw_shipping_carrier;
+      }
       update_order_obj.supplier_order_no = req.body.cdw_order_no;
     }
 
