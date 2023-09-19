@@ -27,6 +27,11 @@ const client_title_case = {
   ALMA: "Alma",
 };
 
+const cdw_carrier = {
+  UPSN: "UPS",
+  RPSI: "FedEx",
+};
+
 router.post("/cdw/order", async (req, res) => {
   console.log("/cdw/order => Starting route.");
   if (
@@ -61,8 +66,8 @@ router.post("/cdw/order", async (req, res) => {
           update_order_obj.serial_number = record.serial_number;
           update_order_obj.tracking_number = record.cdw_tracking_no;
           update_order_obj.part_number = record.cdw_part_no;
-          if (record.cdw_shipping_carrier === "UPSN") {
-            update_order_obj.courier = "UPS";
+          if (cdw_carrier[record.cdw_shipping_carrier]) {
+            update_order_obj.courier = cdw_carrier[record.cdw_shipping_carrier];
           } else {
             update_order_obj.courier = record.cdw_shipping_carrier;
           }
@@ -75,8 +80,8 @@ router.post("/cdw/order", async (req, res) => {
       update_order_obj.serial_number = req.body.serial_number;
       update_order_obj.tracking_number = req.body.cdw_tracking_no;
       update_order_obj.part_number = req.body.cdw_part_no;
-      if (req.body.cdw_shipping_carrier === "UPSN") {
-        update_order_obj.courier = "UPS";
+      if (cdw_carrier[req.body.cdw_shipping_carrier]) {
+        update_order_obj.courier = cdw_carrier[req.body.cdw_shipping_carrier];
       } else {
         update_order_obj.courier = req.body.cdw_shipping_carrier;
       }
