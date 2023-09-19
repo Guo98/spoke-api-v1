@@ -110,10 +110,13 @@ router.post("/cdw/order", async (req, res) => {
       console.log("/cdw/order => Error in updating order.");
     }
 
-    console.log("/cdw/order => Finished updateing CDW order.");
+    console.log("/cdw/order => Finished updating CDW order.");
     if (!res.headersSent) res.send("Hello World");
 
     if (updateRes !== "") {
+      console.log(
+        `/cdw/order/${update_order_obj.order_no} => Starting sending aftership email steps.`
+      );
       let aftershipArray = [
         {
           email:
@@ -131,17 +134,17 @@ router.post("/cdw/order", async (req, res) => {
 
       if (aftershipArray.length > 0) {
         console.log(
-          `addCDWTrackingNumber(${orderNum}) => Sending Aftership CSV file.`
+          `/cdw/order/${update_order_obj.order_no} => Sending Aftership CSV file.`
         );
         const base64csv = createAftershipCSV(aftershipArray);
         try {
           sendAftershipCSV(base64csv, orderNum);
           console.log(
-            `addCDWTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
+            `/cdw/order/${update_order_obj.order_no} => Successfully finished sendAftershipCSV().`
           );
         } catch (e) {
           console.log(
-            `addCDWTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
+            `/cdw/order/${update_order_obj.order_no} => Error in sendAftershipCSV() function: ${e}`
           );
         }
       }

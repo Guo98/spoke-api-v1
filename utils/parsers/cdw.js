@@ -1,5 +1,6 @@
 import { cdwMappings, aftershipMappings } from "./cdwConstants.js";
 import { Configuration, OpenAIApi } from "openai";
+import { load } from "cheerio";
 import { addNewSerialNumber } from "../../routes/inventory.js";
 import { inventoryMappings } from "./cdwConstants.js";
 import { createAftershipCSV } from "../../services/aftership.js";
@@ -18,9 +19,9 @@ export default async function addCDWTrackingNumber(
 ) {
   const orderNum = orders[index].orderNo;
 
-  if (orders[index].client === "Alma") return;
+  // if (orders[index].client === "Alma") return;
 
-  const openai = new OpenAIApi(configuration);
+  // const openai = new OpenAIApi(configuration);
   console.log(`addCDWTrackingNumber(${orderNum}) => Starting function.`);
 
   const cdwOrderPattern = /Order #([^/]+)/;
@@ -31,6 +32,7 @@ export default async function addCDWTrackingNumber(
   let aftershipArray = [];
   let serial_number = "";
   let device_name = "";
+  let already_updated = false;
 
   const tn_result = determineTrackingNumber(decodedMessage, orderNum);
 
@@ -39,36 +41,55 @@ export default async function addCDWTrackingNumber(
     tracking_number = tn_result.tracking_number;
   }
 
-  try {
-    console.log(
-      `addCDWTrackingNumber(${orderNum}) => Getting serial number from CDW email.`
-    );
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-0613",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You're a developer and given html, find the serial number: " +
-            decodedMessage.replace(/<[^>]+>/g, "") +
-            ". Only return the serial number as a string.",
-        },
-      ],
-      temperature: 0.5,
-      max_tokens: 300,
-    });
+  const $ = load(decodedMessage);
 
-    serial_number = response.data.choices[0].message.content;
-    console.log(
-      `addCDWTrackingNumber(${orderNum}) => Got serial number from CDW email:`,
-      serial_number
-    );
-  } catch (e) {
-    console.log(
-      `addCDWTrackingNumber(${orderNum}) => Error in getting serial number from CDW email. Error:`,
-      e
-    );
-  }
+  // try {
+  //   console.log(
+  //     `addCDWTrackingNumber(${orderNum}) => Getting serial number from CDW email.`
+  //   );
+  //   const response = await openai.createChatCompletion({
+  //     model: "gpt-3.5-turbo-0613",
+  //     messages: [
+  //       {
+  //         role: "system",
+  //         content:
+  //           "You're a developer and given html, find the serial number: " +
+  //           decodedMessage.replace(/<[^>]+>/g, "") +
+  //           ". Only return the serial number as a string.",
+  //       },
+  //     ],
+  //     temperature: 0.5,
+  //     max_tokens: 300,
+  //   });
+
+  //   serial_number = response.data.choices[0].message.content;
+  //   console.log(
+  //     `addCDWTrackingNumber(${orderNum}) => Got serial number from CDW email:`,
+  //     serial_number
+  //   );
+  // } catch (e) {
+  //   console.log(
+  //     `addCDWTrackingNumber(${orderNum}) => Error in getting serial number from CDW email. Error:`,
+  //     e
+  //   );
+  // }
+
+  $("td").each((index, element) => {
+    const data_trim = $(element).text().trim().toLowerCase();
+
+    if (
+      data_trim.includes("serial numbers for order") &&
+      !data_trim.includes("shipping confirmation")
+    ) {
+      const result = data_trim
+        .replace(/(\r\n|\n|\r)/gm, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ");
+
+      serial_number = result[result.length - 1].toUpperCase();
+    }
+  });
 
   if (tracking_number !== "") {
     orders[index].items.forEach((item, ind) => {
@@ -99,6 +120,8 @@ export default async function addCDWTrackingNumber(
               `addCDWTrackingNumber(${orderNum}) => Updated item:`,
               item
             );
+          } else {
+            already_updated = true;
           }
         }
       } else {
@@ -109,7 +132,7 @@ export default async function addCDWTrackingNumber(
     });
   }
 
-  if (device_name !== "") {
+  if (device_name !== "" && !already_updated) {
     const new_device = {
       sn: serial_number,
       status: "Shipping",

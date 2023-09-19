@@ -20,6 +20,7 @@ async function getTrackingNumber(emailBody, supplier, orders, subject) {
   const decodedMessage = atob(emailBody.replace(/-/g, "+").replace(/_/g, "/"));
 
   const $ = cheerio.load(decodedMessage);
+
   let orderIndex = -1;
   let orderIndexList = [];
   if (orders?.length > 0) {
