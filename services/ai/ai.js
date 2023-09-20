@@ -321,7 +321,10 @@ async function searchCDW(search_text) {
       availability: $(stockLevel[index])
         .text()
         .replace(/(\r\n|\n|\r)/gm, "")
-        .trim(),
+        .trim()
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace("Availability: ● ", ""),
       image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
     });
   });
