@@ -99,7 +99,7 @@ router.post("/cdw/order", async (req, res) => {
       update_order_obj.courier,
       date
     );
-
+    console.log("/cdw/order => Update res here:", updateRes);
     // aftserhip
 
     if (updateRes !== "") {
@@ -122,10 +122,6 @@ router.post("/cdw/order", async (req, res) => {
     } else {
       console.log("/cdw/order => Error in updating order.");
     }
-
-    console.log("/cdw/order => Finished updating CDW order.");
-    if (!res.headersSent) res.send("Hello World");
-
     if (updateRes !== "") {
       console.log(
         `/cdw/order/${update_order_obj.order_no} => Starting sending aftership email steps.`
@@ -162,6 +158,9 @@ router.post("/cdw/order", async (req, res) => {
         }
       }
     }
+
+    console.log("/cdw/order => Finished updating CDW order.");
+    if (!res.headersSent) res.send("Hello World");
   } else {
     res.status(401).json({ status: "Unauthorized" });
   }
