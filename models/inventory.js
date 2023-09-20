@@ -161,6 +161,10 @@ class Inventory {
       }
       if (updated_condition !== "") {
         resource.serial_numbers[verified_index].condition = updated_condition;
+        if (updated_condition === "End of Life") {
+          resource.serial_numbers[verified_index].eol_date =
+            new Date().toLocaleDateString("en-US");
+        }
       }
       if (grade !== "") {
         resource.serial_numbers[verified_index].grade = grade;

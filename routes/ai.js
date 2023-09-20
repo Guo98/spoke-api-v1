@@ -15,7 +15,7 @@ const router = Router();
 //   }
 // });
 
-router.post("/checkstock", checkJwt, async (req, res) => {
+router.post("/checkstock", async (req, res) => {
   const { item_name, specs, supplier, others } = req.body;
   try {
     if (req.body.product_link) {
