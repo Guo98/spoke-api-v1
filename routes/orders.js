@@ -361,12 +361,11 @@ const export_order = (order, item) => {
     date: order.date ? order.date : "",
     location: order.address?.subdivision + ", " + order.address?.country,
   };
-
   if (order.entity) {
     order_body.entity = order.entity;
   }
 
-  return order;
+  return order_body;
 };
 
 router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
