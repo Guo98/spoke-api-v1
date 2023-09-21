@@ -352,6 +352,23 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
   console.log("/supportEmail => Ending route.");
 });
 
+const export_order = (order, item) => {
+  let order_body = {
+    orderNo: order.orderNo,
+    name: order.firstName + " " + order.lastName,
+    item: item.name,
+    price: item.price,
+    date: order.date,
+    location: order.address?.subdivision + ", " + order.address?.country,
+  };
+
+  if (order.entity) {
+    order_body.entity = order.entity;
+  }
+
+  return order;
+};
+
 router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
   let containerId = determineContainer(req.params.client);
   console.log(`/downloadorders/${req.params.client} => Starting route.`);
@@ -404,15 +421,7 @@ router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
         if (inProgRes.length > 0) {
           inProgRes.reverse().forEach((order) => {
             order.items.forEach((item) => {
-              allOrders.push({
-                orderNo: order.orderNo,
-                name: order.firstName + " " + order.lastName,
-                item: item.name,
-                price: item.price,
-                date: order.date,
-                location:
-                  order.address.subdivision + ", " + order.address.country,
-              });
+              allOrders.push(export_order(order, item));
             });
           });
         }
@@ -423,28 +432,12 @@ router.get("/downloadorders/:client/:entity?", checkJwt, async (req, res) => {
           if (req.params.entity) {
             if (req.params.entity === order.entity) {
               order.items.forEach((item) => {
-                allOrders.push({
-                  orderNo: order.orderNo,
-                  name: order.firstName + " " + order.lastName,
-                  item: item.name,
-                  price: item.price,
-                  date: order.date,
-                  location:
-                    order.address.subdivision + ", " + order.address.country,
-                });
+                allOrders.push(export_order(order, item));
               });
             }
           } else {
             order.items.forEach((item) => {
-              allOrders.push({
-                orderNo: order.orderNo,
-                name: order.firstName + " " + order.lastName,
-                item: item.name,
-                price: item.price,
-                date: order.date,
-                location:
-                  order.address.subdivision + ", " + order.address.country,
-              });
+              allOrders.push(export_order(order, item));
             });
           }
         });
