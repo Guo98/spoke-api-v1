@@ -967,6 +967,7 @@ const cdwHelperFunction = async (
       o.full_name,
       o.items
     );
+    console.log("cdwHelperFunction() => Successfully updated order.");
     return {
       item_name,
       first_name: o.firstName,
@@ -976,6 +977,7 @@ const cdwHelperFunction = async (
       order_no: o.orderNo,
     };
   } else {
+    console.log("cdwHelperFunction() => Nothing to update.");
     return "";
   }
 };
@@ -1006,7 +1008,10 @@ const cdwUpdateOrder = async (
               carrier,
               date_shipped
             );
-
+            console.log(
+              "cdwUpdateOrder() => Update response here: ",
+              helper_res
+            );
             return helper_res;
           }
         }
@@ -1025,7 +1030,10 @@ const cdwUpdateOrder = async (
               carrier,
               date_shipped
             );
-
+            console.log(
+              "cdwUpdateOrder() => Update response here: ",
+              helper_res
+            );
             return helper_res;
           }
         }
