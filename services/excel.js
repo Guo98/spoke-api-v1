@@ -42,6 +42,10 @@ async function exportOrders(res, orders, client) {
     { header: "Location", key: "location", widht: 30 },
   ];
 
+  if (Object.keys(orders[0]).includes("entity")) {
+    worksheet.columns.push({ header: "Entity", key: "entity", widht: 30 });
+  }
+
   orders.forEach((order) => {
     worksheet.addRow(order);
   });
