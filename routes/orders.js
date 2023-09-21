@@ -355,7 +355,7 @@ router.post("/supportEmail", checkJwt, async (req, res) => {
 const export_order = (order, item) => {
   let order_body = {
     orderNo: order.orderNo,
-    name: order.firstName + " " + order.lastName,
+    name: order.firstName ? order.firstName + " " + order.lastName : "",
     item: item.name,
     price: item.price,
     date: order.date,
