@@ -356,9 +356,9 @@ const export_order = (order, item) => {
   let order_body = {
     orderNo: order.orderNo,
     name: order.firstName ? order.firstName + " " + order.lastName : "",
-    item: item.name,
-    price: item.price,
-    date: order.date,
+    item: item.name ? item.name : "",
+    price: item.price ? item.price : "",
+    date: order.date ? order.date : "",
     location: order.address?.subdivision + ", " + order.address?.country,
   };
 
