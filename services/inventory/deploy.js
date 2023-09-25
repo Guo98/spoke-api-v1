@@ -27,9 +27,24 @@ async function deployLaptop(res, body, inventoryDB) {
     if (deviceId) {
       let inventoryRes = await inventoryDB.getItem(containerId, deviceId);
 
-      let specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
-        (device) => device.sn === serial_number && device.status === "In Stock"
-      );
+      let specificLaptopIndex = -1;
+
+      if (!serial_number) {
+        specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+          (device) => device.status === "In Stock" && device.condition === "New"
+        );
+
+        if (specificLaptopIndex < 0) {
+          specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+            (device) => device.status === "In Stock"
+          );
+        }
+      } else {
+        specificLaptopIndex = inventoryRes.serial_numbers.findIndex(
+          (device) =>
+            device.sn === serial_number && device.status === "In Stock"
+        );
+      }
 
       if (specificLaptopIndex > -1) {
         let specificLaptop = inventoryRes.serial_numbers[specificLaptopIndex];
@@ -110,6 +125,11 @@ async function deployLaptop(res, body, inventoryDB) {
             res.status(500).send({ status: "Error" });
           }
         }
+      } else {
+        console.log(
+          `/deployLaptop/${client} => Coudln't find an in stock device. Device Name: ${device_name}. Device Location: ${device_location}`
+        );
+        res.status(500).json({ status: "Error in finding available device" });
       }
     } else {
       console.log(
