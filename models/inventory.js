@@ -205,6 +205,7 @@ class Inventory {
   }
 
   async autoAddInventory(containerId, device_name, new_devices) {
+    console.log("autoAddInventory() => Starting function.");
     const coResponse = await this.database.container(containerId).read();
     const { resources: receivedList } = await coResponse.container.items
       .readAll()
@@ -212,12 +213,14 @@ class Inventory {
     let id = "";
     receivedList.forEach((device) => {
       const lc_name = device_name.toLowerCase();
+      console.log("autoAddInventory() => Searching for device:", device_name);
       if (
         lc_name.includes(device.specs.screen_size) &&
         lc_name.includes(device.specs.ram.toLowerCase()) &&
         lc_name.includes(device.specs.cpu.toLowerCase()) &&
         lc_name.includes(device.specs.hard_drive.toLowerCase())
       ) {
+        console.log("autoAddInventory() => Found device:", device.id);
         id = device.id;
       }
     });
@@ -231,6 +234,10 @@ class Inventory {
 
       return replaced;
     } else {
+      console.log(
+        "autoAddInventory() => Could not match device for:",
+        device_name
+      );
       return undefined;
     }
   }
