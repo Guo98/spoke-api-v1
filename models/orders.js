@@ -302,14 +302,21 @@ class Orders {
       .container(client === "public" || client === "Public" ? "Mock" : client)
       .read();
 
-    const item = coResponse.container.item(id, name);
-    console.log("item :::::::::::: ", item);
-    if (item) {
+    try {
+      const item = coResponse.container.item(id, name);
       await item.delete();
-    } else {
-      const received_item = this.container.item(id, name);
-      if (received_item) {
+      console.log("deleteOrder() => Item deleted from container:", client);
+    } catch (e) {
+      console.log("deleteOrder() => Item not found in container:", client);
+      console.log("deleteOrder() => Item error:", e);
+      try {
+        const received_item = this.container.item(id, name);
         await received_item.delete();
+        console.log("deleteOrder() => Item deleted from Received container.");
+      } catch (err) {
+        console.log(
+          "deleteOrder() => Error in deleting item from Received container."
+        );
       }
     }
   }
