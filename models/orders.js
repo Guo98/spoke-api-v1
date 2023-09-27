@@ -303,6 +303,7 @@ class Orders {
       .read();
 
     const item = coResponse.container.item(id, name);
+    console.log("item :::::::::::: ", item);
     if (item) {
       await item.delete();
     } else {
