@@ -303,8 +303,14 @@ class Orders {
       .read();
 
     const item = coResponse.container.item(id, name);
-
-    await item.delete();
+    if (item) {
+      await item.delete();
+    } else {
+      const received_item = this.container.item(id, name);
+      if (received_item) {
+        await received_item.delete();
+      }
+    }
   }
 
   async completeOrder(client, obj) {
