@@ -519,7 +519,7 @@ router.delete(
         client,
         device_id,
         device_index,
-        serial_number
+        serial_number === "none" ? "" : serial_number
       );
 
       if (deleteResp === "Error") {
