@@ -282,6 +282,9 @@ router.get(
           }
         } else {
           device.serial_numbers.forEach((item) => {
+            if (!item.full_name && item.first_name && item.last_name) {
+              item.full_name = item.first_name + " " + item.last_name;
+            }
             allDevices.push({
               ...item,
               name: device.name,
