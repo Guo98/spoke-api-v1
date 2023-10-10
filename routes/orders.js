@@ -6,7 +6,7 @@ import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
-import { createRecord } from "../services/airtable.js";
+// import { createRecord } from "../services/airtable.js";
 import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
@@ -148,39 +148,41 @@ router.post("/createOrder", async (req, res) => {
     console.log("/createOrder => Adding order to consolidated order sheet.");
     for (let i = 0; i < items.length; i++) {
       console.log("/createOrder => Mapped row item: " + items[i].name);
-      try {
-        const orderValues = createConsolidatedRow(
-          orderNo,
-          client,
-          firstName + " " + lastName,
-          email,
-          items[i].name,
-          items[i].price,
-          address,
-          phone,
-          note,
-          items[i].variant,
-          items[i].supplier,
-          items[i].quantity
-        );
-        const resp = await addOrderRow(
-          orderValues,
-          "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
-          1276989321,
-          19
-        );
-      } catch (e) {
-        console.log(
-          "/createOrder => Error in adding row to consolidated orders sheet: ",
-          item[i].name
-        );
+      if (!items[i].name.toLowerCase().includes("return box")) {
+        try {
+          const orderValues = createConsolidatedRow(
+            orderNo,
+            client,
+            firstName + " " + lastName,
+            email,
+            items[i].name,
+            items[i].price,
+            address,
+            phone,
+            note,
+            items[i].variant,
+            items[i].supplier,
+            items[i].quantity
+          );
+          const resp = await addOrderRow(
+            orderValues,
+            "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+            1276989321,
+            19
+          );
+        } catch (e) {
+          console.log(
+            "/createOrder => Error in adding row to consolidated orders sheet: ",
+            item[i].name
+          );
+        }
       }
     }
     if (items.length > 0) {
-      if (client === "FLYR") {
-        console.log("/createOrder => Adding order to airtable.");
-        await createRecord(mappedInfo, client);
-      }
+      // if (client === "FLYR") {
+      //   console.log("/createOrder => Adding order to airtable.");
+      //   await createRecord(mappedInfo, client);
+      // }
       console.log("/createOrder => Adding order to Orders db.");
       await setOrders(orders, mappedInfo);
       console.log("/createOrder => Ending route.");
