@@ -11,6 +11,22 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
+export async function checkBrowsing(item_name) {
+  const response = await openai.createChatCompletion({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "Whats the most current macbook model?",
+      },
+    ],
+    temperature: 0.5,
+    max_tokens: 1000,
+  });
+
+  console.log("response ::::::::::::: ", response.data.choices);
+}
+
 async function getRecommendations(links, item_name, specs) {
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",

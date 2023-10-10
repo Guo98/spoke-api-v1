@@ -33,14 +33,26 @@ async function exportOrders(res, orders, client) {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("Orders");
 
-  worksheet.columns = [
-    { header: "Order Number", key: "orderNo", width: 10 },
-    { header: "Name", key: "name", width: 20 },
-    { header: "Item", key: "item", width: 30 },
-    { header: "Price", key: "price", width: 10 },
-    { header: "Date Ordered", key: "date", width: 20 },
-    { header: "Location", key: "location", widht: 30 },
-  ];
+  if (Object.keys(orders[orders.length - 1]).includes("entity")) {
+    worksheet.columns = [
+      { header: "Order Number", key: "orderNo", width: 10 },
+      { header: "Name", key: "name", width: 20 },
+      { header: "Item", key: "item", width: 30 },
+      { header: "Price", key: "price", width: 10 },
+      { header: "Date Ordered", key: "date", width: 20 },
+      { header: "Location", key: "location", widht: 30 },
+      { header: "Entity", key: "entity", widht: 30 },
+    ];
+  } else {
+    worksheet.columns = [
+      { header: "Order Number", key: "orderNo", width: 10 },
+      { header: "Name", key: "name", width: 20 },
+      { header: "Item", key: "item", width: 30 },
+      { header: "Price", key: "price", width: 10 },
+      { header: "Date Ordered", key: "date", width: 20 },
+      { header: "Location", key: "location", widht: 30 },
+    ];
+  }
 
   orders.forEach((order) => {
     worksheet.addRow(order);
