@@ -147,7 +147,7 @@ router.post("/cdw/order", async (req, res) => {
         );
         const base64csv = createAftershipCSV(aftershipArray);
         try {
-          sendAftershipCSV(base64csv, orderNum);
+          await sendAftershipCSV(base64csv, updateRes.item_name);
           console.log(
             `/cdw/order/${update_order_obj.order_no} => Successfully finished sendAftershipCSV().`
           );

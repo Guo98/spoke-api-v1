@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { checkJwt } from "../services/auth0.js";
-import { checkItemStock, newCheckStock } from "../services/ai/ai.js";
+import {
+  checkItemStock,
+  newCheckStock,
+  checkBrowsing,
+} from "../services/ai/ai.js";
 
 const router = Router();
 
@@ -15,7 +19,7 @@ const router = Router();
 //   }
 // });
 
-router.post("/checkstock", async (req, res) => {
+router.post("/checkstock", checkJwt, async (req, res) => {
   const { item_name, specs, supplier, others } = req.body;
   try {
     if (req.body.product_link) {
@@ -39,9 +43,9 @@ router.post("/checkstock", async (req, res) => {
   }
 });
 
-// router.get("/recommendations/:item_name", checkJwt, async (req, res) => {
+// router.get("/recommendations/:item_name", async (req, res) => {
 //   const { item_name } = req.params;
-//   await getRecommendations(item_name);
+//   await checkBrowsing(item_name);
 //   res.send("Hello World");
 // });
 
