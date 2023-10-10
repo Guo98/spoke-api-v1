@@ -122,7 +122,7 @@ router.post("/cdw/order", async (req, res) => {
     } else {
       console.log("/cdw/order => Error in updating order.");
     }
-    if (updateRes !== "") {
+    if (updateRes && updateRes !== "") {
       console.log(
         `/cdw/order/${update_order_obj.order_no} => Starting sending aftership email steps.`
       );
@@ -147,7 +147,7 @@ router.post("/cdw/order", async (req, res) => {
         );
         const base64csv = createAftershipCSV(aftershipArray);
         try {
-          await sendAftershipCSV(base64csv, updateRes.item_name);
+          await sendAftershipCSV(base64csv, updateRes.order_no);
           console.log(
             `/cdw/order/${update_order_obj.order_no} => Successfully finished sendAftershipCSV().`
           );

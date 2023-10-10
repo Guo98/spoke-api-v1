@@ -1035,6 +1035,8 @@ const cdwUpdateOrder = async (
       console.log(`cdwUpdateOrder() => Error in function:`, e);
       return "";
     }
+  } else {
+    console.log("cdwUpdateOrder() => Order number is not a number:", order_no);
   }
 };
 
