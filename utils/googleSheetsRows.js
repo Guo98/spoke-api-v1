@@ -141,7 +141,8 @@ function createAdminDeploy(
   email,
   phone,
   note,
-  requestor_email
+  requestor_email,
+  warehouse
 ) {
   const todayDate = new Date();
   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
@@ -216,6 +217,11 @@ function createAdminDeploy(
     {
       userEnteredValue: {
         stringValue: requestor_email,
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: warehouse,
       },
     },
   ];

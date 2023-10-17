@@ -69,6 +69,8 @@ app.use(routes.client);
 
 app.use(routes.cdw);
 
+app.use(routes.connect);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });
