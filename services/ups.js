@@ -1,7 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 
-async function getToken() {
+export async function getToken() {
   const formData = {
     grant_type: "client_credentials",
   };
@@ -36,37 +36,30 @@ async function getToken() {
   return result;
 }
 
-export async function trackUPSPackage(tracking_number) {
+export async function trackUPSPackage(tracking_number, token) {
   console.log(`trackUPSPackage(${tracking_number}) => Starting function.`);
-  const result = await getToken()
-    .then((tokenResp) => {
-      if (tokenResp.status && tokenResp.status === 200) {
-        const query = new URLSearchParams({
-          locale: "en_US",
-          returnSignature: "false",
-        }).toString();
+  const query = new URLSearchParams({
+    locale: "en_US",
+    returnSignature: "false",
+  }).toString();
 
-        const options = {
-          method: "GET",
-          headers: {
-            "content-type": "application/json",
-            transId: "string",
-            Authorization:
-              tokenResp.data.token_type + " " + tokenResp.data.access_token,
-            transactionSrc: "production",
-          },
-          url:
-            process.env.UPS_URL +
-            "/api/track/v1/details/" +
-            tracking_number +
-            "?" +
-            query,
-        };
-        return axios.request(options);
-      } else {
-        throw new Error("Unauthorized");
-      }
-    })
+  const options = {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      transId: "string",
+      Authorization: token,
+      transactionSrc: "production",
+    },
+    url:
+      process.env.UPS_URL +
+      "/api/track/v1/details/" +
+      tracking_number +
+      "?" +
+      query,
+  };
+  const result = await axios
+    .request(options)
     .then((resp) => {
       const shipmentDescription =
         resp.data.trackResponse.shipment[0].package[0].currentStatus

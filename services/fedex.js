@@ -1,7 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 
-async function getToken() {
+async function getFedexToken() {
   const data = {
     grant_type: "client_credentials",
     client_id: process.env.FEDEX_API_KEY,
@@ -49,7 +49,7 @@ async function validateAddress(body) {
     ],
   };
 
-  const result = await getToken()
+  const result = await getFedexToken()
     .then((data) => {
       if (data.status && data.status === 200) {
         const options = {
@@ -92,7 +92,7 @@ async function validateAddress(body) {
   return result;
 }
 
-async function trackPackage(tracking_number) {
+async function trackPackage(tracking_number, token) {
   console.log(`trackPackage(${tracking_number}) => Starting function.`);
   const postdata = {
     includeDetailedScans: true,
@@ -104,24 +104,22 @@ async function trackPackage(tracking_number) {
       },
     ],
   };
-  const result = await getToken()
-    .then((data) => {
-      if (data.status && data.status === 200) {
-        const options = {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            Authorization: `Bearer ${data.data && data.data.access_token}`,
-          },
-          data: JSON.stringify(postdata),
-          url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
-        };
-        return axios(options);
-      } else {
-        throw new Error("Token not generated");
-      }
-    })
+
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: token,
+    },
+    data: JSON.stringify(postdata),
+    url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
+  };
+  const result = await axios(options)
     .then((trackResp) => {
+      console.log(
+        "tracking result ::::::::::::::: ",
+        trackResp.data.output.completeTrackResults[0].trackResults[0]
+      );
       const trackingStatus =
         trackResp.data.output.completeTrackResults[0].trackResults[0]
           .latestStatusDetail.description;
@@ -145,4 +143,72 @@ async function trackPackage(tracking_number) {
   return result;
 }
 
-export { validateAddress, getToken, trackPackage };
+const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
+  let post_data = {
+    includeDetailedScans: true,
+    trackingInfo: fedex_orders.map((fo) => {
+      return {
+        trackingNumberInfo: {
+          trackingNumber: fo.tracking_no,
+        },
+      };
+    }),
+  };
+
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: fedex_token,
+    },
+    data: JSON.stringify(post_data),
+    url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
+  };
+
+  const result = await axios(options)
+    .then((trackResp) => {
+      return trackResp.data.output.completeTrackResults;
+    })
+    .catch((err) => {
+      console.log(
+        `trackPackage(${tracking_number}) => Error in getting tracking info:`,
+        err
+      );
+      return [];
+    });
+
+  let index = 0;
+  let current_order = fedex_orders[0];
+  for await (let item of fedex_orders) {
+    if (result[index].trackResults[0]?.latestStatusDetail?.description) {
+      current_order.items[item.item_index].delivery_status =
+        result[index].trackResults[0].latestStatusDetail.description;
+    }
+
+    if (index < fedex_orders.length) {
+      if (
+        index + 1 === fedex_orders.length ||
+        item.orderNo !== fedex_orders[index + 1].orderNo
+      ) {
+        try {
+          await ordersDB.updateOrderByContainer(
+            current_order.containerId,
+            current_order.id,
+            current_order.full_name,
+            current_order.items
+          );
+        } catch (e) {
+          console.log(
+            "updateFedexStatus() => Error in updating delivery status:",
+            e
+          );
+        }
+
+        current_order = fedex_orders[index + 1];
+      }
+    }
+    index++;
+  }
+};
+
+export { validateAddress, getFedexToken, trackPackage, updateFedexStatus };
