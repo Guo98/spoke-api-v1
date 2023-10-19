@@ -171,8 +171,8 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
     })
     .catch((err) => {
       console.log(
-        `trackPackage(${tracking_number}) => Error in getting tracking info:`,
-        err
+        `trackPackage() => Error in getting tracking info:`,
+        err.response.data
       );
       return [];
     });

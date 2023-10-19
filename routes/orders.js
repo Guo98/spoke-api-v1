@@ -333,7 +333,6 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         `[GET] /orders/${company} => Getting all in progress orders for company: ${client}`
       );
       let inProgRes = await orders.find(querySpec);
-
       for await (let order of inProgRes) {
         delete order._rid;
         delete order._self;
@@ -356,8 +355,9 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
           fedex_items = [...fedex_items, ...delResult.fedex_items];
         }
       }
-
-      await updateFedexStatus(fedex_token, fedex_items, orders);
+      if (fedex_items.length > 0) {
+        await updateFedexStatus(fedex_token, fedex_items, orders);
+      }
       console.log(
         `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
       );
@@ -842,7 +842,7 @@ const orderItemsDelivery = async (order, containerId, ups_token) => {
       if (item.courier) {
         if (item.courier.toLowerCase() === "fedex") {
           if (
-            item.tracking_number.length > 0 &&
+            item.tracking_number?.length > 0 &&
             item.delivery_status !== "Delivered"
           ) {
             fedex_items.push({
@@ -857,7 +857,7 @@ const orderItemsDelivery = async (order, containerId, ups_token) => {
           }
         } else if (item.courier.toLowerCase() === "ups") {
           if (
-            item.tracking_number.length > 0 &&
+            item.tracking_number?.length > 0 &&
             item.delivery_status !== "Delivered"
           ) {
             const deliveryResult = await trackUPSPackage(
