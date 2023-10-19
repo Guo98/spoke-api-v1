@@ -399,6 +399,8 @@ const export_order = (order, item) => {
     price: item.price ? item.price : "",
     date: order.date ? order.date : "",
     location: order.address?.subdivision + ", " + order.address?.country,
+    spoke_fee: item.spoke_fee,
+    serial_no: item.serial_number,
   };
   if (order.entity) {
     order_body.entity = order.entity;

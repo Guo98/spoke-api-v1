@@ -38,19 +38,23 @@ async function exportOrders(res, orders, client) {
       { header: "Order Number", key: "orderNo", width: 10 },
       { header: "Name", key: "name", width: 20 },
       { header: "Item", key: "item", width: 30 },
-      { header: "Price", key: "price", width: 10 },
+      { header: "Serial Number", key: "serial_no", width: 15 },
       { header: "Date Ordered", key: "date", width: 20 },
       { header: "Location", key: "location", widht: 30 },
       { header: "Entity", key: "entity", widht: 30 },
+      { header: "Price", key: "price", width: 10 },
+      { header: "Spoke Fees", key: "spoke_fee", width: 10 },
     ];
   } else {
     worksheet.columns = [
       { header: "Order Number", key: "orderNo", width: 10 },
       { header: "Name", key: "name", width: 20 },
       { header: "Item", key: "item", width: 30 },
-      { header: "Price", key: "price", width: 10 },
+      { header: "Serial Number", key: "serial_no", width: 15 },
       { header: "Date Ordered", key: "date", width: 20 },
       { header: "Location", key: "location", widht: 30 },
+      { header: "Price", key: "price", width: 10 },
+      { header: "Spoke Fees", key: "spoke_fee", width: 10 },
     ];
   }
 
