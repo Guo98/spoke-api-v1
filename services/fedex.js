@@ -181,6 +181,9 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
   let current_order = fedex_orders[0];
   for await (let item of fedex_orders) {
     if (result[index].trackResults[0]?.latestStatusDetail?.description) {
+      if (current_order.orderNo !== item.order_no) {
+        current_order = fedex_orders[index + 1];
+      }
       current_order.items[item.item_index].delivery_status =
         result[index].trackResults[0].latestStatusDetail.description;
     }
@@ -204,7 +207,7 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
           );
         }
 
-        current_order = fedex_orders[index + 1];
+        // current_order = fedex_orders[index + 1];
       }
     }
     index++;
