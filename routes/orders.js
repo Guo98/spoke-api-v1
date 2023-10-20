@@ -1033,15 +1033,22 @@ const cdwUpdateOrder = async (
   carrier,
   date_shipped
 ) => {
+  console.log(`cdwUpdateOrder(${order_no}) => Starting function: ${client}.`);
   if (!isNaN(order_no)) {
     const parsed_order_no = parseInt(order_no);
 
     try {
+      console.log(
+        `cdwUpdateOrder(${order_no}) => Checking Received container.`
+      );
       const all_received = await orders.getAllReceived();
 
       if (all_received.length > 0) {
         for await (let o of all_received) {
           if (o.orderNo === parsed_order_no) {
+            console.log(
+              `cdwUpdateOrder(${order_no}) => Matched order in received container.`
+            );
             const helper_res = await cdwHelperFunction(
               o,
               cdw_part_number,
@@ -1051,32 +1058,39 @@ const cdwUpdateOrder = async (
               date_shipped
             );
             console.log(
-              "cdwUpdateOrder() => Update response here: ",
+              `cdwUpdateOrder(${order_no}) => Update response here: `,
               helper_res
             );
             return helper_res;
           }
         }
       }
+      if (client !== "") {
+        console.log(
+          `cdwUpdateOrder(${order_no}) => Checking ${client} container.`
+        );
+        const all_orders = await orders.getAllOrders(client);
 
-      const all_orders = await orders.getAllOrders(client);
-
-      if (all_orders.length > 0) {
-        for await (let o of all_orders) {
-          if (o.orderNo === parsed_order_no) {
-            const helper_res = await cdwHelperFunction(
-              o,
-              cdw_part_number,
-              serial_no,
-              tracking_no,
-              carrier,
-              date_shipped
-            );
-            console.log(
-              "cdwUpdateOrder() => Update response here: ",
-              helper_res
-            );
-            return helper_res;
+        if (all_orders.length > 0) {
+          for await (let o of all_orders) {
+            if (o.orderNo === parsed_order_no) {
+              console.log(
+                `cdwUpdateOrder(${order_no}) => Matched order in ${client} container.`
+              );
+              const helper_res = await cdwHelperFunction(
+                o,
+                cdw_part_number,
+                serial_no,
+                tracking_no,
+                carrier,
+                date_shipped
+              );
+              console.log(
+                "cdwUpdateOrder() => Update response here: ",
+                helper_res
+              );
+              return helper_res;
+            }
           }
         }
       }
