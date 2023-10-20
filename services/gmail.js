@@ -204,6 +204,7 @@ async function getEmailBody(messageId, orders) {
       isTrackingEmail.id === "CTS" &&
       subject.includes("Device Return Complete")
     ) {
+      console.log(`getEmailBody(${messageId}) => Received a CTS return email.`);
       await completeCTSReturn(body, orders);
     }
   }
