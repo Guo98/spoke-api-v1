@@ -104,6 +104,10 @@ async function getEmailBody(messageId, orders) {
         subject = res.data.payload.headers.filter(
           (header) => header.name === "Subject"
         )[0].value;
+        console.log(
+          `getEmailBody(${messageId}) => CTS subject line: `,
+          subject
+        );
         break;
       case "CDW":
         subject = res.data.payload.headers.filter(
@@ -204,6 +208,7 @@ async function getEmailBody(messageId, orders) {
       isTrackingEmail.id === "CTS" &&
       subject.includes("Device Return Complete")
     ) {
+      console.log(`getEmailBody(${messageId}) => Received a CTS return email.`);
       await completeCTSReturn(body, orders);
     }
   }

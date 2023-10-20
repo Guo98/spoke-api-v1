@@ -20,8 +20,8 @@ import { exportOrders } from "../services/excel.js";
 // import { createYubikeyShipment } from "../utils/yubikey.js";
 import { getAllInventory } from "./inventory.js";
 import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
-import { trackPackage } from "../services/fedex.js";
-import { trackUPSPackage } from "../services/ups.js";
+import { getFedexToken, updateFedexStatus } from "../services/fedex.js";
+import { trackUPSPackage, getToken } from "../services/ups.js";
 import {
   getYubikeyShipmentInfo,
   createYubikeyShipment,
@@ -273,6 +273,23 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
           },
         ],
   };
+  let fedex_token = "";
+  const fedex_token_resp = await getFedexToken();
+
+  if (fedex_token_resp.status === 200) {
+    fedex_token =
+      fedex_token_resp.data.token_type +
+      " " +
+      fedex_token_resp.data.access_token;
+  }
+
+  let ups_token = "";
+  const ups_token_resp = await getToken();
+
+  if (ups_token_resp.status === 200) {
+    ups_token =
+      ups_token_resp.data.token_type + " " + ups_token_resp.data.access_token;
+  }
 
   if (dbContainer !== "") {
     try {
@@ -287,6 +304,8 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         );
       }
 
+      let fedex_items = [];
+
       for await (let order of ordersRes) {
         delete order._rid;
         delete order._self;
@@ -294,10 +313,16 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         delete order._attachments;
         delete order._ts;
 
-        const delResult = await orderItemsDelivery(order, company);
+        const delResult = await orderItemsDelivery(order, company, ups_token);
 
         if (delResult.status === 200 && delResult.data !== "No Change") {
           order = { ...delResult.data };
+        } else if (
+          delResult.status === 200 &&
+          delResult.fedex_items &&
+          delResult.fedex_items.length > 0
+        ) {
+          fedex_items = [...fedex_items, ...delResult.fedex_items];
         }
       }
       console.log(
@@ -308,7 +333,6 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         `[GET] /orders/${company} => Getting all in progress orders for company: ${client}`
       );
       let inProgRes = await orders.find(querySpec);
-
       for await (let order of inProgRes) {
         delete order._rid;
         delete order._self;
@@ -316,10 +340,23 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         delete order._attachments;
         delete order._ts;
 
-        const delResult = await orderItemsDelivery(order, "Received");
+        const delResult = await orderItemsDelivery(
+          order,
+          "Received",
+          ups_token
+        );
         if (delResult.status === 200 && delResult.data !== "No Change") {
           order = { ...delResult.data };
+        } else if (
+          delResult.status === 200 &&
+          delResult.fedex_items &&
+          delResult.fedex_items.length > 0
+        ) {
+          fedex_items = [...fedex_items, ...delResult.fedex_items];
         }
+      }
+      if (fedex_items.length > 0) {
+        await updateFedexStatus(fedex_token, fedex_items, orders);
       }
       console.log(
         `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
@@ -362,6 +399,8 @@ const export_order = (order, item) => {
     price: item.price ? item.price : "",
     date: order.date ? order.date : "",
     location: order.address?.subdivision + ", " + order.address?.country,
+    spoke_fee: item.spoke_fee,
+    serial_no: item.serial_number,
   };
   if (order.entity) {
     order_body.entity = order.entity;
@@ -791,7 +830,7 @@ const marketplaceSentApprovalEmail = async (id, client) => {
   await orders.sentMarketplaceEmail(id, client);
 };
 
-const orderItemsDelivery = async (order, containerId) => {
+const orderItemsDelivery = async (order, containerId, ups_token) => {
   console.log(
     `orderItemDelivery(${order.client}) => Starting function:`,
     order.id
@@ -799,26 +838,33 @@ const orderItemsDelivery = async (order, containerId) => {
 
   if (order.shipping_status !== "Completed") {
     let change = false;
+    let fedex_items = [];
+    let index = 0;
     for await (const item of order.items) {
       if (item.courier) {
         if (item.courier.toLowerCase() === "fedex") {
           if (
-            item.tracking_number.length > 0 &&
+            item.tracking_number?.length > 0 &&
             item.delivery_status !== "Delivered"
           ) {
-            const deliveryResult = await trackPackage(item.tracking_number[0]);
-            if (deliveryResult.status === 200) {
-              change = true;
-              item.delivery_status = deliveryResult.data;
-            }
+            fedex_items.push({
+              order_no: order.orderNo,
+              full_name: order.full_name,
+              item_index: index,
+              tracking_no: item.tracking_number[0],
+              id: order.id,
+              items: order.items,
+              containerId,
+            });
           }
         } else if (item.courier.toLowerCase() === "ups") {
           if (
-            item.tracking_number.length > 0 &&
+            item.tracking_number?.length > 0 &&
             item.delivery_status !== "Delivered"
           ) {
             const deliveryResult = await trackUPSPackage(
-              item.tracking_number[0].trim()
+              item.tracking_number[0].trim(),
+              ups_token
             );
             if (deliveryResult.status === 200) {
               change = true;
@@ -848,6 +894,8 @@ const orderItemsDelivery = async (order, containerId) => {
           }
         }
       }
+
+      index++;
     }
 
     if (change) {
@@ -866,7 +914,7 @@ const orderItemsDelivery = async (order, containerId) => {
           `orderItemDelivery(${order.client}) => Finished updating shipping status:`,
           order.id
         );
-        return { status: 200, data: updateDelivery };
+        return { status: 200, data: updateDelivery, fedex_items: fedex_items };
       } catch (e) {
         console.log(
           `orderItemDelivery(${order.client}) => Error in updating delivery status of order:`,
@@ -875,7 +923,7 @@ const orderItemsDelivery = async (order, containerId) => {
         return { status: 500, data: "Error" };
       }
     } else {
-      return { status: 200, data: "No Change" };
+      return { status: 200, data: "No Change", fedex_items: fedex_items };
     }
   } else {
     return { status: 200, data: "No Change" };
@@ -985,15 +1033,22 @@ const cdwUpdateOrder = async (
   carrier,
   date_shipped
 ) => {
+  console.log(`cdwUpdateOrder(${order_no}) => Starting function: ${client}.`);
   if (!isNaN(order_no)) {
     const parsed_order_no = parseInt(order_no);
 
     try {
+      console.log(
+        `cdwUpdateOrder(${order_no}) => Checking Received container.`
+      );
       const all_received = await orders.getAllReceived();
 
       if (all_received.length > 0) {
         for await (let o of all_received) {
           if (o.orderNo === parsed_order_no) {
+            console.log(
+              `cdwUpdateOrder(${order_no}) => Matched order in received container.`
+            );
             const helper_res = await cdwHelperFunction(
               o,
               cdw_part_number,
@@ -1003,32 +1058,39 @@ const cdwUpdateOrder = async (
               date_shipped
             );
             console.log(
-              "cdwUpdateOrder() => Update response here: ",
+              `cdwUpdateOrder(${order_no}) => Update response here: `,
               helper_res
             );
             return helper_res;
           }
         }
       }
+      if (client !== "") {
+        console.log(
+          `cdwUpdateOrder(${order_no}) => Checking ${client} container.`
+        );
+        const all_orders = await orders.getAllOrders(client);
 
-      const all_orders = await orders.getAllOrders(client);
-
-      if (all_orders.length > 0) {
-        for await (let o of all_orders) {
-          if (o.orderNo === parsed_order_no) {
-            const helper_res = await cdwHelperFunction(
-              o,
-              cdw_part_number,
-              serial_no,
-              tracking_no,
-              carrier,
-              date_shipped
-            );
-            console.log(
-              "cdwUpdateOrder() => Update response here: ",
-              helper_res
-            );
-            return helper_res;
+        if (all_orders.length > 0) {
+          for await (let o of all_orders) {
+            if (o.orderNo === parsed_order_no) {
+              console.log(
+                `cdwUpdateOrder(${order_no}) => Matched order in ${client} container.`
+              );
+              const helper_res = await cdwHelperFunction(
+                o,
+                cdw_part_number,
+                serial_no,
+                tracking_no,
+                carrier,
+                date_shipped
+              );
+              console.log(
+                "cdwUpdateOrder() => Update response here: ",
+                helper_res
+              );
+              return helper_res;
+            }
           }
         }
       }

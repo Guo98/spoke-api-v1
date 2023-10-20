@@ -102,7 +102,8 @@ async function deployLaptop(res, body, inventoryDB) {
             email,
             phone_number,
             note,
-            requestor_email
+            requestor_email,
+            body.warehouse
           );
 
           try {
@@ -113,7 +114,7 @@ async function deployLaptop(res, body, inventoryDB) {
               deployValues,
               "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
               1579665041,
-              12
+              13
             );
             console.log(
               `/deployLaptop/${client} => Finish adding laptop to admin order sheet.`

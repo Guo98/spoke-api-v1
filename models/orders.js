@@ -78,7 +78,9 @@ class Orders {
   }
 
   async updateOrderByContainer(containerId, itemId, fullNameKey, items) {
-    const coResponse = await this.database.container(containerId).read();
+    const coResponse = await this.database
+      .container(containerId === "public" ? "Mock" : containerId)
+      .read();
 
     const { resource } = await coResponse.container
       .item(itemId, fullNameKey)

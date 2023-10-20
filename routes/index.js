@@ -11,6 +11,7 @@ import users from "./users.js";
 import ai from "./ai.js";
 import client from "./client.js";
 import cdw from "./cdw.js";
+import connect from "./connect.js";
 
 export default {
   offboard,
@@ -26,4 +27,5 @@ export default {
   ai,
   client,
   cdw,
+  connect,
 };
