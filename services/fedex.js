@@ -144,6 +144,7 @@ async function trackPackage(tracking_number, token) {
 }
 
 const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
+  console.log("updateFedexStatus() => Starting function.", fedex_orders);
   let post_data = {
     includeDetailedScans: true,
     trackingInfo: fedex_orders.map((fo) => {
@@ -181,11 +182,14 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
   let current_order = fedex_orders[0];
   for await (let item of fedex_orders) {
     if (result[index].trackResults[0]?.latestStatusDetail?.description) {
-      if (current_order.orderNo !== item.order_no) {
-        current_order = fedex_orders[index + 1];
+      if (current_order.order_no !== item.order_no) {
+        current_order = fedex_orders[index];
       }
-      current_order.items[item.item_index].delivery_status =
-        result[index].trackResults[0].latestStatusDetail.description;
+
+      if (current_order.order_no === item.order_no) {
+        current_order.items[item.item_index].delivery_status =
+          result[index].trackResults[0].latestStatusDetail.description;
+      }
     }
 
     if (index < fedex_orders.length) {
