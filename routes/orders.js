@@ -840,6 +840,7 @@ const orderItemsDelivery = async (order, containerId, ups_token) => {
     let change = false;
     let fedex_items = [];
     let index = 0;
+
     for await (const item of order.items) {
       if (item.courier) {
         if (item.courier.toLowerCase() === "fedex") {

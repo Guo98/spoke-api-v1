@@ -6,7 +6,7 @@ import { addNewDocument } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import { cdwUpdateOrder } from "./orders.js";
 import { autoAddNewSerialNumber } from "./inventory.js";
-import { order_to_inventory } from "../utils/mappings/inventory.js";
+import { cdw_order_info_mappings } from "../utils/mappings/cdw_part_numbers.js";
 import { createAftershipCSV } from "../services/aftership.js";
 import { sendAftershipCSV } from "../services/sendEmail.js";
 
@@ -14,12 +14,12 @@ const router = Router();
 
 const cdw_config = {
   client: {
-    id: "OXyKcWEtuePLxIqmBc6OPwbX6BVm5bb0",
-    secret: "IcKAzU3PYWFfrjoQ",
+    id: process.env.CDW_API_KEY,
+    secret: process.env.CDW_API_SECRET,
   },
   auth: {
-    tokenHost: "https://pre-prod-apihub.cdw.com",
-    tokenPath: "/v2/oauth/ClientCredentialAcessToken",
+    tokenHost: process.env.CDW_TOKEN_HOST,
+    tokenPath: process.env.CDW_TOKEN_PATH,
   },
 };
 
@@ -168,14 +168,26 @@ router.post("/cdw/order", async (req, res) => {
 });
 
 router.post("/placeorder/:supplier", async (req, res) => {
-  const { appr_number, cdw_part_number, unit_price, customer_id } = req.body;
+  const {
+    appr_number,
+    cdw_part_number,
+    unit_price,
+    customer_id,
+    item_name,
+    customer_addr,
+    order_client,
+  } = req.body;
   const client = new ClientCredentials(cdw_config);
+
+  let todays_date = new Date();
+  todays_date = todays_date.toISOString().split("T")[0];
+
   const order_body = {
     orderHeader: {
       customerId: customer_id,
-      orderDate: "2023-09-07",
+      orderDate: todays_date,
       currency: "USD",
-      orderAmount: "100",
+      orderAmount: unit_price,
       orderId: appr_number,
       shipTo: {
         firstName: "Andy",
@@ -200,7 +212,6 @@ router.post("/placeorder/:supplier", async (req, res) => {
   };
   try {
     const accessToken = await client.getToken();
-    console.log("access token ::::::::::::: ", accessToken.token);
 
     const options = {
       method: "POST",
@@ -213,9 +224,9 @@ router.post("/placeorder/:supplier", async (req, res) => {
       data: JSON.stringify(order_body),
     };
 
-    const order_resp = await axios.request(options);
+    // const order_resp = await axios.request(options);
 
-    console.log("order resp >>>>>>>>>>> ", order_resp);
+    // console.log("order resp >>>>>>>>>>> ", order_resp);
   } catch (e) {
     console.log("Error in getting access token", e);
   }
