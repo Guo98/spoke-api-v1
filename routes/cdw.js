@@ -214,7 +214,7 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
   };
   try {
     const accessToken = await client.getToken();
-
+    console.log(`/placeorder/${supplier} => Successfully got token.`);
     const options = {
       method: "POST",
       headers: {
@@ -223,8 +223,13 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
           accessToken.token.token_type + " " + accessToken.token.access_token,
       },
       url: process.env.CDW_TOKEN_HOST + "/b2b/customer/inbapi/v1/CustomerOrder",
-      data: JSON.stringify(order_body),
+      data: order_body,
     };
+
+    console.log(
+      `/placeorder/${supplier} => Passing through options: `,
+      options
+    );
 
     const order_resp = await axios.request(options);
 
