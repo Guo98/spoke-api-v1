@@ -167,7 +167,7 @@ router.post("/cdw/order", async (req, res) => {
   console.log("/cdw/order => Finished route.");
 });
 
-router.post("/placeorder/:supplier", async (req, res) => {
+router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
   const {
     appr_number,
     cdw_part_number,
@@ -176,6 +176,8 @@ router.post("/placeorder/:supplier", async (req, res) => {
     item_name,
     customer_addr,
     order_client,
+    first_name,
+    last_name,
   } = req.body;
   const client = new ClientCredentials(cdw_config);
 
@@ -190,14 +192,14 @@ router.post("/placeorder/:supplier", async (req, res) => {
       orderAmount: unit_price,
       orderId: appr_number,
       shipTo: {
-        firstName: "Andy",
-        lastName: "Guo",
-        address1: "1 Lewis St",
-        street: "1 Lewis St",
-        city: "Hartford",
-        state: "CT",
-        postalCode: "06103",
-        country: "USA",
+        firstName: first_name,
+        lastName: last_name,
+        address1: "ALMA Withspoke",
+        street: customer_addr.addressLine,
+        city: customer_addr.city,
+        state: customer_addr.subdivision,
+        postalCode: customer_addr.postalCode,
+        country: "US",
       },
     },
     orderLines: [
