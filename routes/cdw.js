@@ -6,7 +6,6 @@ import { addNewDocument } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import { cdwUpdateOrder } from "./orders.js";
 import { autoAddNewSerialNumber } from "./inventory.js";
-import { cdw_order_info_mappings } from "../utils/mappings/cdw_part_numbers.js";
 import { createAftershipCSV } from "../services/aftership.js";
 import { sendAftershipCSV } from "../services/sendEmail.js";
 
@@ -169,16 +168,17 @@ router.post("/cdw/order", async (req, res) => {
 
 router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
   const {
-    appr_number,
+    order_number,
     cdw_part_number,
     unit_price,
     customer_id,
-    item_name,
     customer_addr,
     order_client,
     first_name,
     last_name,
   } = req.body;
+  const { supplier } = req.params;
+  console.log(`/placeorder/${supplier} => Starting path.`);
   const client = new ClientCredentials(cdw_config);
 
   let todays_date = new Date();
@@ -190,7 +190,7 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
       orderDate: todays_date,
       currency: "USD",
       orderAmount: unit_price,
-      orderId: appr_number,
+      orderId: order_number,
       shipTo: {
         firstName: first_name,
         lastName: last_name,
@@ -222,18 +222,37 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
         Authorization:
           accessToken.token.token_type + " " + accessToken.token.access_token,
       },
-      url: "https://pre-prod-apihub.cdw.com/b2b/customer/inbapi/v1/CustomerOrder",
+      url: process.env.CDW_TOKEN_HOST + "/b2b/customer/inbapi/v1/CustomerOrder",
       data: JSON.stringify(order_body),
     };
 
-    // const order_resp = await axios.request(options);
+    const order_resp = await axios.request(options);
 
-    // console.log("order resp >>>>>>>>>>> ", order_resp);
+    if (order_resp.data?.statusCode === "RECEIVED") {
+      console.log(
+        `/placeorder/${supplier} => Successfully placed order: `,
+        order_resp.data
+      );
+      res.json({
+        status: "Successful",
+        data: { order_ref: order_resp.data.orderLines[0].CDWOrderReference },
+      });
+    } else {
+      console.log(
+        `/placeorder/${supplier} => No RECEIVED status in order response: `,
+        order_resp.data
+      );
+      res.status(500).json({ status: "Error" });
+    }
   } catch (e) {
-    console.log("Error in getting access token", e);
+    console.log(
+      `/placeorder/${supplier} => Error in getting access token: `,
+      e
+    );
+    res.status(500).json({ status: "Error" });
   }
 
-  res.send("Hello World");
+  console.log(`/placeorder/${supplier} => Finished path.`);
 });
 
 export default router;
