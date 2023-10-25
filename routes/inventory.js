@@ -277,6 +277,7 @@ router.get(
                 name: device.name,
                 location: device.location,
                 grade: item.grade ? item.grade : "",
+                entity: device.entity,
               });
             });
           }
@@ -290,6 +291,7 @@ router.get(
               name: device.name,
               location: device.location,
               grade: item.grade ? item.grade : "",
+              entity: device.entity ? device.entity : req.params.client,
             });
           });
         }

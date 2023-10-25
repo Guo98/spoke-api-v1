@@ -14,6 +14,11 @@ async function exportInventory(res, devices) {
     { header: "Status", key: "status", width: 10 },
     { header: "Date Deployed", key: "date_deployed", width: 20 },
     { header: "Name", key: "full_name", width: 20 },
+    {
+      header: "Entity",
+      key: "entity",
+      width: 20,
+    },
   ];
 
   devices.forEach((device) => {

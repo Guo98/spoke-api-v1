@@ -21,6 +21,8 @@ export const cdwMappings = {
     "LVO E14 G5 R7-7730U 512/16 W11P",
   "MacBook Pro 13” M2 Chip: 16GB RAM, 1TB SSD (Roivant) - Non-Technical":
     "APPLE MBP 13 M2 8C10C 16 16GB 1TB",
+  "Lenovo ThinkPad P16s Gen 2, Intel Core i7 1360P: 32GB, 1TB (Alma)":
+    "LVO P16S G2 RTX I7",
 };
 
 export const inventoryMappings = {
