@@ -42,7 +42,7 @@ async function exportOrders(res, orders, client) {
     worksheet.columns = [
       { header: "Order Number", key: "orderNo", width: 10 },
       { header: "Name", key: "name", width: 20 },
-      { header: "Item", key: "item", width: 30 },
+      { header: "Item", key: "item", width: 50 },
       { header: "Serial Number", key: "serial_no", width: 15 },
       { header: "Date Ordered", key: "date", width: 20 },
       { header: "Location", key: "location", widht: 30 },
@@ -54,7 +54,7 @@ async function exportOrders(res, orders, client) {
     worksheet.columns = [
       { header: "Order Number", key: "orderNo", width: 10 },
       { header: "Name", key: "name", width: 20 },
-      { header: "Item", key: "item", width: 30 },
+      { header: "Item", key: "item", width: 50 },
       { header: "Serial Number", key: "serial_no", width: 15 },
       { header: "Date Ordered", key: "date", width: 20 },
       { header: "Location", key: "location", widht: 30 },
