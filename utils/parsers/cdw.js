@@ -19,7 +19,7 @@ export default async function addCDWTrackingNumber(
 ) {
   const orderNum = orders[index].orderNo;
 
-  // if (orders[index].client === "Alma") return;
+  if (orders[index].client === "Alma") return;
 
   // const openai = new OpenAIApi(configuration);
   console.log(`addCDWTrackingNumber(${orderNum}) => Starting function.`);
