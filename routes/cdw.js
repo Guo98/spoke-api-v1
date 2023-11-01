@@ -176,6 +176,8 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
     order_client,
     first_name,
     last_name,
+    id,
+    full_name_key,
   } = req.body;
   const { supplier } = req.params;
   console.log(`/placeorder/${supplier} => Starting path.`);

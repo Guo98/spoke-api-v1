@@ -189,6 +189,9 @@ class Orders {
             },
           ],
           shipping_status: "Incomplete",
+          date: new Date().toLocaleString("en-US", {
+            timeZone: "America/New_York",
+          }),
         };
         if (resource.order_type === "Deploy Right Away") {
           orderItem.address = {
