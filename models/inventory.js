@@ -204,23 +204,24 @@ class Inventory {
     return replaced;
   }
 
-  async autoAddInventory(containerId, device_name, new_devices) {
-    console.log("autoAddInventory() => Starting function.");
+  async autoAddInventory(containerId, cdw_part_no, new_devices) {
+    console.log(`autoAddInventory(${containerId}) => Starting function.`);
     const coResponse = await this.database.container(containerId).read();
     const { resources: receivedList } = await coResponse.container.items
       .readAll()
       .fetchAll();
     let id = "";
     receivedList.forEach((device) => {
-      const lc_name = device_name.toLowerCase();
-      console.log("autoAddInventory() => Searching for device:", device_name);
-      if (
-        lc_name.includes(device.specs.screen_size) &&
-        lc_name.includes(device.specs.ram.toLowerCase()) &&
-        lc_name.includes(device.specs.cpu.toLowerCase()) &&
-        lc_name.includes(device.specs.hard_drive.toLowerCase())
-      ) {
-        console.log("autoAddInventory() => Found device:", device.id);
+      // const lc_name = device_name.toLowerCase();
+      console.log(
+        `autoAddInventory(${containerId}) => Searching for device by cdw part number:`,
+        cdw_part_no
+      );
+      if (device.cdw_part_no && device.cdw_part_no === cdw_part_no) {
+        console.log(
+          `autoAddInventory(${containerId}) => Found device:`,
+          device.id
+        );
         id = device.id;
       }
     });
@@ -235,8 +236,8 @@ class Inventory {
       return replaced;
     } else {
       console.log(
-        "autoAddInventory() => Could not match device for:",
-        device_name
+        "autoAddInventory() => Could not match device by cdw part number:",
+        cdw_part_no
       );
       return undefined;
     }

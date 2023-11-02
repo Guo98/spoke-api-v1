@@ -631,9 +631,18 @@ async function addNewSerialNumber(client, device_id, new_device) {
   }
 }
 
-async function autoAddNewSerialNumber(client, device_name, new_device) {
+async function autoAddNewSerialNumber(client, cdw_part_no, new_device) {
+  console.log(`autoAddNewSerialNumber(${client}) => Starting function.`);
   try {
-    await inventory.autoAddInventory(client, device_name, [new_device]);
+    console.log(
+      `autoAddNewSerialNumber(${client}) => Adding new device:`,
+      new_device
+    );
+    await inventory.autoAddInventory(client, cdw_part_no, [new_device]);
+    console.log(
+      `autoAddNewSerialNumber(${client}) => Finished adding`,
+      device_name
+    );
     return true;
   } catch (e) {
     console.log(

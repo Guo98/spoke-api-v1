@@ -1102,6 +1102,7 @@ const cdwUpdateOrder = async (
     }
   } else {
     console.log("cdwUpdateOrder() => Order number is not a number:", order_no);
+    return "";
   }
 };
 
