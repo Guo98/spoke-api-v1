@@ -278,6 +278,9 @@ router.get(
                 location: device.location,
                 grade: item.grade ? item.grade : "",
                 entity: device.entity,
+                supplier: item.supplier,
+                price: item.price,
+                purchase_date: item.purchase_date,
               });
             });
           }
@@ -292,6 +295,9 @@ router.get(
               location: device.location,
               grade: item.grade ? item.grade : "",
               entity: device.entity ? device.entity : req.params.client,
+              supplier: item.supplier,
+              price: item.price,
+              purchase_date: item.purchase_date,
             });
           });
         }
