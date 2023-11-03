@@ -121,7 +121,10 @@ class Inventory {
     grade = "",
     updated_condition = "",
     updated_warehouse = "",
-    updated_date = ""
+    updated_date = "",
+    updated_supplier = "",
+    updated_price = "",
+    updated_purchase_date = ""
   ) {
     let verified_index = device_index;
     const coResponse = await this.database
@@ -174,6 +177,16 @@ class Inventory {
       }
       if (updated_date !== "") {
         resource.serial_numbers[verified_index].date_deployed = updated_date;
+      }
+      if (updated_supplier !== "") {
+        resource.serial_numbers[verified_index].supplier = updated_supplier;
+      }
+      if (updated_price !== "") {
+        resource.serial_numbers[verified_index].price = updated_price;
+      }
+      if (updated_purchase_date !== "") {
+        resource.serial_numbers[verified_index].purchase_date =
+          updated_purchase_date;
       }
 
       const { resource: replaced } = await coResponse.container
