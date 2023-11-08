@@ -278,6 +278,10 @@ router.get(
                 location: device.location,
                 grade: item.grade ? item.grade : "",
                 entity: device.entity,
+                supplier: item.supplier,
+                price: item.price,
+                purchase_date: item.purchase_date,
+                warehouse: item.warehouse,
               });
             });
           }
@@ -292,6 +296,10 @@ router.get(
               location: device.location,
               grade: item.grade ? item.grade : "",
               entity: device.entity ? device.entity : req.params.client,
+              supplier: item.supplier,
+              price: item.price,
+              purchase_date: item.purchase_date,
+              warehouse: item.warehouse,
             });
           });
         }
@@ -458,6 +466,9 @@ router.patch("/inventory", checkJwt, async (req, res) => {
     updated_condition,
     updated_warehouse,
     updated_date,
+    updated_supplier,
+    updated_price,
+    updated_purchase_date,
   } = req.body;
   console.log(`[PATCH] /inventory/${client} => Starting route.`);
 
@@ -475,7 +486,10 @@ router.patch("/inventory", checkJwt, async (req, res) => {
       grade,
       updated_condition,
       updated_warehouse,
-      updated_date
+      updated_date,
+      updated_supplier,
+      updated_price,
+      updated_purchase_date
     );
     if (updateResp === "Error") {
       throw new Error("Error in updating");
@@ -631,9 +645,18 @@ async function addNewSerialNumber(client, device_id, new_device) {
   }
 }
 
-async function autoAddNewSerialNumber(client, device_name, new_device) {
+async function autoAddNewSerialNumber(client, cdw_part_no, new_device) {
+  console.log(`autoAddNewSerialNumber(${client}) => Starting function.`);
   try {
-    await inventory.autoAddInventory(client, device_name, [new_device]);
+    console.log(
+      `autoAddNewSerialNumber(${client}) => Adding new device:`,
+      new_device
+    );
+    await inventory.autoAddInventory(client, cdw_part_no, [new_device]);
+    console.log(
+      `autoAddNewSerialNumber(${client}) => Finished adding`,
+      device_name
+    );
     return true;
   } catch (e) {
     console.log(

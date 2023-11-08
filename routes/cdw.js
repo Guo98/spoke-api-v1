@@ -55,11 +55,15 @@ router.post("/cdw/order", async (req, res) => {
       part_number: "",
       courier: "",
       supplier_order_no: "",
+      price: "",
+      purchase_date: "",
     };
 
     if (req.body.records) {
+      console.log("/cdw/order => Mutliple records sent.");
       req.body.records.forEach((record) => {
         if (record.cdw_item_type === "Notebook/Mobile Devices") {
+          console.log("/cdw/order => Found laptop order in multiple records.");
           update_order_obj.client = record.po_customer_name;
           update_order_obj.order_no = record.po_number;
           update_order_obj.serial_number = record.serial_number;
@@ -71,24 +75,38 @@ router.post("/cdw/order", async (req, res) => {
             update_order_obj.courier = record.cdw_shipping_carrier;
           }
           update_order_obj.supplier_order_no = record.cdw_order_no;
+          update_order_obj.price = record.purchase_price;
+          update_order_obj.purchase_date = record.purchase_date;
         }
       });
     } else {
-      update_order_obj.client = req.body.po_customer_name;
-      update_order_obj.order_no = req.body.po_number;
-      update_order_obj.serial_number = req.body.serial_number;
-      update_order_obj.tracking_number = req.body.cdw_tracking_no;
-      update_order_obj.part_number = req.body.cdw_part_no;
-      if (cdw_carrier[req.body.cdw_shipping_carrier]) {
-        update_order_obj.courier = cdw_carrier[req.body.cdw_shipping_carrier];
-      } else {
-        update_order_obj.courier = req.body.cdw_shipping_carrier;
+      if (req.body.cdw_item_type === "Notebook/Mobile Devices") {
+        console.log("/cdw/order => Received a laptop order.");
+        update_order_obj.client = req.body.po_customer_name;
+        update_order_obj.order_no = req.body.po_number;
+        update_order_obj.serial_number = req.body.serial_number;
+        update_order_obj.tracking_number = req.body.cdw_tracking_no;
+        update_order_obj.part_number = req.body.cdw_part_no;
+        if (cdw_carrier[req.body.cdw_shipping_carrier]) {
+          update_order_obj.courier = cdw_carrier[req.body.cdw_shipping_carrier];
+        } else {
+          update_order_obj.courier = req.body.cdw_shipping_carrier;
+        }
+        update_order_obj.supplier_order_no = req.body.cdw_order_no;
+        update_order_obj.price = req.body.purchase_price;
+        update_order_obj.purchase_date = req.body.purchase_date;
       }
-      update_order_obj.supplier_order_no = req.body.cdw_order_no;
     }
 
+    console.log("/cdw/order => Adding request body to CDW container.");
     const addresult = await addNewDocument("CDW", req.body);
+    console.log("/cdw/order => Added request body to CDW container.");
 
+    console.log(
+      "/cdw/order => Updating order " +
+        update_order_obj.order_no +
+        " with info from cdw."
+    );
     const updateRes = await cdwUpdateOrder(
       client_title_case[update_order_obj.client],
       update_order_obj.order_no,
@@ -103,10 +121,13 @@ router.post("/cdw/order", async (req, res) => {
 
     if (updateRes !== "") {
       console.log("/cdw/order => Successfully updated order.");
-
+      console.log(
+        "/cdw/order => Adding serial number to inventory for part number:",
+        update_order_obj.part_number
+      );
       const updateInvRes = await autoAddNewSerialNumber(
         client_title_case[update_order_obj.client],
-        updateRes.item_name,
+        update_order_obj.part_number,
         {
           sn: update_order_obj.serial_number,
           status: "Shipping",
@@ -116,7 +137,14 @@ router.post("/cdw/order", async (req, res) => {
           full_name: updateRes.full_name,
           supplier: "CDW",
           supplier_order_no: update_order_obj.supplier_order_no,
+          price: update_order_obj.price,
+          purchase_date: update_order_obj.purchase_date,
+          user_history: [updateRes.full_name],
         }
+      );
+      console.log(
+        "/cdw/order => Finished adding serial number to inventory.",
+        updateInvRes
       );
     } else {
       console.log("/cdw/order => Error in updating order.");

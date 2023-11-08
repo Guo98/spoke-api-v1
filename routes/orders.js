@@ -7,7 +7,10 @@ import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
 // import { createRecord } from "../services/airtable.js";
-import { createConsolidatedRow } from "../utils/googleSheetsRows.js";
+import {
+  createConsolidatedRow,
+  createMissingMappingRow,
+} from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
 import { sendSupportEmail, sendConfirmation } from "../services/sendEmail.js";
@@ -803,6 +806,31 @@ router.post("/deleteOrder", checkJwt, async (req, res) => {
   console.log(`/deleteOrder => Finishing route for ${client}`);
 });
 
+router.post("/missing", checkJwt, async (req, res) => {
+  const { order_no, serial_no, device_name, name, client } = req.body;
+
+  try {
+    const row_vals = createMissingMappingRow(
+      client,
+      device_name,
+      serial_no,
+      name,
+      order_no
+    );
+
+    const resp = await addOrderRow(
+      row_vals,
+      "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+      1613459136,
+      6
+    );
+  } catch (e) {
+    console.log("/missing => Error in listing missing device mapping:", e);
+  }
+
+  res.send("Hello World");
+});
+
 // router.post("/orderyubikey", async (req, res) => {
 //   // const { firstname, lastname, address, email, phone_number } = body;
 //   try {
@@ -1102,6 +1130,7 @@ const cdwUpdateOrder = async (
     }
   } else {
     console.log("cdwUpdateOrder() => Order number is not a number:", order_no);
+    return "";
   }
 };
 

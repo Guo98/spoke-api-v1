@@ -1,3 +1,53 @@
+function createMissingMappingRow(
+  client,
+  device_name,
+  serial_no,
+  name,
+  order_no
+) {
+  const today_date = new Date();
+  today_date.toLocaleString("en-US", { timeZone: "America/New_York" });
+
+  return [
+    {
+      userEnteredValue: {
+        stringValue:
+          today_date.getMonth() +
+          1 +
+          "/" +
+          today_date.getDate() +
+          "/" +
+          today_date.getFullYear(),
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: client,
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: device_name,
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: serial_no,
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: name,
+      },
+    },
+    {
+      userEnteredValue: {
+        numberValue: order_no,
+      },
+    },
+  ];
+}
+
 function createConsolidatedRow(
   orderNo,
   client,
@@ -384,4 +434,9 @@ function createOffboardRow(
   ];
 }
 
-export { createConsolidatedRow, createAdminDeploy, createOffboardRow };
+export {
+  createConsolidatedRow,
+  createAdminDeploy,
+  createOffboardRow,
+  createMissingMappingRow,
+};
