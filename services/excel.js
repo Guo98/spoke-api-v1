@@ -18,6 +18,7 @@ async function exportInventory(res, devices) {
     { header: "Supplier", key: "supplier", width: 10 },
     { header: "Price", key: "price", width: 15 },
     { header: "Purchase Date", key: "purchase_date", width: 20 },
+    { header: "Warehouse", key: "warehouse", width: 10 },
   ];
 
   devices.forEach((device) => {

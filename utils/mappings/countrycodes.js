@@ -42,6 +42,7 @@ export const euCountryCodes = [
   "FR",
   "DE",
   "GR",
+  "GB",
   "HU",
   "IE",
   "IT",

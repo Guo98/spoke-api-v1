@@ -49,7 +49,6 @@ async function validateAddress(address, source) {
 
   const result = await axios(options)
     .then((data) => {
-      // console.log("address data :::::::: ", data.data.features[0]);
       if (data.status && data.status === 200) {
         const features = data.data.features[0];
 

@@ -281,6 +281,7 @@ router.get(
                 supplier: item.supplier,
                 price: item.price,
                 purchase_date: item.purchase_date,
+                warehouse: item.warehouse,
               });
             });
           }
@@ -298,6 +299,7 @@ router.get(
               supplier: item.supplier,
               price: item.price,
               purchase_date: item.purchase_date,
+              warehouse: item.warehouse,
             });
           });
         }
