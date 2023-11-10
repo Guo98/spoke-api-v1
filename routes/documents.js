@@ -59,7 +59,7 @@ router.get("/documents", checkJwt, async (req, res) => {
   res.send({ status: "Hello World", blobNames: blobNames });
 });
 
-router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
+router.get("/downloaddoc/:filename", async (req, res) => {
   const filename = req.params.filename;
   try {
     const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
@@ -67,9 +67,7 @@ router.get("/downloaddoc/:filename", checkJwt, async (req, res) => {
 
     const blobServiceClient = new BlobServiceClient(
       `https://${accountName}.blob.core.windows.net`,
-      new DefaultAzureCredential({
-        tenantId: "9b9f4cee-fe96-4873-8081-83787efec6ee",
-      })
+      new DefaultAzureCredential({})
     );
 
     const containerClient = blobServiceClient.getContainerClient("quotes");
