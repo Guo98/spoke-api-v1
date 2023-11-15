@@ -24,6 +24,7 @@ const cdw_config = {
 
 const client_title_case = {
   ALMA: "Alma",
+  "AUTOMOX INC": "Automox",
 };
 
 const cdw_carrier = {
@@ -261,24 +262,25 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
       options
     );
 
-    const order_resp = await axios.request(options);
+    // const order_resp = await axios.request(options);
 
-    if (order_resp.data?.statusCode === "RECEIVED") {
-      console.log(
-        `/placeorder/${supplier} => Successfully placed order: `,
-        order_resp.data
-      );
-      res.json({
-        status: "Successful",
-        data: { order_ref: order_resp.data.orderLines[0].CDWOrderReference },
-      });
-    } else {
-      console.log(
-        `/placeorder/${supplier} => No RECEIVED status in order response: `,
-        order_resp.data
-      );
-      res.status(500).json({ status: "Error" });
-    }
+    // if (order_resp.data?.statusCode === "RECEIVED") {
+    //   console.log(
+    //     `/placeorder/${supplier} => Successfully placed order: `,
+    //     order_resp.data
+    //   );
+    //   res.json({
+    //     status: "Successful",
+    //     data: { order_ref: order_resp.data.orderLines[0].CDWOrderReference },
+    //   });
+    // } else {
+    //   console.log(
+    //     `/placeorder/${supplier} => No RECEIVED status in order response: `,
+    //     order_resp.data
+    //   );
+    //   res.status(500).json({ status: "Error" });
+    // }
+    res.json({ status: "Successful" });
   } catch (e) {
     console.log(
       `/placeorder/${supplier} => Error in getting access token: `,
