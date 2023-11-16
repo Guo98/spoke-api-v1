@@ -96,10 +96,60 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     last_name,
     device_name,
     shipping,
+    return_device,
+    address,
   } = req.body;
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
+
+  if (return_device) {
+    /**
+     *  1,
+      client,
+      recipient_name,
+      recipient_email,
+      device_name,
+      type,
+      shipping_address,
+      phone_num,
+      requestor_email,
+      note,
+      device_condition,
+      body.activation_key ? body.activation_key : ""
+
+       al1: ad1,
+        al2: ad2,
+        city: city,
+        state: state,
+        postal_code: postalCode,
+        country_code: country,
+     */
+    console.log(`/deployLaptop/${client} => Returning old device.`);
+    await inventoryOffboard(res, {
+      client,
+      recipient_name: first_name + " " + last_name,
+      recipient_email: email,
+      device_name: "",
+      type: "Return",
+      shipping_address:
+        address.al1 +
+        (address.al2 ? address.al2 : "") +
+        ", " +
+        address.city +
+        ", " +
+        address.state +
+        " " +
+        address.postal_code +
+        ", " +
+        address.country_code,
+      phone_num: phone_number,
+      requestor_email,
+      inventory,
+      note: "",
+      device_condition: "",
+    });
+  }
 
   console.log(`/deployLaptop/${client} => Ending route.`);
 
