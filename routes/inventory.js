@@ -35,10 +35,10 @@ const router = Router();
 router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
-  console.log(`/getInventory/${company} => Starting route.`);
+  console.log(`[GET] /inventory/${company} => Starting route.`);
   if (dbContainer !== "") {
     console.log(
-      `/getInventory/${company} => Getting inventory from db: ${dbContainer}.`
+      `[GET] /inventory/${company} => Getting inventory from db: ${dbContainer}.`
     );
     try {
       let inventoryRes = await inventory.getAll(dbContainer);
@@ -57,17 +57,17 @@ router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
         delete device._attachments;
         delete device._ts;
       });
-      console.log(`/getInventory/${company} => Ending route. Successful.`);
+      console.log(`[GET] /inventory/${company} => Ending route. Successful.`);
       res.json({ data: inventoryRes });
     } catch (e) {
       console.log(
-        `/getInventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
+        `[GET] /inventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
       );
       res.status(500).json({ data: [] });
     }
   } else {
     console.log(
-      `/getInventory/${company} => Ending route. Error company doesn't exist in DB.`
+      `[GET] /inventory/${company} => Ending route. Error company doesn't exist in DB.`
     );
 
     res.status(500).json({ data: [] });
@@ -104,54 +104,48 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
   await deployLaptop(res, req.body, inventory);
 
   if (return_device) {
-    /**
-     *  1,
-      client,
-      recipient_name,
-      recipient_email,
-      device_name,
-      type,
-      shipping_address,
-      phone_num,
-      requestor_email,
-      note,
-      device_condition,
-      body.activation_key ? body.activation_key : ""
+    const { return_info } = req.body;
 
-       al1: ad1,
-        al2: ad2,
-        city: city,
-        state: state,
-        postal_code: postalCode,
-        country_code: country,
-     */
     console.log(`/deployLaptop/${client} => Returning old device.`);
-    await inventoryOffboard(res, {
-      client,
-      recipient_name: first_name + " " + last_name,
-      recipient_email: email,
-      device_name: "",
-      type: "Return",
-      shipping_address:
-        address.al1 +
-        (address.al2 ? address.al2 : "") +
-        ", " +
-        address.city +
-        ", " +
-        address.state +
-        " " +
-        address.postal_code +
-        ", " +
-        address.country_code,
-      phone_num: phone_number,
-      requestor_email,
-      inventory,
-      note: "",
-      device_condition: "",
-    });
+    try {
+      await inventoryOffboard(
+        res,
+        {
+          client,
+          recipient_name: first_name + " " + last_name,
+          recipient_email: email,
+          device_name: return_info.device_name,
+          type: "Return",
+          shipping_address:
+            address.al1 +
+            (address.al2 ? address.al2 : "") +
+            ", " +
+            address.city +
+            ", " +
+            address.state +
+            " " +
+            address.postal_code +
+            ", " +
+            address.country_code,
+          phone_num: phone_number,
+          requestor_email,
+          inventory,
+          note: return_info.note,
+          device_condition: return_info.condition,
+          activation_key: return_info.activation_key,
+        },
+        inventory
+      );
+      console.log(
+        `/deployLaptop/${client} => Successfully created offboarding row.`
+      );
+    } catch (e) {
+      console.log(
+        `/deployLaptop/${client} => Error in adding row to offboarding sheet:`,
+        e
+      );
+    }
   }
-
-  console.log(`/deployLaptop/${client} => Ending route.`);
 
   if (!res.headersSent) res.send({ status: "Success" });
 
@@ -189,6 +183,8 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       e
     );
   }
+
+  console.log(`/deployLaptop/${client} => Ending route.`);
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
