@@ -170,7 +170,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     await sendOrderConfirmationEmail(
       requestor_email,
       requestor_name,
-      "Deployment",
+      return_device ? "Deployment + Return" : "Deployment",
       first_name + " " + last_name,
       device_name,
       shipping
