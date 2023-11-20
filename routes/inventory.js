@@ -98,6 +98,8 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     shipping,
     return_device,
     address,
+    email,
+    phone_number,
   } = req.body;
   console.log(`/deployLaptop/${client} => Starting route.`);
 
@@ -129,7 +131,6 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
             address.country_code,
           phone_num: phone_number,
           requestor_email,
-          inventory,
           note: return_info.note,
           device_condition: return_info.condition,
           activation_key: return_info.activation_key,
