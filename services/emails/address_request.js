@@ -1,4 +1,4 @@
-import { sendAzureEmail } from "../sendEmail";
+import { sendAzureEmail } from "../sendEmail.js";
 
 export async function sendAddressRequestEmail(client, recipient_email) {
   console.log(`sendAddressRequestEmail(${client}) => Starting function.`);
