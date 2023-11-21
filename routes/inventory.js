@@ -207,7 +207,11 @@ router.post("/offboarding", checkJwt, async (req, res) => {
       `/offboarding/${client} => No address given, sending email to employee.`
     );
     try {
-      await sendAddressRequestEmail(client, req.body.recipient_email);
+      await sendAddressRequestEmail(
+        client,
+        req.body.recipient_email,
+        requestor_email
+      );
       console.log(`/offboarding/${client} => Sent email.`);
     } catch (e) {
       console.log(

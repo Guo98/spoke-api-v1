@@ -1,6 +1,10 @@
 import { sendAzureEmail } from "../sendEmail.js";
 
-export async function sendAddressRequestEmail(client, recipient_email) {
+export async function sendAddressRequestEmail(
+  client,
+  recipient_email,
+  requestor_email
+) {
   console.log(`sendAddressRequestEmail(${client}) => Starting function.`);
   let emailMessage = {
     senderAddress: "info@withspoke.com",
@@ -12,6 +16,11 @@ export async function sendAddressRequestEmail(client, recipient_email) {
       to: [
         {
           address: recipient_email,
+        },
+      ],
+      bcc: [
+        {
+          address: requestor_email,
         },
       ],
     },
