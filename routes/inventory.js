@@ -726,6 +726,18 @@ async function createInventoryContainer(client) {
   return newCoResponse;
 }
 
+async function offboardDevice(res, body) {
+  const { client } = body;
+  console.log(`offboardDevice(${client}) => Starting function.`);
+  try {
+    await inventoryOffboard(res, body, inventory);
+    console.log(`offboardDevice(${client}) => Successfully offboarded.`);
+  } catch (e) {
+    console.log(`offboardDevice(${client}) => Error in offboarding:`, e);
+  }
+  console.log(`offboardDevice(${client}) => Finishing function.`);
+}
+
 export default router;
 
 export {
@@ -733,4 +745,5 @@ export {
   getAllInventory,
   createInventoryContainer,
   autoAddNewSerialNumber,
+  offboardDevice,
 };
