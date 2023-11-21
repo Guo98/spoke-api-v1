@@ -695,6 +695,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   }
 
   if (return_device) {
+    console.log(`/newPurchase/${client} => Creating offboard row.`);
     const { recipient_name, email, phone_number, address, requestor_email } =
       req.body;
     try {
@@ -712,11 +713,11 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         activation_key: "",
       });
       console.log(
-        `/deployLaptop/${client} => Successfully created offboarding row.`
+        `/newPurchase/${client} => Successfully created offboarding row.`
       );
     } catch (e) {
       console.log(
-        `/deployLaptop/${client} => Error in adding row to offboarding sheet:`,
+        `/newPurchase/${client} => Error in adding row to offboarding sheet:`,
         e
       );
     }

@@ -12,6 +12,7 @@ import {
   sendNotificationEmail,
   sendOrderConfirmationEmail,
 } from "../services/sendEmail.js";
+import { sendAddressRequestEmail } from "../services/emails/address_request.js";
 import { resetMockApprovals } from "./orders.js";
 
 const cosmosClient = new CosmosClient({
@@ -189,11 +190,32 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { client, recipient_name, requestor_email, requestor_name, type } =
-    req.body;
+  const {
+    client,
+    recipient_name,
+    requestor_email,
+    requestor_name,
+    type,
+    no_address,
+  } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
   await inventoryOffboard(res, req.body, inventory);
+
+  if (no_address) {
+    console.log(
+      `/offboarding/${client} => No address given, sending email to employee.`
+    );
+    try {
+      await sendAddressRequestEmail(client, req.body.recipient_email);
+      console.log(`/offboarding/${client} => Sent email.`);
+    } catch (e) {
+      console.log(
+        `/offboarding/${client} => Error in sending no address email:`,
+        e
+      );
+    }
+  }
 
   console.log(`/offboarding/${client} => Ending route.`);
   if (!res.headersSent) res.send({ status: "Success" });
