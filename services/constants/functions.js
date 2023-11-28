@@ -104,3 +104,64 @@ export const functions = [
     },
   },
 ];
+
+export const scrape_functions = [
+  {
+    name: "returnItemInfo",
+    description:
+      "Returns the price, specs (screen size, cpu, ram size, hard drive size), color, and url of item image in a formatted response",
+    parameters: {
+      type: "object",
+      properties: {
+        price: {
+          type: "string",
+          description:
+            'Price of the item in currency format with dollar sign in front and cents, e.g. "$1999.99", "$9.99',
+        },
+        screen_size: {
+          type: "string",
+          description: 'Screen size of the item, e.g. 14"',
+        },
+        cpu: {
+          type: "string",
+          description: 'Processing unit of the device, e.g. "M2", "Intel i7"',
+        },
+        name: {
+          type: "string",
+          description: 'Name of the product, e.g. MacBook Pro 14"',
+        },
+        ram: {
+          type: "string",
+          description: 'RAM size of the device, e.g. "16GB", "8GB"',
+        },
+        hard_drive: {
+          type: "string",
+          description: 'Hard drive size of the device, e.g. "256GB", "512GB',
+        },
+        image_source: {
+          type: "string",
+          description: "Url link of the image of the product",
+        },
+        color: {
+          type: "string",
+          description: 'Color of the device, e.g. "Space Gray", "Black"',
+        },
+        brand: {
+          type: "string",
+          description: 'Device brand, e.g. "Apple", "Dell"',
+        },
+      },
+      required: [
+        "price",
+        "screen_size",
+        "cpu",
+        "ram",
+        "hard_drive",
+        "image_source",
+        "color",
+        "name",
+        "brand",
+      ],
+    },
+  },
+];

@@ -71,6 +71,8 @@ app.use(routes.cdw);
 
 app.use(routes.connect);
 
+app.use(routes.marketplace);
+
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Not found" });
 });

@@ -12,6 +12,7 @@ import ai from "./ai.js";
 import client from "./client.js";
 import cdw from "./cdw.js";
 import connect from "./connect.js";
+import marketplace from "./marketplace.js";
 
 export default {
   offboard,
@@ -28,4 +29,5 @@ export default {
   client,
   cdw,
   connect,
+  marketplace,
 };

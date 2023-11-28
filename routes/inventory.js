@@ -772,4 +772,5 @@ export {
   createInventoryContainer,
   autoAddNewSerialNumber,
   offboardDevice,
+  inventory,
 };
