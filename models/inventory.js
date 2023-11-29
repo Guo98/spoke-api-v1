@@ -418,7 +418,7 @@ class Inventory {
       .read();
 
     const { resource: replaced } = await marketplaceContainer.container
-      .item(id, client)
+      .item(id, client_key)
       .replace(new_doc);
 
     return replaced;

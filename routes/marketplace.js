@@ -40,20 +40,20 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
   console.log(`/marketplace/add/${client} => Starting function.`);
 
   try {
-    console.log(`/marketplace/add/${client} => Getting all marketpalce items.`);
+    console.log(`/marketplace/add/${client} => Getting all marketplace items.`);
     const marketplace = await inventory.getAll("MarketplaceInventory");
 
-    marketplace.forEach((market) => {
+    marketplace.forEach(async (market) => {
       if (market.client === client) {
         if (type.toLowerCase() === market.item_type.toLowerCase()) {
           // go thru different brands
-          market.forEach((device_brand, brand_index) => {
+          market.forEach(async (device_brand, brand_index) => {
             if (device_brand.brand === brand) {
               // go through different brand lines
-              device_brand.types.forEach((d_t, d_t_index) => {
+              device_brand.types.forEach(async (d_t, d_t_index) => {
                 if (d_t.type.toLowerCase() === device_line.toLowerCase()) {
                   // check specs to makes sure it hasn't been added already
-                  d_t.specs.forEach((d_s) => {
+                  d_t.specs.forEach(async (d_s) => {
                     const no_spaces_spec = d_s.spec
                       .replace(" ", "")
                       .toLowerCase();
@@ -79,6 +79,17 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                           cdw: { [color]: supplier_url },
                         },
                       });
+                      try {
+                        await inventory.marketplaceUpdateSelections(
+                          updated_marketplace.id,
+                          client,
+                          updated_marketplace
+                        );
+                      } catch (err) {
+                        console.log(
+                          `/marketplace/add/${client} => Error in updating specs.`
+                        );
+                      }
                     }
                   });
                 }

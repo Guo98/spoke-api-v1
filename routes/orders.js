@@ -354,7 +354,7 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       if (fedex_items.length > 0) {
-        await updateFedexStatus(fedex_token, fedex_items, orders);
+        await updateFedexStatus(fedex_token, fedex_items.splice(0, 30), orders);
       }
       console.log(
         `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
