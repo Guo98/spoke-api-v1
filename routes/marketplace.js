@@ -25,6 +25,7 @@ router.post("/marketplace/specs", checkJwt, async (req, res) => {
 
 router.post("/marketplace/add", checkJwt, async (req, res) => {
   const { update_type, client, type, id, brand, device_type } = req.body;
+
   res.send("Hello World");
 });
 

@@ -154,6 +154,11 @@ export const scrape_functions = [
           type: "string",
           description: 'Stock level of the item, e.g. "In Stock"',
         },
+        device_type: {
+          type: "string",
+          description:
+            'Type of device, e.g. "laptops", "desktops", "accessories"',
+        },
       },
       required: [
         "price",
@@ -166,6 +171,7 @@ export const scrape_functions = [
         "name",
         "brand",
         "stock_level",
+        "device_type",
       ],
     },
   },
