@@ -7,14 +7,20 @@ import { inventory } from "./inventory.js";
 const router = Router();
 
 router.post("/marketplace/specs", checkJwt, async (req, res) => {
+  console.log("/marketplace/specs => Starting route.");
   const { supplier_url } = req.body;
-  const device_info = await scrape_supplier_site(supplier_url);
+  try {
+    const device_info = await scrape_supplier_site(supplier_url);
 
-  if (device_info !== null) {
-    res.json({ status: "Successful", data: device_info });
-  } else {
-    res.json({ status: "Could not retrieve info" });
+    if (device_info !== null) {
+      res.json({ status: "Successful", data: device_info });
+    } else {
+      res.json({ status: "Could not retrieve info" });
+    }
+  } catch (e) {
+    res.json({ status: "Error" });
   }
+  console.log("/marketplace/specs => Finished route.");
 });
 
 router.post("/marketplace/add", checkJwt, async (req, res) => {
