@@ -12,6 +12,7 @@ import {
   sendNotificationEmail,
   sendOrderConfirmationEmail,
 } from "../services/sendEmail.js";
+import { sendAddressRequestEmail } from "../services/emails/address_request.js";
 import { resetMockApprovals } from "./orders.js";
 
 const cosmosClient = new CosmosClient({
@@ -35,10 +36,10 @@ const router = Router();
 router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
   const company = req.params.company;
   const dbContainer = determineContainer(company);
-  console.log(`/getInventory/${company} => Starting route.`);
+  console.log(`[GET] /inventory/${company} => Starting route.`);
   if (dbContainer !== "") {
     console.log(
-      `/getInventory/${company} => Getting inventory from db: ${dbContainer}.`
+      `[GET] /inventory/${company} => Getting inventory from db: ${dbContainer}.`
     );
     try {
       let inventoryRes = await inventory.getAll(dbContainer);
@@ -57,17 +58,17 @@ router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
         delete device._attachments;
         delete device._ts;
       });
-      console.log(`/getInventory/${company} => Ending route. Successful.`);
+      console.log(`[GET] /inventory/${company} => Ending route. Successful.`);
       res.json({ data: inventoryRes });
     } catch (e) {
       console.log(
-        `/getInventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
+        `[GET] /inventory/${company} => Error retrieving inventory from container: ${dbContainer}. Error: ${e}.`
       );
       res.status(500).json({ data: [] });
     }
   } else {
     console.log(
-      `/getInventory/${company} => Ending route. Error company doesn't exist in DB.`
+      `[GET] /inventory/${company} => Ending route. Error company doesn't exist in DB.`
     );
 
     res.status(500).json({ data: [] });
@@ -96,12 +97,57 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     last_name,
     device_name,
     shipping,
+    return_device,
+    address,
+    email,
+    phone_number,
   } = req.body;
   console.log(`/deployLaptop/${client} => Starting route.`);
 
   await deployLaptop(res, req.body, inventory);
 
-  console.log(`/deployLaptop/${client} => Ending route.`);
+  if (return_device) {
+    const { return_info } = req.body;
+
+    console.log(`/deployLaptop/${client} => Returning old device.`);
+    try {
+      await inventoryOffboard(
+        res,
+        {
+          client,
+          recipient_name: first_name + " " + last_name,
+          recipient_email: email,
+          device_name: return_info.device_name,
+          type: "Return",
+          shipping_address:
+            address.al1 +
+            (address.al2 ? address.al2 : "") +
+            ", " +
+            address.city +
+            ", " +
+            address.state +
+            " " +
+            address.postal_code +
+            ", " +
+            address.country_code,
+          phone_num: phone_number,
+          requestor_email,
+          note: return_info.note,
+          device_condition: return_info.condition,
+          activation_key: return_info.activation_key,
+        },
+        inventory
+      );
+      console.log(
+        `/deployLaptop/${client} => Successfully created offboarding row.`
+      );
+    } catch (e) {
+      console.log(
+        `/deployLaptop/${client} => Error in adding row to offboarding sheet:`,
+        e
+      );
+    }
+  }
 
   if (!res.headersSent) res.send({ status: "Success" });
 
@@ -125,7 +171,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
     await sendOrderConfirmationEmail(
       requestor_email,
       requestor_name,
-      "Deployment",
+      return_device ? "Deployment + Return" : "Deployment",
       first_name + " " + last_name,
       device_name,
       shipping
@@ -139,14 +185,41 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
       e
     );
   }
+
+  console.log(`/deployLaptop/${client} => Ending route.`);
 });
 
 router.post("/offboarding", checkJwt, async (req, res) => {
-  const { client, recipient_name, requestor_email, requestor_name, type } =
-    req.body;
+  const {
+    client,
+    recipient_name,
+    requestor_email,
+    requestor_name,
+    type,
+    no_address,
+  } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
   await inventoryOffboard(res, req.body, inventory);
+
+  if (no_address) {
+    console.log(
+      `/offboarding/${client} => No address given, sending email to employee.`
+    );
+    try {
+      await sendAddressRequestEmail(
+        client,
+        req.body.recipient_email,
+        requestor_email
+      );
+      console.log(`/offboarding/${client} => Sent email.`);
+    } catch (e) {
+      console.log(
+        `/offboarding/${client} => Error in sending no address email:`,
+        e
+      );
+    }
+  }
 
   console.log(`/offboarding/${client} => Ending route.`);
   if (!res.headersSent) res.send({ status: "Success" });
@@ -679,6 +752,18 @@ async function createInventoryContainer(client) {
   return newCoResponse;
 }
 
+async function offboardDevice(res, body) {
+  const { client } = body;
+  console.log(`offboardDevice(${client}) => Starting function.`);
+  try {
+    await inventoryOffboard(res, body, inventory);
+    console.log(`offboardDevice(${client}) => Successfully offboarded.`);
+  } catch (e) {
+    console.log(`offboardDevice(${client}) => Error in offboarding:`, e);
+  }
+  console.log(`offboardDevice(${client}) => Finishing function.`);
+}
+
 export default router;
 
 export {
@@ -686,4 +771,6 @@ export {
   getAllInventory,
   createInventoryContainer,
   autoAddNewSerialNumber,
+  offboardDevice,
+  inventory,
 };

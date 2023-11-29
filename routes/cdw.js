@@ -280,7 +280,7 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
       );
       res.status(500).json({ status: "Error" });
     }
-    res.json({ status: "Successful" });
+    // if (!res.headersSent) res.json({ status: "Successful" });
   } catch (e) {
     console.log(
       `/placeorder/${supplier} => Error in getting access token: `,

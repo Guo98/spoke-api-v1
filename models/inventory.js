@@ -411,5 +411,17 @@ class Inventory {
       return doc;
     }
   }
+
+  async marketplaceUpdateSelections(id, client_key, new_doc) {
+    const marketplaceContainer = await this.database
+      .container("MarketplaceInventory")
+      .read();
+
+    const { resource: replaced } = await marketplaceContainer.container
+      .item(id, client_key)
+      .replace(new_doc);
+
+    return replaced;
+  }
 }
 export { Inventory };

@@ -6,7 +6,6 @@ import { Orders } from "../models/orders.js";
 import { setOrders } from "../services/database.js";
 import { mapLineItems } from "../utils/mapItems.js";
 import { addOrderRow } from "../services/googleSheets.js";
-// import { createRecord } from "../services/airtable.js";
 import {
   createConsolidatedRow,
   createMissingMappingRow,
@@ -20,15 +19,11 @@ import {
 } from "../services/emails/marketplace.js";
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
-// import { createYubikeyShipment } from "../utils/yubikey.js";
-import { getAllInventory } from "./inventory.js";
-import { inventoryMappings } from "../utils/parsers/cdwConstants.js";
+
 import { getFedexToken, updateFedexStatus } from "../services/fedex.js";
 import { trackUPSPackage, getToken } from "../services/ups.js";
-import {
-  getYubikeyShipmentInfo,
-  createYubikeyShipment,
-} from "../utils/yubikey.js";
+import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
+import { offboardDevice } from "./inventory.js";
 
 import { cdw_to_item_name } from "../utils/mappings/cdw_part_numbers.js";
 
@@ -359,7 +354,7 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
         }
       }
       if (fedex_items.length > 0) {
-        await updateFedexStatus(fedex_token, fedex_items, orders);
+        await updateFedexStatus(fedex_token, fedex_items.splice(0, 30), orders);
       }
       console.log(
         `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
@@ -664,6 +659,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   const {
     client,
     notes: { device, recipient },
+    return_device,
   } = req.body;
 
   try {
@@ -696,6 +692,35 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     console.log(
       `/newPurchase/${client} => Error in sending market request email: ${e}`
     );
+  }
+
+  if (return_device) {
+    console.log(`/newPurchase/${client} => Creating offboard row.`);
+    const { recipient_name, email, phone_number, address, requestor_email } =
+      req.body;
+    try {
+      await offboardDevice(res, {
+        client,
+        recipient_name: recipient_name,
+        recipient_email: email,
+        device_name: "",
+        type: "Return",
+        shipping_address: address,
+        phone_num: phone_number,
+        requestor_email,
+        note: "",
+        device_condition: "",
+        activation_key: "",
+      });
+      console.log(
+        `/newPurchase/${client} => Successfully created offboarding row.`
+      );
+    } catch (e) {
+      console.log(
+        `/newPurchase/${client} => Error in adding row to offboarding sheet:`,
+        e
+      );
+    }
   }
 
   if (!res.headersSent) res.json({ status: "Successful" });

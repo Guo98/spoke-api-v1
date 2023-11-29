@@ -29,7 +29,7 @@ router.post("/invites", checkJwt, async (req, res) => {
         name: "Spoke",
       },
       invitee: {
-        email: invite_email,
+        email: invite_email.trim(),
       },
       client_id: process.env.AUTH0_UI_CLIENT_ID,
       connection_id: hasIds ? connection : connectionsMappings[connection],

@@ -20,6 +20,7 @@ export async function sendMarketplaceRequestEmail(body) {
     ref_url,
     ai_specs,
     supplier,
+    return_device,
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
@@ -48,7 +49,8 @@ export async function sendMarketplaceRequestEmail(body) {
           region,
           ref_url,
           ai_specs,
-          supplier
+          supplier,
+          return_device
         ),
       },
       recipients: {
@@ -138,13 +140,16 @@ function generateMarketplaceRequestEmail(
   region,
   ref_url,
   ai_specs,
-  supplier
+  supplier,
+  return_device
 ) {
   const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
   const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
   const specs_blk = `<div dir="ltr">Requested Specs: ${specs}</div><div dir="ltr"><br></div>`;
   const color_blk = `<div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div>`;
-  const req_type_blk = `<div dir="ltr">Request Type: ${request_type}</div><div dir="ltr"><br></div>`; // Hold in Inventory
+  const req_type_blk = `<div dir="ltr">Request Type: ${
+    return_device ? request_type + " + return box" : request_type
+  }</div><div dir="ltr"><br></div>`; // Hold in Inventory
   const item_note_blk = `<div dir="ltr">Item Notes: ${item_notes}</div><div dir="ltr"><br></div>`;
   const recipient_name_blk = `<div dir="ltr">Recipient Name: ${name}</div><div dir="ltr"><br></div>`;
   const address_blk = `<div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div>`;
