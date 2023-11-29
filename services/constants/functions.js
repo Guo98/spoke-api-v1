@@ -157,7 +157,12 @@ export const scrape_functions = [
         device_type: {
           type: "string",
           description:
-            'Type of device, e.g. "laptops", "desktops", "accessories"',
+            'Type of device, can either be "laptops", "desktops", or "accessories"',
+        },
+        device_line: {
+          type: "string",
+          description:
+            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad"',
         },
       },
       required: [

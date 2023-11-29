@@ -24,9 +24,35 @@ router.post("/marketplace/specs", checkJwt, async (req, res) => {
 });
 
 router.post("/marketplace/add", checkJwt, async (req, res) => {
-  const { update_type, client, type, id, brand, device_type } = req.body;
+  const { client, type, device_name, brand } = req.body;
+  console.log(`/marketplace/add/${client} => Starting function.`);
+
+  try {
+    console.log(`/marketplace/add/${client} => Getting all marketpalce items.`);
+    const marketplace = await inventory.getAll("MarketplaceInventory");
+
+    marketplace.forEach((market) => {
+      if (market.client === client) {
+        if (type.toLowerCase() === market.item_type.toLowerCase()) {
+          market.forEach((device_brand) => {
+            if (device_brand.brand === brand) {
+            }
+          });
+        }
+      }
+    });
+  } catch (e) {
+    console.log(
+      `/marketplace/add/${client} => Error in getting all marketplace:`,
+      e
+    );
+    res
+      .status(500)
+      .json({ status: "Error", data: "Error in adding to marketplace" });
+  }
 
   res.send("Hello World");
+  console.log(`/marketplace/add/${client} => Finished function.`);
 });
 
 export default router;
