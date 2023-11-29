@@ -164,6 +164,10 @@ export const scrape_functions = [
           description:
             'Which line of device is it, e.g. "Macbook Pro", "ThinkPad"',
         },
+        supplier: {
+          type: "string",
+          description: 'Supplier of the site, e.g. "CDW", "Insight"',
+        },
       },
       required: [
         "price",
@@ -177,6 +181,8 @@ export const scrape_functions = [
         "brand",
         "stock_level",
         "device_type",
+        "device_line",
+        "supplier",
       ],
     },
   },

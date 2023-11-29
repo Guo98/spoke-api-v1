@@ -24,7 +24,19 @@ router.post("/marketplace/specs", checkJwt, async (req, res) => {
 });
 
 router.post("/marketplace/add", checkJwt, async (req, res) => {
-  const { client, type, device_name, brand } = req.body;
+  const {
+    client,
+    type,
+    device_name,
+    brand,
+    device_line,
+    screen_size,
+    cpu,
+    ram,
+    ssd,
+    supplier_url,
+    color,
+  } = req.body;
   console.log(`/marketplace/add/${client} => Starting function.`);
 
   try {
@@ -34,8 +46,43 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
     marketplace.forEach((market) => {
       if (market.client === client) {
         if (type.toLowerCase() === market.item_type.toLowerCase()) {
-          market.forEach((device_brand) => {
+          // go thru different brands
+          market.forEach((device_brand, brand_index) => {
             if (device_brand.brand === brand) {
+              // go through different brand lines
+              device_brand.types.forEach((d_t, d_t_index) => {
+                if (d_t.type.toLowerCase() === device_line.toLowerCase()) {
+                  // check specs to makes sure it hasn't been added already
+                  d_t.specs.forEach((d_s) => {
+                    const no_spaces_spec = d_s.spec
+                      .replace(" ", "")
+                      .toLowerCase();
+                    if (
+                      no_spaces_spec.includes(screen_size) &&
+                      no_spaces_spec.includes(cpu.toLowerCase()) &&
+                      no_spaces_spec.includes(ram.toLowerCase()) &&
+                      no_spaces_spec.includes(ssd.toLowerCase())
+                    ) {
+                      console.log(
+                        `/marketplace/add/${client} => Spec already exists.`
+                      );
+                      res.json({ status: "Already exists" });
+                    } else {
+                      let updated_marketplace = { ...market };
+                      updated_marketplace.brands[brand_index].types[
+                        d_t_index
+                      ].specs.push({
+                        spec:
+                          screen_size + ", " + cpu + ", " + ram + ", " + ssd,
+                        locations: [],
+                        supplier: {
+                          cdw: { [color]: supplier_url },
+                        },
+                      });
+                    }
+                  });
+                }
+              });
             }
           });
         }
