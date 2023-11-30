@@ -152,14 +152,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
             });
           }
         }
-        console.log(
-          "regular marketplace >>>>>>>>>>>> ",
-          JSON.stringify(market)
-        );
-        console.log(
-          "updated marketplace ::::::::::: ",
-          JSON.stringify(updated_marketplace)
-        );
+
         if (new_device) {
           try {
             console.log(
@@ -238,6 +231,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
   }
 
   if (!res.headersSent) res.json({ status: "Successful" });
+
   console.log(`/marketplace/add/${client} => Finished function.`);
 });
 

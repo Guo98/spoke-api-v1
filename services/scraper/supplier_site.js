@@ -17,7 +17,7 @@ async function scrape_supplier_site(supplier_url) {
     headers: { "Content-Type": "text/html" },
   });
   //   const $ = load(html.data);
-
+  console.log("html data :::::::::: ", html.data);
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
     messages: [
