@@ -237,7 +237,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       .json({ status: "Error", data: "Error in adding to marketplace" });
   }
 
-  res.send("Hello World");
+  if (!res.headersSent) res.json({ status: "Successful" });
   console.log(`/marketplace/add/${client} => Finished function.`);
 });
 
