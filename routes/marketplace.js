@@ -68,6 +68,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                   );
                   line_exists = true;
                   // check specs to makes sure it hasn't been added already
+                  let spec_exists = false;
                   d_t.specs.forEach(async (d_s) => {
                     const no_spaces_spec = d_s.spec
                       .replace(" ", "")
@@ -78,23 +79,26 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       no_spaces_spec.includes(ram.toLowerCase()) &&
                       no_spaces_spec.includes(ssd.toLowerCase())
                     ) {
+                      spec_exists = true;
                       console.log(
                         `/marketplace/add/${client} => Spec already exists.`
                       );
                       res.json({ status: "Already exists" });
-                    } else {
-                      console.log(`/marketplace/add/${client} => Adding spec`);
-                      updated_marketplace.brands[brand_index].types[
-                        d_t_index
-                      ].specs.push({
-                        spec: formatted_specs,
-                        locations,
-                        supplier: {
-                          cdw: { [color]: supplier_url },
-                        },
-                      });
                     }
                   });
+
+                  if (!spec_exists) {
+                    console.log(`/marketplace/add/${client} => Adding spec`);
+                    updated_marketplace.brands[brand_index].types[
+                      d_t_index
+                    ].specs.push({
+                      spec: formatted_specs,
+                      locations,
+                      supplier: {
+                        cdw: { [color]: supplier_url },
+                      },
+                    });
+                  }
                 }
               });
 
@@ -143,7 +147,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
             });
           }
         }
-
+        console.log("regular marketplace >>>>>>>>>>>> ", market);
+        console.log("updated marketplace ::::::::::: ", updated_marketplace);
         if (JSON.stringify(market) !== JSON.stringify(updated_marketplace)) {
           try {
             console.log(
