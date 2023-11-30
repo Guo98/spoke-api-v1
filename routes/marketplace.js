@@ -45,6 +45,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
     const marketplace = await inventory.getAll("MarketplaceInventory");
     const formatted_specs = screen_size + ", " + cpu + ", " + ram + ", " + ssd;
     let type_exists = false;
+    let new_device = false;
+
     marketplace.forEach(async (market) => {
       let updated_marketplace = { ...market };
       if (market.client === client) {
@@ -88,6 +90,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                   });
 
                   if (!spec_exists) {
+                    new_device = true;
                     console.log(`/marketplace/add/${client} => Adding spec`);
                     updated_marketplace.brands[brand_index].types[
                       d_t_index
@@ -103,6 +106,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
               });
 
               if (!line_exists) {
+                new_device = true;
                 console.log(
                   `/marketplace/add/${client} => Adding device line and spec.`
                 );
@@ -124,6 +128,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           });
 
           if (!brand_exists) {
+            new_device = true;
             console.log(
               `/marketplace/add/${client} => Adding device brand, line and spec.`
             );
@@ -155,7 +160,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           "updated marketplace ::::::::::: ",
           JSON.stringify(updated_marketplace)
         );
-        if (JSON.stringify(market) !== JSON.stringify(updated_marketplace)) {
+        if (new_device) {
           try {
             console.log(
               `/marketplace/add/${client} => Updating database with new device.`
