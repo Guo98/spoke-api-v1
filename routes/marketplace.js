@@ -49,16 +49,23 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       let updated_marketplace = { ...market };
       if (market.client === client) {
         if (type.toLowerCase() === market.item_type.toLowerCase()) {
+          console.log(`/marketplace/add/${client} => Matched device type.`);
           type_exists = true;
           // go thru different brands
           let brand_exists = false;
           market.brands.forEach(async (device_brand, brand_index) => {
             if (device_brand.brand === brand) {
+              console.log(
+                `/marketplace/add/${client} => Matched device brand.`
+              );
               // go through different brand lines
               brand_exists = true;
               let line_exists = false;
               device_brand.types.forEach(async (d_t, d_t_index) => {
                 if (d_t.type.toLowerCase() === device_line.toLowerCase()) {
+                  console.log(
+                    `/marketplace/add/${client} => Matched device line.`
+                  );
                   line_exists = true;
                   // check specs to makes sure it hasn't been added already
                   d_t.specs.forEach(async (d_s) => {
@@ -76,6 +83,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       );
                       res.json({ status: "Already exists" });
                     } else {
+                      console.log(`/marketplace/add/${client} => Adding spec`);
                       updated_marketplace.brands[brand_index].types[
                         d_t_index
                       ].specs.push({
@@ -91,6 +99,9 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
               });
 
               if (!line_exists) {
+                console.log(
+                  `/marketplace/add/${client} => Adding device line and spec.`
+                );
                 updated_marketplace.brands[brand_index].types.push({
                   type: device_line,
                   colors: [color],
@@ -109,6 +120,9 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           });
 
           if (!brand_exists) {
+            console.log(
+              `/marketplace/add/${client} => Adding device brand, line and spec.`
+            );
             updated_marketplace.brands.push({
               brand,
               types: [
@@ -132,6 +146,9 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
 
         if (JSON.stringify(market) !== JSON.stringify(updated_marketplace)) {
           try {
+            console.log(
+              `/marketplace/add/${client} => Updating database with new device.`
+            );
             await inventory.marketplaceUpdateSelections(
               updated_marketplace.id,
               client,
@@ -139,7 +156,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
             );
           } catch (err) {
             console.log(
-              `/marketplace/add/${client} => Error in updating specs.`
+              `/marketplace/add/${client} => Error in updating specs:`,
+              err
             );
           }
         }
@@ -147,6 +165,9 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
     });
 
     if (!type_exists) {
+      console.log(
+        `/marketplace/add/${client} => Adding new device type, brand, line and spec.`
+      );
       const new_doc = {
         id: type.toLowerCase() + "-" + client.toLowerCase(),
         item_type: type,
@@ -174,11 +195,16 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       };
 
       try {
+        console.log(`/marketplace/add/${client} => Updating db with new type.`);
         const added_item = await inventory.addItem(
           "MarketplaceInventory",
           new_doc
         );
       } catch (e) {
+        console.log(
+          `/marketplace/add/${client} => Error in updating db with new type:`,
+          e
+        );
         res.status(500).json({
           status: "Error",
           data: "Error in adding new type to marketplace",
