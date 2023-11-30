@@ -147,8 +147,14 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
             });
           }
         }
-        console.log("regular marketplace >>>>>>>>>>>> ", market);
-        console.log("updated marketplace ::::::::::: ", updated_marketplace);
+        console.log(
+          "regular marketplace >>>>>>>>>>>> ",
+          JSON.stringify(market)
+        );
+        console.log(
+          "updated marketplace ::::::::::: ",
+          JSON.stringify(updated_marketplace)
+        );
         if (JSON.stringify(market) !== JSON.stringify(updated_marketplace)) {
           try {
             console.log(
