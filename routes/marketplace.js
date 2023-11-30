@@ -52,7 +52,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           type_exists = true;
           // go thru different brands
           let brand_exists = false;
-          market.forEach(async (device_brand, brand_index) => {
+          market.brands.forEach(async (device_brand, brand_index) => {
             if (device_brand.brand === brand) {
               // go through different brand lines
               brand_exists = true;
@@ -179,12 +179,10 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           new_doc
         );
       } catch (e) {
-        res
-          .status(500)
-          .json({
-            status: "Error",
-            data: "Error in adding new type to marketplace",
-          });
+        res.status(500).json({
+          status: "Error",
+          data: "Error in adding new type to marketplace",
+        });
       }
     }
   } catch (e) {
