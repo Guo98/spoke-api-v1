@@ -166,6 +166,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                   ],
                 },
               ],
+              imgSrc: req.body.img_src,
             });
           }
         }

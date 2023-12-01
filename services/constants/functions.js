@@ -144,7 +144,8 @@ export const scrape_functions = [
         },
         color: {
           type: "string",
-          description: 'Color of the device, e.g. "Space Gray", "Black"',
+          description:
+            'Color of the device, if data is not available, return "Default", e.g. "Space Gray", "Black", "Default"',
         },
         brand: {
           type: "string",
