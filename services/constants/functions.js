@@ -163,7 +163,7 @@ export const scrape_functions = [
         device_line: {
           type: "string",
           description:
-            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad"',
+            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad Carbon"',
         },
         supplier: {
           type: "string",
