@@ -12,6 +12,7 @@ const openai = new OpenAIApi(configuration);
 
 async function scrape_supplier_site(supplier_url) {
   let messages = [];
+  let sku = "";
   if (supplier_url.includes("www.cdw.com")) {
     let html = await axios.request({
       url: supplier_url,
@@ -36,7 +37,7 @@ async function scrape_supplier_site(supplier_url) {
     const product_index = url_splits.findIndex((p) => p === "product");
 
     if (product_index > -1) {
-      const sku = url_splits[product_index + 1];
+      sku = url_splits[product_index + 1];
       let insight_api_result = await axios.get(
         "https://www.insight.com/api/product-search/search?q=" +
           sku +
@@ -78,7 +79,10 @@ async function scrape_supplier_site(supplier_url) {
       );
 
       if (func_name === "returnItemInfo") {
-        const return_response = returnItemInfo(ret_args);
+        let return_response = returnItemInfo(ret_args);
+        if (return_response.supplier.toLowerCase() === "insight") {
+          return_response.sku = sku;
+        }
         return return_response;
       } else {
         return null;

@@ -38,6 +38,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
     supplier_url,
     color,
     locations,
+    supplier,
   } = req.body;
   console.log(`/marketplace/add/${client} => Starting function.`);
 
@@ -99,7 +100,12 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       spec: formatted_specs,
                       locations,
                       supplier: {
-                        cdw: { [color]: supplier_url },
+                        [supplier.toLowerCase()]: {
+                          [color]:
+                            supplier.toLowerCase() === "cdw"
+                              ? supplier_url
+                              : req.body.sku,
+                        },
                       },
                     });
                   }
@@ -119,7 +125,12 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       spec: formatted_specs,
                       locations,
                       supplier: {
-                        cdw: { [color]: supplier_url },
+                        [supplier.toLowerCase()]: {
+                          [color]:
+                            supplier.toLowerCase() === "cdw"
+                              ? supplier_url
+                              : req.body.sku,
+                        },
                       },
                     },
                   ],
@@ -144,7 +155,12 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       spec: formatted_specs,
                       locations,
                       supplier: {
-                        cdw: { [color]: supplier_url },
+                        [supplier.toLowerCase()]: {
+                          [color]:
+                            supplier.toLowerCase() === "cdw"
+                              ? supplier_url
+                              : req.body.sku,
+                        },
                       },
                     },
                   ],
