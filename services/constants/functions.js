@@ -32,6 +32,10 @@ export const functions = [
           type: "string",
           description: "Url link of the image of the product",
         },
+        cdw_part_no: {
+          type: "string",
+          description: "CDW part no if it exists",
+        },
       },
       required: [
         "price",
@@ -86,6 +90,10 @@ export const functions = [
               image_source: {
                 type: "string",
                 description: "Url link of the image of the product",
+              },
+              cdw_part_no: {
+                type: "string",
+                description: "CDW part no if it exists",
               },
             },
             required: [

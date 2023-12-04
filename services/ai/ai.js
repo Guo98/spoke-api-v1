@@ -327,6 +327,7 @@ async function searchCDW(search_text) {
   const prices = $(".price-type-price");
   const stockLevel = $(".is-available");
   const imageLinks = $(".search-result-product-image");
+  const cdwPartNo = $(".cdw-code");
 
   links.each((index, element) => {
     const linkElement = $(element);
@@ -342,6 +343,7 @@ async function searchCDW(search_text) {
         .trim()
         .replace("Availability: ● ", ""),
       image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
+      cdw_part_no: $(cdwPartNo[index]).text().replace("CDW#: ", ""),
     });
   });
 
