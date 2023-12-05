@@ -735,6 +735,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         currency: "USD",
         orderAmount: req.body.unit_price,
         orderId: approval_number,
+        comments: req.body.shipping_rate,
         shipTo: {
           firstName: req.body.cdw_name.first_name,
           lastName: req.body.cdw_name.last_name,
