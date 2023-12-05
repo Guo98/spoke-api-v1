@@ -1,6 +1,4 @@
 import { Router } from "express";
-import axios from "axios";
-import { ClientCredentials } from "simple-oauth2";
 import { cdwBasicAuth } from "../services/basicAuth.js";
 import { addNewDocument } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
@@ -8,19 +6,9 @@ import { cdwUpdateOrder } from "./orders.js";
 import { autoAddNewSerialNumber } from "./inventory.js";
 import { createAftershipCSV } from "../services/aftership.js";
 import { sendAftershipCSV } from "../services/sendEmail.js";
+import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
 
 const router = Router();
-
-const cdw_config = {
-  client: {
-    id: process.env.CDW_API_KEY,
-    secret: process.env.CDW_API_SECRET,
-  },
-  auth: {
-    tokenHost: process.env.CDW_TOKEN_HOST,
-    tokenPath: process.env.CDW_TOKEN_PATH,
-  },
-};
 
 const client_title_case = {
   ALMA: "Alma",
@@ -210,7 +198,6 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
   } = req.body;
   const { supplier } = req.params;
   console.log(`/placeorder/${supplier} => Starting path.`);
-  const client = new ClientCredentials(cdw_config);
 
   let todays_date = new Date();
   todays_date = todays_date.toISOString().split("T")[0];
@@ -244,51 +231,24 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
     ],
   };
   try {
-    const accessToken = await client.getToken();
-    console.log(`/placeorder/${supplier} => Successfully got token.`);
-    const options = {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        Authorization:
-          accessToken.token.token_type + " " + accessToken.token.access_token,
-      },
-      url: process.env.CDW_TOKEN_HOST + "/b2b/customer/inbapi/v1/CustomerOrder",
-      data: order_body,
-    };
+    console.log(`/placeorder/${supplier} => Placing cdw order.`);
+    const resp = await placeCDWOrder(order_body);
 
-    console.log(
-      `/placeorder/${supplier} => Passing through options: `,
-      options
-    );
-
-    const order_resp = await axios.request(options);
-
-    if (order_resp.data?.statusCode === "RECEIVED") {
-      console.log(
-        `/placeorder/${supplier} => Successfully placed order: `,
-        order_resp.data
-      );
+    if (resp !== "" && resp !== "Error") {
       res.json({
         status: "Successful",
         data: { order_ref: order_resp.data.orderLines[0].CDWOrderReference },
       });
+    } else if (resp === "Error") {
+      throw new Error("Error in placing cdw order.");
     } else {
-      console.log(
-        `/placeorder/${supplier} => No RECEIVED status in order response: `,
-        order_resp.data
-      );
-      res.status(500).json({ status: "Error" });
+      res.json({ status: "Nothing happened" });
     }
-    // if (!res.headersSent) res.json({ status: "Successful" });
   } catch (e) {
-    console.log(
-      `/placeorder/${supplier} => Error in getting access token: `,
-      e
-    );
+    console.log(`/placeorder/${supplier} => Error in placing cdw order: `, e);
     res.status(500).json({ status: "Error" });
   }
-
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`/placeorder/${supplier} => Finished path.`);
 });
 

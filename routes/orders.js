@@ -24,6 +24,7 @@ import { getFedexToken, updateFedexStatus } from "../services/fedex.js";
 import { trackUPSPackage, getToken } from "../services/ups.js";
 import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
 import { offboardDevice } from "./inventory.js";
+import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
 
 import { cdw_to_item_name } from "../utils/mappings/cdw_part_numbers.js";
 
@@ -660,19 +661,20 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     client,
     notes: { device, recipient },
     return_device,
+    order_type,
   } = req.body;
-
+  let approval_number = "";
   try {
     console.log(
       `/newPurchase/${client} => Adding new request to db:`,
       req.body
     );
     let orderRes = await orders.getAllOrders("Marketplace");
-
+    approval_number = orderRes.length.toString().padStart(5, "0");
     await orders.addOrderByContainer("Marketplace", {
       ...req.body,
       status: "Received",
-      market_order: orderRes.length.toString().padStart(5, "0"),
+      market_order: approval_number,
     });
     console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
@@ -720,6 +722,57 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         `/newPurchase/${client} => Error in adding row to offboarding sheet:`,
         e
       );
+    }
+  }
+
+  if (order_type === "Buy Directly from CDW") {
+    let todays_date = new Date();
+    todays_date = todays_date.toISOString().split("T")[0];
+    const cdw_body = {
+      orderHeader: {
+        customerId: req.body.customer_id,
+        orderDate: todays_date,
+        currency: "USD",
+        orderAmount: req.body.unit_price,
+        orderId: approval_number,
+        shipTo: {
+          firstName: req.body.cdw_name.first_name,
+          lastName: req.body.cdw_name.last_name,
+          address1: "ALMA Withspoke",
+          street: req.body.cdw_address.addressLine,
+          city: req.body.cdw_address.city,
+          state: req.body.cdw_address.subdivision,
+          postalCode: req.body.cdw_address.postalCode,
+          country: "US",
+        },
+      },
+      orderLines: [
+        {
+          lineNumber: "1",
+          quantity: 1,
+          unitPrice: req.body.unit_price,
+          uom: "EA",
+          cdwPartNumber: req.body.cdw_part_no,
+        },
+      ],
+    };
+
+    try {
+      console.log(`/newPurchase/${client} => Placing CDW order.`);
+      const cdw_resp = await placeCDWOrder(cdw_body);
+
+      if (cdw_resp === "Error") {
+        throw new Error("Error in placing CDW order.");
+      } else if (cdw_resp !== "") {
+        console.log(`/newPurchase/${client} => Successfully placed CDW order.`);
+      } else {
+        console.log(
+          `/newPurchase/${client} => Nothing happened in placing CDW order.`
+        );
+      }
+    } catch (e) {
+      console.log(`/newPurchase/${client} => Error in placing CDW order.`);
+      res.status(500).json({ status: "Error" });
     }
   }
 
