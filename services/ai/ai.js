@@ -366,7 +366,7 @@ async function scrapeLink(product_link, supplier) {
     const price = $(".price-type-selected").text();
     const name = $("#primaryProductNameStickyHeader").text();
     const image_source = $(".main-image").children("img").eq(0).attr("src");
-    const cdw_part_no = $("#primary-product-part-numbers")
+    const cdw_part_no = $(".primary-product-part-numbers")
       .children("span")
       .eq(1)
       .children("span")
