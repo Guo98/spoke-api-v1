@@ -109,6 +109,22 @@ class Inventory {
     return resource;
   }
 
+  async getItemWKey(containerId, itemId, key) {
+    const coResponse = await this.database.container(containerId).read();
+    const { resource } = await coResponse.container.item(itemId, key).read();
+
+    return resource;
+  }
+
+  async updateItemWKey(container_id, item_id, key, updated_body) {
+    const coResponse = await this.database.container(container_id).read();
+    const { resource: replaced } = await coResponse.container
+      .item(item_id, key)
+      .replace(updated_body);
+
+    return replaced;
+  }
+
   async opsUpdateInventory(
     containerId,
     device_index,

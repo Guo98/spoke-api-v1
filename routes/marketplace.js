@@ -253,4 +253,42 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
   console.log(`/marketplace/add/${client} => Finished function.`);
 });
 
+router.post("/marketplace/bookmark", checkJwt, async (req, res) => {
+  const { client, brand, type, specs, product_type } = req.body;
+
+  const db_id = product_type.toLowerCase() + "-" + client.toLowerCase();
+
+  try {
+    let marketplace = await inventory.getItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client
+    );
+
+    marketplace.brands.forEach((b) => {
+      if (b.brand === brand) {
+        b.types.forEach((t) => {
+          if (t.type === type) {
+            t.specs.forEach((s) => {
+              if (s.spec === specs) {
+                s.bookmarked = true;
+              }
+            });
+          }
+        });
+      }
+    });
+
+    const replaced = await inventory.updateItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client,
+      marketplace
+    );
+  } catch (e) {
+    console.log(`/marketplace/bookmark => Error in getting item ${db_id}:`, e);
+  }
+  res.send("Hello world");
+});
+
 export default router;
