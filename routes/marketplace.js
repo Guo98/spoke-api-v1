@@ -285,10 +285,14 @@ router.post("/marketplace/bookmark", checkJwt, async (req, res) => {
       client,
       marketplace
     );
+
+    res.json({ status: "Successful" });
   } catch (e) {
     console.log(`/marketplace/bookmark => Error in getting item ${db_id}:`, e);
+    res.status(500).json({ status: "Error" });
   }
-  res.send("Hello world");
+
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
 });
 
 export default router;
