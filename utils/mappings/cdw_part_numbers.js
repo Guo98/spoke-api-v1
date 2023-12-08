@@ -3,6 +3,7 @@ export const cdw_to_item_name = {
   7477164: "lenovo",
   7061583: "macbook",
   7072708: "macbook",
+  7667608: "macbook",
 };
 
 export const cdw_order_info_mappings = {
@@ -23,6 +24,10 @@ export const cdw_order_info_mappings = {
     "MacBook Pro M2 Chip 13”: 16GB (Alma)": {
       cdw_part_no: "7072708",
       price: "1662.57",
+    },
+    'MacBook Pro 14" M3, 16GB (Alma)': {
+      cdw_part_no: "7667608",
+      price: "1599.00",
     },
   },
 };
