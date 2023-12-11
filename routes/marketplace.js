@@ -295,4 +295,45 @@ router.post("/marketplace/bookmark", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Nothing happened" });
 });
 
+router.post("/marketplace/delete", checkJwt, async (req, res) => {
+  const { client, brand, type, specs, product_type } = req.body;
+  console.log(`/marketplace/delete/${client} => Starting route.`);
+  const db_id = product_type.toLowerCase() + "-" + client.toLowerCase();
+
+  try {
+    let marketplace = await inventory.getItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client
+    );
+
+    marketplace.brands.forEach((b) => {
+      if (b.brand === brand) {
+        b.types.forEach((t) => {
+          if (t.type === type) {
+            const spec_index = t.specs.findIndex((s) => s.spec === specs);
+            if (spec_index !== -1) {
+              t.specs.splice(spec_index, 1);
+            }
+          }
+        });
+      }
+    });
+
+    const replaced = await inventory.updateItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client,
+      marketplace
+    );
+
+    res.json({ status: "Successful" });
+  } catch (e) {
+    console.log(`/marketplace/bookmark => Error in getting item ${db_id}:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`/marketplace/delete/${client} => Finished route.`);
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
+});
+
 export default router;
