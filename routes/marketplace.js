@@ -312,7 +312,7 @@ router.post("/marketplace/bookmark/delete", checkJwt, async (req, res) => {
           if (t.type === type) {
             const spec_index = t.specs.findIndex((s) => s.spec === specs);
             if (spec_index !== -1) {
-              t.specs[spec_index].bookmarked = false;
+              delete t.specs[spec_index].bookmarked;
             }
           }
         });
