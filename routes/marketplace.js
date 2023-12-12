@@ -269,11 +269,51 @@ router.post("/marketplace/bookmark", checkJwt, async (req, res) => {
       if (b.brand === brand) {
         b.types.forEach((t) => {
           if (t.type === type) {
-            t.specs.forEach((s) => {
-              if (s.spec === specs) {
-                s.bookmarked = true;
-              }
-            });
+            const spec_index = t.specs.findIndex((s) => s.spec === specs);
+            if (spec_index !== -1) {
+              t.specs[spec_index].bookmarked = true;
+            }
+          }
+        });
+      }
+    });
+
+    const replaced = await inventory.updateItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client,
+      marketplace
+    );
+
+    res.json({ status: "Successful" });
+  } catch (e) {
+    console.log(`/marketplace/bookmark => Error in getting item ${db_id}:`, e);
+    res.status(500).json({ status: "Error" });
+  }
+
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
+});
+
+router.post("/marketplace/bookmark/delete", checkJwt, async (req, res) => {
+  const { client, brand, type, specs, product_type } = req.body;
+
+  const db_id = product_type.toLowerCase() + "-" + client.toLowerCase();
+
+  try {
+    let marketplace = await inventory.getItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client
+    );
+
+    marketplace.brands.forEach((b) => {
+      if (b.brand === brand) {
+        b.types.forEach((t) => {
+          if (t.type === type) {
+            const spec_index = t.specs.findIndex((s) => s.spec === specs);
+            if (spec_index !== -1) {
+              t.specs[spec_index].bookmarked = false;
+            }
           }
         });
       }

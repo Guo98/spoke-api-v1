@@ -76,7 +76,7 @@ export async function createYubikeyShipment(body) {
         data: {
           channelpartner_id: 1,
           delivery_type: 1,
-          country_code_2: "US",
+          country_code_2: address.country === "CAN" ? "CA" : "US",
           recipient: firstname + " " + lastname,
           recipient_email: email,
           recipient_firstname: firstname,
