@@ -1,7 +1,6 @@
 import { createOffboardRow } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
 import { determineContainer } from "../../utils/utility.js";
-import { sendConfirmation } from "../sendEmail.js";
 
 async function inventoryOffboard(res, body, inventoryDB) {
   const {

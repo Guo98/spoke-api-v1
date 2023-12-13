@@ -12,7 +12,7 @@ import {
 } from "../utils/googleSheetsRows.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { checkJwt } from "../services/auth0.js";
-import { sendSupportEmail, sendConfirmation } from "../services/sendEmail.js";
+import { sendSupportEmail } from "../services/sendEmail.js";
 import {
   sendMarketplaceRequestEmail,
   sendMarketplaceResponse,
