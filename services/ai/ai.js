@@ -327,6 +327,7 @@ async function searchCDW(search_text) {
   const prices = $(".price-type-price");
   const stockLevel = $(".is-available");
   const imageLinks = $(".search-result-product-image");
+  const cdwPartNo = $(".cdw-code");
 
   links.each((index, element) => {
     const linkElement = $(element);
@@ -342,6 +343,7 @@ async function searchCDW(search_text) {
         .trim()
         .replace("Availability: ● ", ""),
       image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
+      cdw_part_no: $(cdwPartNo[index]).text().replace("CDW#: ", ""),
     });
   });
 
@@ -364,6 +366,12 @@ async function scrapeLink(product_link, supplier) {
     const price = $(".price-type-selected").text();
     const name = $("#primaryProductNameStickyHeader").text();
     const image_source = $(".main-image").children("img").eq(0).attr("src");
+    const cdw_part_no = $(".primary-product-part-numbers")
+      .children("span")
+      .eq(1)
+      .children("span")
+      .eq(0)
+      .text();
 
     return {
       availability,
@@ -371,6 +379,7 @@ async function scrapeLink(product_link, supplier) {
       name,
       image_source,
       product_link,
+      cdw_part_no,
     };
   }
 }

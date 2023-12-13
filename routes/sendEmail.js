@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { sendEmail, sendConfirmation } from "../services/sendEmail.js";
+import { sendEmail } from "../services/sendEmail.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { sendMarketplaceRequestEmail } from "../services/emails/marketplace.js";
+import { sendReturnConfirmation } from "../services/emails/offboard.js";
 import { checkJwt } from "../services/auth0.js";
 import { marketplaceSentApprovalEmail } from "./orders.js";
 
@@ -47,9 +48,9 @@ router.post(
 
       if (isAuthenticated) {
         console.log(
-          "/sendConfirmationEmail => Starting sendConfirmation function."
+          "/sendConfirmationEmail => Starting sendReturnConfirmation function."
         );
-        const resp = await sendConfirmation(req.body);
+        const resp = await sendReturnConfirmation(req.body);
         if (resp) {
           console.log("/sendConfirmationEmail => Ending route.");
           res.send(resp);

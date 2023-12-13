@@ -11,16 +11,16 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function scrape_supplier_site(supplier_url) {
-  let html = await axios.request({
-    url: supplier_url,
-    method: "get",
-    headers: { "Content-Type": "text/html" },
-  });
-  //   const $ = load(html.data);
+  let messages = [];
+  let sku = "";
+  if (supplier_url.includes("www.cdw.com")) {
+    let html = await axios.request({
+      url: supplier_url,
+      method: "get",
+      headers: { "Content-Type": "text/html" },
+    });
 
-  const response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-0613",
-    messages: [
+    messages = [
       {
         role: "system",
         content: "Given html, scrape it for device information.",
@@ -31,28 +31,65 @@ async function scrape_supplier_site(supplier_url) {
           "Scrape the following html for device name, specs, price, and color. " +
           html.data.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, ""),
       },
-    ],
-    temperature: 0.5,
-    max_tokens: 1000,
-    functions: scrape_functions,
-    function_call: "auto",
-  });
+    ];
+  } else if (supplier_url.includes("www.insight.com")) {
+    let url_splits = supplier_url.split("/");
+    const product_index = url_splits.findIndex((p) => p === "product");
 
-  if (response.data.choices[0].finish_reason === "function_call") {
-    const func_name = response.data.choices[0].message?.function_call?.name;
+    if (product_index > -1) {
+      sku = url_splits[product_index + 1];
+      let insight_api_result = await axios.get(
+        "https://www.insight.com/api/product-search/search?q=" +
+          sku +
+          "&qsrc=h&country=US&instockOnly=false&lang=en_US&locale=en_US&rows=50&start=0&salesOrg=2400&userSegment=CES"
+      );
 
-    const ret_args = JSON.parse(
-      response.data.choices[0].message?.function_call?.arguments
-    );
+      messages = [
+        {
+          role: "system",
+          content:
+            "Given data, get item info from data that best matches the url given: " +
+            supplier_url,
+        },
+        {
+          role: "user",
+          content:
+            "Scrape the data for device name, specs, price, and color. " +
+            JSON.stringify(insight_api_result.data.products),
+        },
+      ];
+    }
+  }
 
-    if (func_name === "returnItemInfo") {
-      const return_response = returnItemInfo(ret_args);
-      return return_response;
+  if (messages.length > 0) {
+    const response = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages,
+      temperature: 0.5,
+      max_tokens: 1000,
+      functions: scrape_functions,
+      function_call: "auto",
+    });
+
+    if (response.data.choices[0].finish_reason === "function_call") {
+      const func_name = response.data.choices[0].message?.function_call?.name;
+
+      const ret_args = JSON.parse(
+        response.data.choices[0].message?.function_call?.arguments
+      );
+
+      if (func_name === "returnItemInfo") {
+        let return_response = returnItemInfo(ret_args);
+        if (return_response.supplier.toLowerCase() === "insight") {
+          return_response.sku = sku;
+        }
+        return return_response;
+      } else {
+        return null;
+      }
     } else {
       return null;
     }
-  } else {
-    return null;
   }
 }
 

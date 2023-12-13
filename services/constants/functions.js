@@ -32,6 +32,10 @@ export const functions = [
           type: "string",
           description: "Url link of the image of the product",
         },
+        cdw_part_no: {
+          type: "string",
+          description: "CDW part no if it exists",
+        },
       },
       required: [
         "price",
@@ -86,6 +90,10 @@ export const functions = [
               image_source: {
                 type: "string",
                 description: "Url link of the image of the product",
+              },
+              cdw_part_no: {
+                type: "string",
+                description: "CDW part no if it exists",
               },
             },
             required: [
@@ -144,7 +152,8 @@ export const scrape_functions = [
         },
         color: {
           type: "string",
-          description: 'Color of the device, e.g. "Space Gray", "Black"',
+          description:
+            'Color of the device, if data is not available, return "Default", e.g. "Space Gray", "Black", "Default"',
         },
         brand: {
           type: "string",
@@ -162,7 +171,7 @@ export const scrape_functions = [
         device_line: {
           type: "string",
           description:
-            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad"',
+            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad Carbon"',
         },
         supplier: {
           type: "string",
