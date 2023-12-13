@@ -319,7 +319,6 @@ function generateSlackBody(body) {
 
 export {
   sendEmail,
-  sendConfirmation,
   sendAftershipCSV,
   sendSupportEmail,
   sendNotificationEmail,
