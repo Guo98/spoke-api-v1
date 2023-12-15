@@ -108,6 +108,18 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                         },
                       },
                     });
+
+                    if (
+                      updated_marketplace.brands[brand_index].types[
+                        d_t_index
+                      ].colors.findIndex(
+                        (c) => c.toLowerCase() === color.toLowerCase()
+                      ) < 0
+                    ) {
+                      updated_marketplace.brands[brand_index].types[
+                        d_t_index
+                      ].colors.push(color);
+                    }
                   }
                 }
               });
@@ -132,6 +144,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                               : req.body.sku,
                         },
                       },
+                      colors: [color],
                     },
                   ],
                 });
@@ -154,6 +167,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                     {
                       spec: formatted_specs,
                       locations,
+                      colors: [color],
                       supplier: {
                         [supplier.toLowerCase()]: {
                           [color]:
