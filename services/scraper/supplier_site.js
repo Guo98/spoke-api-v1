@@ -23,12 +23,12 @@ async function scrape_supplier_site(supplier_url) {
     messages = [
       {
         role: "system",
-        content: "Given html, scrape it for device information.",
+        content: "Given html, scrape it for item information.",
       },
       {
         role: "user",
         content:
-          "Scrape the following html for device name, specs, price, and color. " +
+          "Scrape the following html for item name, specs, price, and color. " +
           html.data.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, ""),
       },
     ];
@@ -83,6 +83,7 @@ async function scrape_supplier_site(supplier_url) {
         if (return_response.supplier.toLowerCase() === "insight") {
           return_response.sku = sku;
         }
+
         return return_response;
       } else {
         return null;
