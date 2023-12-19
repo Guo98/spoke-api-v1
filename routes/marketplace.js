@@ -272,7 +272,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       };
 
       if (type.toLowerCase() === "accessories") {
-        new_doc.imgSrc ===
+        new_doc.imgSrc =
           "https://spokeimages.blob.core.windows.net/image/charger.jpeg";
       }
 
