@@ -244,7 +244,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       );
       let new_doc = {
         id: type.toLowerCase() + "-" + client.toLowerCase(),
-        item_type: type.charAt(0).toUpperCase(),
+        item_type: type.charAt(0).toUpperCase() + type.slice(1),
         client,
         brands: [
           {
