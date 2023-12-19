@@ -163,6 +163,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                   updated_marketplace.brands[brand_index].types.push({
                     type: item_name,
                     locations,
+                    supplier: { [supplier.toLowerCase()]: supplier_url },
                   });
                 }
               }
@@ -210,6 +211,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                   {
                     type: item_name,
                     locations,
+                    supplier: { [supplier.toLowerCase()]: supplier_url },
                   },
                 ],
                 imgSrc: req.body.img_src,
@@ -248,6 +250,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
         client,
         brands: [
           {
+            imgSrc: req.body.img_src,
             brand,
             types: [
               type.toLowerCase() === "laptops" ||
@@ -260,12 +263,18 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                         spec: formatted_specs,
                         locations,
                         supplier: {
-                          cdw: { [color]: supplier_url },
+                          [supplier.toLowerCase()]: { [color]: supplier_url },
                         },
                       },
                     ],
                   }
-                : { type: item_name, locations },
+                : {
+                    type: item_name,
+                    locations,
+                    supplier: {
+                      [supplier.toLowerCase()]: supplier_url,
+                    },
+                  },
             ],
           },
         ],
