@@ -250,8 +250,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
           {
             brand,
             types: [
-              market.item_type.toLowerCase() === "laptops" ||
-              market.item_type.toLowerCase() === "desktops"
+              type.toLowerCase() === "laptops" ||
+              type.toLowerCase() === "desktops"
                 ? {
                     type: device_line,
                     colors: [color],
