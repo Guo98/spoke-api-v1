@@ -106,7 +106,7 @@ router.post("/cdw/order", async (req, res) => {
       date
     );
     console.log("/cdw/order => Update res here:", updateRes);
-    // aftserhip
+    // aftership
 
     if (updateRes !== "") {
       console.log("/cdw/order => Successfully updated order.");

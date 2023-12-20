@@ -39,6 +39,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
     color,
     locations,
     supplier,
+    item_name,
   } = req.body;
   console.log(`/marketplace/add/${client} => Starting function.`);
 
@@ -66,7 +67,12 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
               brand_exists = true;
               let line_exists = false;
               device_brand.types.forEach(async (d_t, d_t_index) => {
-                if (d_t.type.toLowerCase() === device_line.toLowerCase()) {
+                if (
+                  (d_t.type.toLowerCase() === device_line.toLowerCase() &&
+                    market.item_type.toLowerCase() === "laptops") ||
+                  (market.item_type.toLowerCase() === "accessories" &&
+                    d_t.type.toLowerCase() === item_name.toLowerCase())
+                ) {
                   console.log(
                     `/marketplace/add/${client} => Matched device line.`
                   );
@@ -78,6 +84,7 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                       .replace(" ", "")
                       .toLowerCase();
                     if (
+                      market.item_type.toLowerCase() === "laptops" &&
                       no_spaces_spec.includes(screen_size) &&
                       no_spaces_spec.includes(cpu.toLowerCase()) &&
                       no_spaces_spec.includes(ram.toLowerCase()) &&
@@ -108,6 +115,18 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                         },
                       },
                     });
+
+                    if (
+                      updated_marketplace.brands[brand_index].types[
+                        d_t_index
+                      ].colors.findIndex(
+                        (c) => c.toLowerCase() === color.toLowerCase()
+                      ) < 0
+                    ) {
+                      updated_marketplace.brands[brand_index].types[
+                        d_t_index
+                      ].colors.push(color);
+                    }
                   }
                 }
               });
@@ -117,24 +136,36 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
                 console.log(
                   `/marketplace/add/${client} => Adding device line and spec.`
                 );
-                updated_marketplace.brands[brand_index].types.push({
-                  type: device_line,
-                  colors: [color],
-                  specs: [
-                    {
-                      spec: formatted_specs,
-                      locations,
-                      supplier: {
-                        [supplier.toLowerCase()]: {
-                          [color]:
-                            supplier.toLowerCase() === "cdw"
-                              ? supplier_url
-                              : req.body.sku,
+                if (
+                  market.item_type.toLowerCase() === "laptops" ||
+                  market.item_type.toLowerCase() === "desktops"
+                ) {
+                  updated_marketplace.brands[brand_index].types.push({
+                    type: device_line,
+                    colors: [color],
+                    specs: [
+                      {
+                        spec: formatted_specs,
+                        locations,
+                        supplier: {
+                          [supplier.toLowerCase()]: {
+                            [color]:
+                              supplier.toLowerCase() === "cdw"
+                                ? supplier_url
+                                : req.body.sku,
+                          },
                         },
+                        colors: [color],
                       },
-                    },
-                  ],
-                });
+                    ],
+                  });
+                } else if (market.item_type.toLowerCase() === "accessories") {
+                  updated_marketplace.brands[brand_index].types.push({
+                    type: item_name,
+                    locations,
+                    supplier: { [supplier.toLowerCase()]: supplier_url },
+                  });
+                }
               }
             }
           });
@@ -144,30 +175,48 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
             console.log(
               `/marketplace/add/${client} => Adding device brand, line and spec.`
             );
-            updated_marketplace.brands.push({
-              brand,
-              types: [
-                {
-                  type: device_line,
-                  colors: [color],
-                  specs: [
-                    {
-                      spec: formatted_specs,
-                      locations,
-                      supplier: {
-                        [supplier.toLowerCase()]: {
-                          [color]:
-                            supplier.toLowerCase() === "cdw"
-                              ? supplier_url
-                              : req.body.sku,
+            if (
+              market.item_type.toLowerCase() === "laptops" ||
+              market.item_type.toLowerCase() === "desktops"
+            ) {
+              updated_marketplace.brands.push({
+                brand,
+                types: [
+                  {
+                    type: device_line,
+                    colors: [color],
+                    specs: [
+                      {
+                        spec: formatted_specs,
+                        locations,
+                        colors: [color],
+                        supplier: {
+                          [supplier.toLowerCase()]: {
+                            [color]:
+                              supplier.toLowerCase() === "cdw"
+                                ? supplier_url
+                                : req.body.sku,
+                          },
                         },
                       },
-                    },
-                  ],
-                },
-              ],
-              imgSrc: req.body.img_src,
-            });
+                    ],
+                  },
+                ],
+                imgSrc: req.body.img_src,
+              });
+            } else if (market.item_type.toLowerCase() === "accessories") {
+              updated_marketplace.brands.push({
+                brand,
+                types: [
+                  {
+                    type: item_name,
+                    locations,
+                    supplier: { [supplier.toLowerCase()]: supplier_url },
+                  },
+                ],
+                imgSrc: req.body.img_src,
+              });
+            }
           }
         }
 
@@ -195,31 +244,46 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       console.log(
         `/marketplace/add/${client} => Adding new device type, brand, line and spec.`
       );
-      const new_doc = {
+      let new_doc = {
         id: type.toLowerCase() + "-" + client.toLowerCase(),
-        item_type: type,
+        item_type: type.charAt(0).toUpperCase() + type.slice(1),
         client,
         brands: [
           {
+            imgSrc: req.body.img_src,
             brand,
             types: [
-              {
-                type: device_line,
-                colors: [color],
-                specs: [
-                  {
-                    spec: formatted_specs,
+              type.toLowerCase() === "laptops" ||
+              type.toLowerCase() === "desktops"
+                ? {
+                    type: device_line,
+                    colors: [color],
+                    specs: [
+                      {
+                        spec: formatted_specs,
+                        locations,
+                        supplier: {
+                          [supplier.toLowerCase()]: { [color]: supplier_url },
+                        },
+                      },
+                    ],
+                  }
+                : {
+                    type: item_name,
                     locations,
                     supplier: {
-                      cdw: { [color]: supplier_url },
+                      [supplier.toLowerCase()]: supplier_url,
                     },
                   },
-                ],
-              },
             ],
           },
         ],
       };
+
+      if (type.toLowerCase() === "accessories") {
+        new_doc.imgSrc =
+          "https://spokeimages.blob.core.windows.net/image/charger.jpeg";
+      }
 
       try {
         console.log(`/marketplace/add/${client} => Updating db with new type.`);
