@@ -829,6 +829,7 @@ router.post("/marketplaceorders", checkJwt, async (req, res) => {
     } else {
       const updateRes = await orders.updateMarketplaceClient(
         id,
+        client,
         req.body.updateClient
       );
     }

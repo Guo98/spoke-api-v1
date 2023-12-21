@@ -179,24 +179,11 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
     });
 
   let index = 0;
-  let current_order = fedex_orders[0];
+  let current_order = { ...fedex_orders[0] };
+  let changed = false;
   for await (let item of fedex_orders) {
-    if (result[index].trackResults[0]?.latestStatusDetail?.description) {
-      if (current_order.order_no !== item.order_no) {
-        current_order = fedex_orders[index];
-      }
-
-      if (current_order.order_no === item.order_no) {
-        current_order.items[item.item_index].delivery_status =
-          result[index].trackResults[0].latestStatusDetail.description;
-      }
-    }
-
-    if (index < fedex_orders.length) {
-      if (
-        index + 1 === fedex_orders.length ||
-        item.orderNo !== fedex_orders[index + 1].orderNo
-      ) {
+    if (current_order.order_no !== item.current_order) {
+      if (changed) {
         try {
           await ordersDB.updateOrderByContainer(
             current_order.containerId,
@@ -210,12 +197,25 @@ const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
             e
           );
         }
+      }
+      changed = false;
+      current_order = { ...item };
+    }
 
-        // current_order = fedex_orders[index + 1];
+    if (result[index].trackResults[0]?.latestStatusDetail?.description) {
+      const fedex_tracking_number =
+        result[index].trackResults[0].trackingNumberInfo.trackingNumber;
+
+      if (item.tracking_no === fedex_tracking_number) {
+        current_order.items[item.item_index].delivery_status =
+          result[index].trackResults[0].latestStatusDetail.description;
+        changed = true;
       }
     }
     index++;
   }
+
+  console.log("updateFedexStatus() => Ending function.");
 };
 
 export { validateAddress, getFedexToken, trackPackage, updateFedexStatus };

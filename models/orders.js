@@ -339,10 +339,10 @@ class Orders {
     const coResponse = await this.database.container(client).read();
   }
 
-  async updateMarketplaceClient(id, client) {
+  async updateMarketplaceClient(id, oldclient, client) {
     const coResponse = await this.database.container("Marketplace").read();
 
-    const item = coResponse.container.item(id, undefined);
+    const item = coResponse.container.item(id, oldclient);
 
     const { resource } = await item.read();
 
