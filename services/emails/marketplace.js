@@ -21,6 +21,7 @@ export async function sendMarketplaceRequestEmail(body) {
     ai_specs,
     supplier,
     return_device,
+    addons,
   } = body;
   try {
     console.log(`sendMarketplaceRequestEmail() => Starting function.`);
@@ -50,7 +51,8 @@ export async function sendMarketplaceRequestEmail(body) {
           ref_url,
           ai_specs,
           supplier,
-          return_device
+          return_device,
+          addons
         ),
       },
       recipients: {
@@ -141,7 +143,8 @@ function generateMarketplaceRequestEmail(
   ref_url,
   ai_specs,
   supplier,
-  return_device
+  return_device,
+  addons
 ) {
   const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
   const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
@@ -162,6 +165,15 @@ function generateMarketplaceRequestEmail(
   const ref_url_blk = `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
   const ai_specs_blk = `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
   const supplier_blk = `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
+  let addons_blk = "";
+
+  if (addons.length > 0) {
+    addons_blk = `<div dir="ltr">Add Ons Requested: <div><ul>${addons.map(
+      (item) => {
+        return `<li>${item}</li>`;
+      }
+    )}</ul></div></div><div dir="ltr"><br></div>`;
+  }
 
   let emailBody =
     '<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div>';
@@ -191,6 +203,7 @@ function generateMarketplaceRequestEmail(
       ai_specs_blk +
       color_blk +
       ref_url_blk +
+      addons_blk +
       region_blk +
       shipping_blk +
       req_email_blk +

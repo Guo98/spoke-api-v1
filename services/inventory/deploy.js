@@ -17,6 +17,7 @@ async function deployLaptop(res, body, inventoryDB) {
     device_location,
     requestor_email,
     id,
+    addons,
   } = body;
   console.log(`deployLaptop() => Starting function:`, body);
   const containerId = determineContainer(client);
@@ -114,7 +115,7 @@ async function deployLaptop(res, body, inventoryDB) {
               deployValues,
               "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
               1579665041,
-              13
+              14
             );
             console.log(
               `/deployLaptop/${client} => Finish adding laptop to admin order sheet.`

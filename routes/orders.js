@@ -662,6 +662,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     notes: { device, recipient },
     return_device,
     order_type,
+    addons,
   } = req.body;
   let approval_number = "";
   try {
