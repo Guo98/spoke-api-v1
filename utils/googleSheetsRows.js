@@ -277,7 +277,7 @@ function createAdminDeploy(
     },
     {
       userEnteredValue: {
-        stringValue: addons,
+        stringValue: JSON.stringify(addons),
       },
     },
   ];

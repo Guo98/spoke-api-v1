@@ -104,7 +104,8 @@ async function deployLaptop(res, body, inventoryDB) {
             phone_number,
             note,
             requestor_email,
-            body.warehouse
+            body.warehouse,
+            addons
           );
 
           try {
