@@ -62,14 +62,16 @@ function generateInventoryDeploymentHTML(
 ) {
   const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
   const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
-  const serial_number_blk = `<div dir="ltr">Requested Specs: ${serial_number}</div><div dir="ltr"><br></div>`;
+  const serial_number_blk = `<div dir="ltr">Serial Number: ${serial_number}</div><div dir="ltr"><br></div>`;
   const note_blk = `<div dir="ltr">Item Notes: ${note}</div><div dir="ltr"><br></div>`;
   const recipient_name_blk = `<div dir="ltr">Recipient Name: ${recipient_name}</div><div dir="ltr"><br></div>`;
-  const address_blk = `<div dir="ltr">Address: ${address}</div><div dir="ltr"><br></div>`;
+  const address_blk = `<div dir="ltr">Address: ${JSON.stringify(
+    address
+  )}</div><div dir="ltr"><br></div>`;
   const email_blk = `<div dir="ltr">Recipient Email: ${email}</div><div dir="ltr"><br></div>`;
   const phone_blk = `<div dir="ltr">Recipient Phone: ${phone}</div><div dir="ltr"><br></div>`;
   const shipping_blk = `<div dir="ltr">Shipping: ${shipping}</div><div dir="ltr"><br></div>`;
-  const supplier_blk = `<div dir="ltr">Supplier: ${warehouse}</div><div dir="ltr"><br></div>`;
+  const supplier_blk = `<div dir="ltr">Warehouse: ${warehouse}</div><div dir="ltr"><br></div>`;
   let addons_blk = "";
 
   if (addons.length > 0) {
