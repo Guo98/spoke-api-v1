@@ -182,14 +182,23 @@ router.post("/marketplace/delete", checkJwt, async (req, res) => {
 
     marketplace.brands.forEach((b) => {
       if (b.brand === brand) {
-        b.types.forEach((t) => {
+        let remove_type_index = -1;
+        b.types.forEach((t, t_index) => {
           if (t.type === type) {
             const spec_index = t.specs.findIndex((s) => s.spec === specs);
             if (spec_index !== -1) {
               t.specs.splice(spec_index, 1);
             }
+
+            if (t.specs.length === 0) {
+              remove_type_index = t_index;
+            }
           }
         });
+
+        if (remove_type_index > -1) {
+          b.types.splice(remove_type_index, 1);
+        }
       }
     });
 
