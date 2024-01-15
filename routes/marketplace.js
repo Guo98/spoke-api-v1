@@ -179,8 +179,8 @@ router.post("/marketplace/delete", checkJwt, async (req, res) => {
       db_id,
       client
     );
-
-    marketplace.brands.forEach((b) => {
+    let remove_brand_index = -1;
+    marketplace.brands.forEach((b, b_index) => {
       if (b.brand === brand) {
         let remove_type_index = -1;
         b.types.forEach((t, t_index) => {
@@ -199,8 +199,16 @@ router.post("/marketplace/delete", checkJwt, async (req, res) => {
         if (remove_type_index > -1) {
           b.types.splice(remove_type_index, 1);
         }
+
+        if (b.types.length === 0) {
+          remove_brand_index = b_index;
+        }
       }
     });
+
+    if (remove_brand_index > -1) {
+      marketplace.brands.splice(remove_brand_index, 1);
+    }
 
     const replaced = await inventory.updateItemWKey(
       "MarketplaceInventory",
