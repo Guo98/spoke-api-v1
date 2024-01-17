@@ -193,7 +193,8 @@ function createAdminDeploy(
   note,
   requestor_email,
   warehouse,
-  addons
+  addons,
+  shipment_id
 ) {
   const todayDate = new Date();
   todayDate.toLocaleString("en-US", { timeZone: "America/New_York" });
@@ -278,6 +279,11 @@ function createAdminDeploy(
     {
       userEnteredValue: {
         stringValue: JSON.stringify(addons),
+      },
+    },
+    {
+      userEnteredValue: {
+        stringValue: shipment_id,
       },
     },
   ];

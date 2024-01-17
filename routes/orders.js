@@ -22,7 +22,10 @@ import { exportOrders } from "../services/excel.js";
 
 import { getFedexToken, updateFedexStatus } from "../services/fedex.js";
 import { trackUPSPackage, getToken } from "../services/ups.js";
-import { getYubikeyShipmentInfo } from "../utils/yubikey.js";
+import {
+  getYubikeyShipmentInfo,
+  createYubikeyShipment,
+} from "../utils/yubikey.js";
 import { offboardDevice } from "./inventory.js";
 import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
 
@@ -665,15 +668,46 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     addons,
   } = req.body;
   let approval_number = "";
+
+  let db_obj = [...req.body];
+
+  const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+  if (yubikey_index > -1) {
+    console.log(`/newPurchase/${client} => Ordering yubikey.`);
+    try {
+      const yubikeyBody = {
+        firstname: req.body.first_name,
+        lastname: req.body.last_name,
+        email: req.body.email,
+        phone_number: req.body.phone_number,
+        address: {
+          addressLine: req.body.address_obj.al1,
+          addressLine2: req.body.address_obj.al2,
+          city: req.body.address_obj.city,
+          subdivision: req.body.address_obj.state,
+          postalCode: req.body.address_obj.postal_code,
+          country: req.body.address_obj.country_code,
+        },
+        quantity: parseInt(addons[yubikey_index].split("x")[0]),
+      };
+
+      const shipmentId = await createYubikeyShipment(yubikeyBody);
+      console.log(
+        `/newPurchase/${client} => Successfully ordered yubikey:`,
+        shipmentId
+      );
+      db_obj.shipment_id = shipmentId;
+    } catch (e) {
+      console.log(`/newPurchase/${client} => Error in ordering yubikey.`, e);
+    }
+  }
+
   try {
-    console.log(
-      `/newPurchase/${client} => Adding new request to db:`,
-      req.body
-    );
+    console.log(`/newPurchase/${client} => Adding new request to db:`, db_obj);
     let orderRes = await orders.getAllOrders("Marketplace");
     approval_number = orderRes.length.toString().padStart(5, "0");
     await orders.addOrderByContainer("Marketplace", {
-      ...req.body,
+      ...db_obj,
       status: "Received",
       market_order: approval_number,
     });
@@ -706,14 +740,14 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         client,
         recipient_name: recipient_name,
         recipient_email: email,
-        device_name: "",
+        device_name: req.body.return_info.device_name,
         type: "Return",
         shipping_address: address,
         phone_num: phone_number,
         requestor_email,
-        note: "",
-        device_condition: "",
-        activation_key: "",
+        note: req.body.return_info.note,
+        device_condition: req.body.return_info.condition,
+        activation_key: req.body.return_info.activation_key,
       });
       console.log(
         `/newPurchase/${client} => Successfully created offboarding row.`
