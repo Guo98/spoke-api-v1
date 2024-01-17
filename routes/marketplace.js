@@ -226,4 +226,44 @@ router.post("/marketplace/delete", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Nothing happened" });
 });
 
+router.post("/marketplace/delete/accessories", async (req, res) => {
+  const { client, items } = req.body;
+  console.log(`/marketplace/delete/accessories/${client} => Starting route.`);
+  const db_id = "accessories-" + client.toLowerCase();
+  try {
+    let marketplace = await inventory.getItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client
+    );
+
+    items.forEach((item) => {
+      const item_index = marketplace.items.findIndex((i) =>
+        item.toLowerCase().includes(i.name.toLowerCase())
+      );
+
+      if (item_index > -1) {
+        marketplace.items.splice(item_index, 1);
+      }
+    });
+
+    const replaced = await inventory.updateItemWKey(
+      "MarketplaceInventory",
+      db_id,
+      client,
+      marketplace
+    );
+
+    res.json({ status: "Successful" });
+  } catch (e) {
+    console.log(
+      `/marketplace/delete/accessories/${client} => Error in deleting items ${db_id}:`,
+      e
+    );
+    res.status(500).json({ status: "Error" });
+  }
+  console.log(`/marketplace/delete/accessories/${client} => Finished route.`);
+  if (!res.headersSent) res.json({ status: "Nothing happened" });
+});
+
 export default router;

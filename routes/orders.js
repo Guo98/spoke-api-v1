@@ -669,7 +669,7 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
   } = req.body;
   let approval_number = "";
 
-  let db_obj = [...req.body];
+  let db_obj = { ...req.body };
 
   const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
   if (yubikey_index > -1) {

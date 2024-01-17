@@ -83,7 +83,7 @@ export async function createYubikeyShipment(body) {
           recipient_lastname: lastname,
           recipient_telephone: phone_number,
           street_line1: address.addressLine,
-          street_line2: "",
+          street_line2: address.addressLine2 ? address.addressLine2 : "",
           city: address.city,
           region: address.subdivision,
           postal_code: address.postalCode,
