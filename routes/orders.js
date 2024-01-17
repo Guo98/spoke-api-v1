@@ -1020,24 +1020,23 @@ const orderItemsDelivery = async (order, containerId, ups_token) => {
       if (item.name.toLowerCase().includes("yubikey 5c nfc (automox)")) {
         if (item.shipment_id) {
           const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
-          if (
-            yubiShipping &&
-            yubiShipping.tracking_number &&
-            item.delivery_status !== "Delivered"
-          ) {
+          if (yubiShipping) {
             change = true;
-            if (item.tracking_number === "") {
-              item.tracking_number = [yubiShipping.tracking_number];
-              item.courier = yubiShipping.courier;
-              item.delivery_status = yubiShipping.delivery_description;
-            } else if (
-              item.delivery_status !== yubiShipping.delivery_description
+            if (
+              yubiShipping.tracking_number &&
+              item.delivery_status !== "Delivered"
             ) {
-              if (yubiShipping.delivery_description) {
+              if (item.tracking_number === "") {
+                item.tracking_number = [yubiShipping.tracking_number];
+                item.courier = yubiShipping.courier;
                 item.delivery_status = yubiShipping.delivery_description;
-              } else {
-                item.delivery_status = yubiShipping.shipment_state_message;
+              } else if (
+                item.delivery_status !== yubiShipping.delivery_description
+              ) {
+                item.delivery_status = yubiShipping.delivery_description;
               }
+            } else {
+              item.delivery_status = yubiShipping.delivery_description;
             }
           }
         }
