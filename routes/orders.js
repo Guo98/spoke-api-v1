@@ -1033,7 +1033,11 @@ const orderItemsDelivery = async (order, containerId, ups_token) => {
             } else if (
               item.delivery_status !== yubiShipping.delivery_description
             ) {
-              item.delivery_status = yubiShipping.delivery_description;
+              if (yubiShipping.delivery_description) {
+                item.delivery_status = yubiShipping.delivery_description;
+              } else {
+                item.delivery_status = yubiShipping.shipment_state_message;
+              }
             }
           }
         }
