@@ -22,7 +22,7 @@ export const functions = [
         product_name: {
           type: "string",
           description:
-            "Name of the product, device line of the product, e.g. MacBook Pro, ThinkPad E14",
+            "Device line of the product, e.g. MacBook Pro, ThinkPad E14",
         },
         specs: {
           type: "string",
@@ -84,7 +84,7 @@ export const functions = [
               product_name: {
                 type: "string",
                 description:
-                  "Name of the product, device line of the product, e.g. MacBook Pro, ThinkPad E14",
+                  "Device line of the product, e.g. MacBook Pro, ThinkPad E14",
               },
               stock_level: {
                 type: "string",
