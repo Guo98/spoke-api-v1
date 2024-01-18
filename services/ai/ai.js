@@ -154,7 +154,8 @@ export async function newCheckStock(
   item_name,
   specs,
   supplier = "cdw",
-  others
+  others,
+  color
 ) {
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
@@ -164,7 +165,6 @@ export async function newCheckStock(
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
     links = await searchInsight(item_name + " " + specs);
-    // console.log("links :::::::::::: ", links);
   }
 
   if (links.length > 0) {
@@ -189,7 +189,7 @@ export async function newCheckStock(
             content: `Match specs: ${specs.replace(
               '"',
               " inch"
-            )} for item: ${item_name} to one in the list and return the info in a formatted response.`,
+            )} for item: ${item_name} and color: ${color} to one in the list and return the info in a formatted response.`,
           },
         ],
         temperature: 0.3,
@@ -292,6 +292,7 @@ async function searchInsight(search_text, sku = "") {
           name: filtered_links[0].description,
           image_source: filtered_links[0].image,
           product_link: getInsightProductLink(filtered_links[0]),
+          color: "",
         },
         links,
       };
@@ -328,9 +329,23 @@ async function searchCDW(search_text) {
   const stockLevel = $(".is-available");
   const imageLinks = $(".search-result-product-image");
   const cdwPartNo = $(".cdw-code");
+  const color = $(".extended-specs-content");
 
   links.each((index, element) => {
     const linkElement = $(element);
+
+    const color_result = $(color[index])
+      .children(".extended-specs-row")
+      .filter(function (i, el) {
+        return $(this).children(".extended-specs-key").text() === "Color:";
+      })
+      .text()
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace("Color: ", "")
+      .trim();
+
     productLinks.push({
       name: linkElement.text(),
       link: "https://www.cdw.com" + linkElement.attr("href"),
@@ -344,6 +359,7 @@ async function searchCDW(search_text) {
         .replace("Availability: ● ", ""),
       image_source: $(imageLinks[index]).children("img").eq(0).attr("src"),
       cdw_part_no: $(cdwPartNo[index]).text().replace("CDW#: ", ""),
+      color: color_result,
     });
   });
 
