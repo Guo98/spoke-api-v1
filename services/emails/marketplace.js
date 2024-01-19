@@ -147,9 +147,9 @@ function generateMarketplaceRequestEmail(
   addons
 ) {
   const req_email_blk = `<div dir="ltr">Requestor Email: ${requestor_email}</div><div dir="ltr"><br></div>`;
-  const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
-  const specs_blk = `<div dir="ltr">Requested Specs: ${specs}</div><div dir="ltr"><br></div>`;
-  const color_blk = `<div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div>`;
+  // const item_name_blk = `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
+  // const specs_blk = `<div dir="ltr">Requested Specs: ${specs}</div><div dir="ltr"><br></div>`;
+  //  const color_blk = `<div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div>`;
   const req_type_blk = `<div dir="ltr">Request Type: ${
     return_device ? request_type + " + return box" : request_type
   }</div><div dir="ltr"><br></div>`; // Hold in Inventory
@@ -162,9 +162,9 @@ function generateMarketplaceRequestEmail(
   const shipping_blk = `<div dir="ltr">Shipping: ${shipping}</div><div dir="ltr"><br></div>`;
   const quantity_blk = `<div dir="ltr">Quantity: ${quantity}</div><div dir="ltr"><br></div>`;
   const region_blk = `<div dir="ltr">Region: ${region}</div><div dir="ltr"><br></div>`;
-  const ref_url_blk = `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
-  const ai_specs_blk = `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
-  const supplier_blk = `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
+  // const ref_url_blk = `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
+  // const ai_specs_blk = `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
+  // const supplier_blk = `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
   let addons_blk = "";
 
   if (addons.length > 0) {
@@ -176,18 +176,49 @@ function generateMarketplaceRequestEmail(
   }
 
   let emailBody =
-    '<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div>';
+    '<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>New Item Request:</b></div><div dir="ltr"><br></div>' +
+    req_type_blk +
+    req_email_blk;
+
+  if (supplier) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
+  }
+
+  if (item_name) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">Item Name: ${item_name}</div><div dir="ltr"><br></div>`;
+  }
+
+  if (specs) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">Requested Specs: ${specs}</div><div dir="ltr"><br></div>`;
+  }
+
+  if (ai_specs) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">AI Specs: ${ai_specs}</div><div dir="ltr"><br></div>`;
+  }
+
+  if (color) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">Color: ${color}</div><div dir="ltr"><br></div>`;
+  }
+
+  if (ref_url) {
+    emailBody =
+      emailBody +
+      `<div dir="ltr">Reference Url: ${ref_url}</div><div dir="ltr"><br></div>`;
+  }
 
   if (request_type === "Hold in Inventory") {
     emailBody =
       emailBody +
-      req_type_blk +
-      supplier_blk +
-      item_name_blk +
-      specs_blk +
-      ai_specs_blk +
-      color_blk +
-      ref_url_blk +
       region_blk +
       quantity_blk +
       shipping_blk +
@@ -196,13 +227,6 @@ function generateMarketplaceRequestEmail(
   } else {
     emailBody =
       emailBody +
-      req_type_blk +
-      supplier_blk +
-      item_name_blk +
-      specs_blk +
-      ai_specs_blk +
-      color_blk +
-      ref_url_blk +
       addons_blk +
       region_blk +
       shipping_blk +
