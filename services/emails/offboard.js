@@ -53,14 +53,14 @@ export async function sendReturnConfirmation(body) {
   }
 }
 
-export async function sendRollingNotification(client, name, email) {
+export async function sendRollingNotification(client, name, email, address) {
   console.log(`sendRollingNotification(${client}) => Starting function.`);
   try {
     const email_message = {
       senderAddress: "info@withspoke.com",
       content: {
-        subject: "Reminder Return",
-        html: generateRollingNotification(client, name),
+        subject: `[Action Required] ${client} Equipment Return Reminder`,
+        html: generateRollingNotification(name, address),
       },
       recipients: {
         to: [
@@ -71,7 +71,7 @@ export async function sendRollingNotification(client, name, email) {
       },
     };
 
-    // const response = await sendAzureEmail(email_message);
+    const response = await sendAzureEmail(email_message);
     console.log(
       `sendRollingNotification(${client}) => Successfully sent rolling notification.`
     );
@@ -111,4 +111,7 @@ function generateOffboardingEmailBody(company, name, address) {
   }
 }
 
-function generateRollingNotification(client, name) {}
+function generateRollingNotification(name, address) {
+  const emailBody = `<div dir="ltr"><div><div class="gmail_signature" data-smartmail="gmail_signature">Hi ${name},</div></div><div class="gmail_signature" data-smartmail="gmail_signature"><br></div><div class="gmail_signature" data-smartmail="gmail_signature">Just a quick reminder that we will be handling the return of your laptop. You should have received a box with a prepaid return label. Please ensure to complete the following:</div><div class="gmail_signature" data-smartmail="gmail_signature"><br></div><div class="gmail_signature" data-smartmail="gmail_signature">1. Log out of all accounts on the device (especially iCloud if you have an Apple device)</div><div class="gmail_signature" data-smartmail="gmail_signature">2. Place the device (along with the charger) into the box</div><div class="gmail_signature" data-smartmail="gmail_signature">3. Apply the return label and mail the box back</div><div class="gmail_signature" data-smartmail="gmail_signature"><br></div><div class="gmail_signature" data-smartmail="gmail_signature">The return box was sent to:</div><div class="gmail_signature" data-smartmail="gmail_signature">${address}</div><div class="gmail_signature" data-smartmail="gmail_signature"><br></div><div class="gmail_signature" data-smartmail="gmail_signature">If you require any assistance, please let us know by emailing Spoke at <a href="mailto:info@withspoke.com" target="_blank">info@withspoke.com</a>.</div></div>`;
+  return emailBody;
+}

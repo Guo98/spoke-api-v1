@@ -130,25 +130,33 @@ async function getOrders(db, client, entity, res) {
 
         if (return_box_index > -1) {
           if (!ip_order.items[return_box_index].delivery_status) {
-            console.log("no delivery status yet :::::::::::::::: ");
             if (!ip_order.items[return_box_index].date_reminder_sent) {
-              //send email
               const send_email = await sendRollingNotification(
                 ip_order.client,
                 ip_order.full_name,
-                ip_order.email
+                ip_order.email,
+                ip_order.address.addressLine +
+                  ", " +
+                  ip_order.address.city +
+                  ", " +
+                  ip_order.address.subdivision +
+                  " " +
+                  ip_order.address.postalCode +
+                  ", " +
+                  ip_order.address.country
               );
+
               let updated_order = { ...ip_order };
 
               updated_order.items[return_box_index].date_reminder_sent =
                 new Date().toISOString().split("T")[0];
-              console.log("updated order ::::::::::::: ", updated_order);
-              //   const update_date = await db.updateOrderByContainer(
-              //     db_container,
-              //     ip_order.id,
-              //     ip_order.full_name,
-              //     updated_order
-              //   );
+
+              const update_date = await db.updateOrderByContainer(
+                db_container,
+                ip_order.id,
+                ip_order.full_name,
+                updated_order
+              );
             }
           }
         }
