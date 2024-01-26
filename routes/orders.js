@@ -20,14 +20,10 @@ import {
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 
-import { getFedexToken, updateFedexStatus } from "../services/fedex.js";
-import { trackUPSPackage, getToken } from "../services/ups.js";
-import {
-  getYubikeyShipmentInfo,
-  createYubikeyShipment,
-} from "../utils/yubikey.js";
+import { createYubikeyShipment } from "../utils/yubikey.js";
 import { offboardDevice } from "./inventory.js";
 import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
+import { getOrders } from "../services/orders/get.js";
 
 import { cdw_to_item_name } from "../utils/mappings/cdw_part_numbers.js";
 
@@ -233,147 +229,11 @@ router.get("/orders/:company/:entity?", checkJwt, async (req, res) => {
   // res.setHeader("Access-Control-Allow-Origin", "*");
   // res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
   const company = req.params.company;
-  let dbContainer = "";
-  let client = "";
-
-  switch (company) {
-    case "public":
-      dbContainer = "Mock";
-      client = "Public";
-      break;
-    case "FLYR":
-      dbContainer = "FLYR";
-      client = "FLYR";
-      break;
-    default:
-      dbContainer = company;
-      client = company;
-      break;
-  }
 
   console.log(`[GET] /orders/${company} => Starting route.`);
 
-  const querySpec = {
-    query: req.params.entity
-      ? "SELECT * FROM Received r WHERE r.client = @client AND r.entity = @entity"
-      : "SELECT * FROM Received r WHERE r.client = @client",
-    parameters: req.params.entity
-      ? [
-          {
-            name: "@client",
-            value: client,
-          },
-          {
-            name: "@entity",
-            value: req.params.entity,
-          },
-        ]
-      : [
-          {
-            name: "@client",
-            value: client,
-          },
-        ],
-  };
-  let fedex_token = "";
-  const fedex_token_resp = await getFedexToken();
+  await getOrders(orders, company, req.params.entity, res);
 
-  if (fedex_token_resp.status === 200) {
-    fedex_token =
-      fedex_token_resp.data.token_type +
-      " " +
-      fedex_token_resp.data.access_token;
-  }
-
-  let ups_token = "";
-  const ups_token_resp = await getToken();
-
-  if (ups_token_resp.status === 200) {
-    ups_token =
-      ups_token_resp.data.token_type + " " + ups_token_resp.data.access_token;
-  }
-
-  if (dbContainer !== "") {
-    try {
-      console.log(
-        `[GET] /orders/${company} => Getting all orders from container: ${dbContainer}`
-      );
-      let ordersRes = await orders.getAllOrders(dbContainer);
-
-      if (req.params.entity) {
-        ordersRes = ordersRes.filter(
-          (order) => order.entity === req.params.entity
-        );
-      }
-
-      let fedex_items = [];
-
-      for await (let order of ordersRes) {
-        delete order._rid;
-        delete order._self;
-        delete order._etag;
-        delete order._attachments;
-        delete order._ts;
-
-        const delResult = await orderItemsDelivery(order, company, ups_token);
-
-        if (delResult.status === 200 && delResult.data !== "No Change") {
-          order = { ...delResult.data };
-        } else if (
-          delResult.status === 200 &&
-          delResult.fedex_items &&
-          delResult.fedex_items.length > 0
-        ) {
-          fedex_items = [...fedex_items, ...delResult.fedex_items];
-        }
-      }
-      console.log(
-        `[GET] /orders/${company} => Finished getting all orders from container: ${dbContainer}`
-      );
-
-      console.log(
-        `[GET] /orders/${company} => Getting all in progress orders for company: ${client}`
-      );
-      let inProgRes = await orders.find(querySpec);
-      for await (let order of inProgRes) {
-        delete order._rid;
-        delete order._self;
-        delete order._etag;
-        delete order._attachments;
-        delete order._ts;
-
-        const delResult = await orderItemsDelivery(
-          order,
-          "Received",
-          ups_token
-        );
-        if (delResult.status === 200 && delResult.data !== "No Change") {
-          order = { ...delResult.data };
-        } else if (
-          delResult.status === 200 &&
-          delResult.fedex_items &&
-          delResult.fedex_items.length > 0
-        ) {
-          fedex_items = [...fedex_items, ...delResult.fedex_items];
-        }
-      }
-      if (fedex_items.length > 0) {
-        await updateFedexStatus(fedex_token, fedex_items.splice(0, 30), orders);
-      }
-      console.log(
-        `[GET] /orders/${company} => Finished getting all in progress orders for company: ${client}`
-      );
-      res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
-    } catch (e) {
-      console.log(
-        `[GET] /orders/${company} => Error in getting all orders: ${e}`
-      );
-      res.status(500).json({ status: "Error in getting info" });
-    }
-  } else {
-    console.log(`[GET] /orders/${company} => Company doesn't exist in DB.`);
-    res.status(500).json({ status: "Error in DB" });
-  }
   console.log(`/getAllOrders/${company} => Ending route.`);
 });
 
@@ -971,110 +831,6 @@ const updateMarketplaceFile = async (id, client, filename) => {
 
 const marketplaceSentApprovalEmail = async (id, client) => {
   await orders.sentMarketplaceEmail(id, client);
-};
-
-const orderItemsDelivery = async (order, containerId, ups_token) => {
-  console.log(
-    `orderItemDelivery(${order.client}) => Starting function:`,
-    order.id
-  );
-
-  if (order.shipping_status !== "Completed") {
-    let change = false;
-    let fedex_items = [];
-    let index = 0;
-
-    for await (const item of order.items) {
-      if (item.courier) {
-        if (item.courier.toLowerCase() === "fedex") {
-          if (
-            item.tracking_number?.length > 0 &&
-            item.delivery_status !== "Delivered"
-          ) {
-            fedex_items.push({
-              order_no: order.orderNo,
-              full_name: order.full_name,
-              item_index: index,
-              tracking_no: item.tracking_number[0],
-              id: order.id,
-              items: order.items,
-              containerId,
-            });
-          }
-        } else if (item.courier.toLowerCase() === "ups") {
-          if (
-            item.tracking_number?.length > 0 &&
-            item.delivery_status !== "Delivered"
-          ) {
-            const deliveryResult = await trackUPSPackage(
-              item.tracking_number[0].trim(),
-              ups_token
-            );
-            if (deliveryResult.status === 200) {
-              change = true;
-              item.delivery_status = deliveryResult.data;
-            }
-          }
-        }
-      }
-      if (item.name.toLowerCase().includes("yubikey 5c nfc (automox)")) {
-        if (item.shipment_id) {
-          const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
-          if (yubiShipping) {
-            change = true;
-            if (
-              yubiShipping.tracking_number &&
-              item.delivery_status !== "Delivered"
-            ) {
-              if (item.tracking_number === "") {
-                item.tracking_number = [yubiShipping.tracking_number];
-                item.courier = yubiShipping.courier;
-                item.delivery_status = yubiShipping.delivery_description;
-              } else if (
-                item.delivery_status !== yubiShipping.delivery_description
-              ) {
-                item.delivery_status = yubiShipping.delivery_description;
-              }
-            } else {
-              item.delivery_status = yubiShipping.delivery_description;
-            }
-          }
-        }
-      }
-
-      index++;
-    }
-
-    if (change) {
-      try {
-        console.log(
-          `orderItemDelivery(${order.client}) => Updating shipping status:`,
-          order.id
-        );
-        const updateDelivery = await orders.updateOrderByContainer(
-          containerId,
-          order.id,
-          order.full_name,
-          order.items
-        );
-        console.log(
-          `orderItemDelivery(${order.client}) => Finished updating shipping status:`,
-          order.id
-        );
-        return { status: 200, data: updateDelivery, fedex_items: fedex_items };
-      } catch (e) {
-        console.log(
-          `orderItemDelivery(${order.client}) => Error in updating delivery status of order:`,
-          order.id
-        );
-        return { status: 500, data: "Error" };
-      }
-    } else {
-      return { status: 200, data: "No Change", fedex_items: fedex_items };
-    }
-  } else {
-    return { status: 200, data: "No Change" };
-  }
 };
 
 const addNewDocument = async (containerId, doc) => {

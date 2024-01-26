@@ -48,6 +48,10 @@ router.post("/cdw/order", async (req, res) => {
       purchase_date: "",
     };
 
+    console.log("/cdw/order => Adding request body to CDW container.");
+    const addresult = await addNewDocument("CDW", req.body);
+    console.log("/cdw/order => Added request body to CDW container.");
+
     if (req.body.records) {
       console.log("/cdw/order => Mutliple records sent.");
       req.body.records.forEach((record) => {
@@ -86,10 +90,6 @@ router.post("/cdw/order", async (req, res) => {
         update_order_obj.purchase_date = req.body.purchase_date;
       }
     }
-
-    console.log("/cdw/order => Adding request body to CDW container.");
-    const addresult = await addNewDocument("CDW", req.body);
-    console.log("/cdw/order => Added request body to CDW container.");
 
     console.log(
       "/cdw/order => Updating order " +

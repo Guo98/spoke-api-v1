@@ -53,6 +53,38 @@ export async function sendReturnConfirmation(body) {
   }
 }
 
+export async function sendRollingNotification(client, name, email) {
+  console.log(`sendRollingNotification(${client}) => Starting function.`);
+  try {
+    const email_message = {
+      senderAddress: "info@withspoke.com",
+      content: {
+        subject: "Reminder Return",
+        html: generateRollingNotification(client, name),
+      },
+      recipients: {
+        to: [
+          {
+            address: email,
+          },
+        ],
+      },
+    };
+
+    // const response = await sendAzureEmail(email_message);
+    console.log(
+      `sendRollingNotification(${client}) => Successfully sent rolling notification.`
+    );
+    return true;
+  } catch (e) {
+    console.log(
+      `sendRollingNotification(${client}) => Error in sending email:`,
+      e
+    );
+    return false;
+  }
+}
+
 function generateReturnEmailBody(company, name, address) {
   if (company !== "Automox") {
     const emailBody = `<div dir="ltr">Hi ${name},<br><br><div>We’ve been informed by ${
@@ -78,3 +110,5 @@ function generateOffboardingEmailBody(company, name, address) {
     return emailBody;
   }
 }
+
+function generateRollingNotification(client, name) {}
