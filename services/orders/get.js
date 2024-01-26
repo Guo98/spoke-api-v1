@@ -130,7 +130,15 @@ async function getOrders(db, client, entity, res) {
 
         if (return_box_index > -1) {
           if (!ip_order.items[return_box_index].delivery_status) {
-            if (!ip_order.items[return_box_index].date_reminder_sent) {
+            let rolling_deadline = new Date(ip_order.date);
+            rolling_deadline.setDate(rolling_deadline.getDate() + 14);
+
+            const today_date = new Date();
+
+            if (
+              !ip_order.items[return_box_index].date_reminder_sent &&
+              today_date > rolling_deadline
+            ) {
               const send_email = await sendRollingNotification(
                 ip_order.client,
                 ip_order.full_name,
