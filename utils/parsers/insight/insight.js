@@ -2,7 +2,10 @@ import { load } from "cheerio";
 import determineTrackingNumber from "../common/tracking.js";
 import { insightProductMappings, aftershipMappings } from "./constants.js";
 import { autoAddNewSerialNumber } from "../../../routes/inventory.js";
-import { createAftershipCSV } from "../../../services/aftership.js";
+import {
+  createAftershipCSV,
+  createAftershipTracking,
+} from "../../../services/aftership.js";
 import { sendAftershipCSV } from "../../../services/sendEmail.js";
 
 export default async function parseInsight(message, orders, index) {
@@ -84,10 +87,10 @@ export default async function parseInsight(message, orders, index) {
             let aftershipObj = {
               email:
                 orders[index].client === "Alma"
-                  ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                  ? [orders[index].email, "it-team@helloalma.com"]
                   : orders[index].client === "Roivant"
-                  ? '"' + orders[index].email + ',ronald.estime@roivant.com"'
-                  : orders[index].email,
+                  ? [orders[index].email, "ronald.estime@roivant.com"]
+                  : [orders[index].email],
               title: orderNum,
               customer_name: orders[index].full_name,
               order_number: aftershipMappings[orders[index].items[ind].name]
@@ -120,18 +123,22 @@ export default async function parseInsight(message, orders, index) {
   }
 
   if (aftershipArray.length > 0) {
-    console.log(`parseInsight(${orderNum}) => Sending Aftership CSV file.`);
-    const base64csv = createAftershipCSV(aftershipArray);
-    try {
-      sendAftershipCSV(base64csv, orderNum);
-      console.log(
-        `parseInsight(${orderNum}) => Successfully finished sendAftershipCSV().`
-      );
-    } catch (e) {
-      console.log(
-        `parseInsight(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
-      );
-    }
+    console.log(`parseInsight(${orderNum}) => Creating Aftership tracking.`);
+    await createAftershipTracking(aftershipArray);
+    console.log(
+      `parseInsight(${orderNum}) => Finished creating Aftership tracking.`
+    );
+    // const base64csv = createAftershipCSV(aftershipArray);
+    // try {
+    //   sendAftershipCSV(base64csv, orderNum);
+    //   console.log(
+    //     `parseInsight(${orderNum}) => Successfully finished sendAftershipCSV().`
+    //   );
+    // } catch (e) {
+    //   console.log(
+    //     `parseInsight(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
+    //   );
+    // }
   }
   console.log(`parseInsight(${orderNum}) => Finished function.`);
 }

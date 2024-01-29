@@ -1,3 +1,7 @@
+import { AfterShip } from "aftership";
+
+const aftership = new AfterShip(process.env.AFTERSHIP_API_KEY);
+
 function createAftershipCSV(customerInfo) {
   let csvRows = [
     "courier,tracking_number,email,title,customer_name,order_number,language",
@@ -11,4 +15,35 @@ function createAftershipCSV(customerInfo) {
   return customerInfo.length > 0 ? btoa(csvRows.join("\n")) : "";
 }
 
-export { createAftershipCSV };
+async function createAftershipTracking(customer_info) {
+  customer_info.forEach(async (row) => {
+    const tracking_payload = {
+      tracking: {
+        tracking_number: row.tracking_number,
+        title: row.title,
+        emails: row.email,
+        customer_name: row.customer_name,
+        order_number: row.order_number,
+      },
+    };
+    try {
+      console.log(
+        `createAftershipTracking(${row.title}) => Starting createTracking function.`
+      );
+      const aftership_result = await aftership.tracking.createTracking(
+        tracking_payload
+      );
+      console.log(
+        `createAftershipTracking(${row.title}) => Successfully created tracking.`,
+        aftership_result
+      );
+    } catch (e) {
+      console.log(
+        `createAftershipTracking(${row.title}) => Error in creating tracking:`,
+        e
+      );
+    }
+  });
+}
+
+export { createAftershipCSV, createAftershipTracking };

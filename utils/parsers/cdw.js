@@ -3,7 +3,10 @@ import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import { addNewSerialNumber } from "../../routes/inventory.js";
 import { inventoryMappings } from "./cdwConstants.js";
-import { createAftershipCSV } from "../../services/aftership.js";
+import {
+  createAftershipCSV,
+  createAftershipTracking,
+} from "../../services/aftership.js";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
 import determineTrackingNumber from "./common/tracking.js";
 
@@ -104,10 +107,10 @@ export default async function addCDWTrackingNumber(
             let aftershipObj = {
               email:
                 orders[index].client === "Alma"
-                  ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                  ? [orders[index].email, "it-team@helloalma.com"]
                   : orders[index].client === "Roivant"
-                  ? '"' + orders[index].email + ',ronald.estime@roivant.com"'
-                  : orders[index].email,
+                  ? [orders[index].email, "ronald.estime@roivant.com"]
+                  : [orders[index].email],
               title: orderNum,
               customer_name: orders[index].full_name,
               order_number: aftershipMappings[orders[index].items[ind].name]
@@ -155,19 +158,23 @@ export default async function addCDWTrackingNumber(
   orders[index].shipping_status = "Shipped";
   if (aftershipArray.length > 0) {
     console.log(
-      `addCDWTrackingNumber(${orderNum}) => Sending Aftership CSV file.`
+      `addCDWTrackingNumber(${orderNum}) => Creating Aftership tracking.`
     );
-    const base64csv = createAftershipCSV(aftershipArray);
-    try {
-      sendAftershipCSV(base64csv, orderNum);
-      console.log(
-        `addCDWTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
-      );
-    } catch (e) {
-      console.log(
-        `addCDWTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
-      );
-    }
+    await createAftershipTracking(aftershipArray);
+    console.log(
+      `addCDWTrackingNumber(${orderNum}) => Finished creating Aftership tracking.`
+    );
+    // const base64csv = createAftershipCSV(aftershipArray);
+    // try {
+    //   sendAftershipCSV(base64csv, orderNum);
+    //   console.log(
+    //     `addCDWTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
+    //   );
+    // } catch (e) {
+    //   console.log(
+    //     `addCDWTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
+    //   );
+    // }
   }
 
   console.log(`addCDWTrackingNumber(${orderNum}) => Finished function.`);

@@ -26,6 +26,7 @@
     "@google-cloud/local-auth": "^2.1.0",
     "@mergeapi/merge-node-client": "^0.1.7",
     "@slack/bolt": "^3.13.3",
+    "aftership": "^8.1.0",
     "airtable": "^0.11.5",
     "auth0": "^3.4.0",
     "axios": "^0.27.2",

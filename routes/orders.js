@@ -20,6 +20,7 @@ import {
 import { determineContainer } from "../utils/utility.js";
 import { exportOrders } from "../services/excel.js";
 
+import { createAftershipTracking } from "../services/aftership.js";
 import { createYubikeyShipment } from "../utils/yubikey.js";
 import { offboardDevice } from "./inventory.js";
 import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
@@ -804,6 +805,34 @@ router.post("/missing", checkJwt, async (req, res) => {
   }
 
   res.send("Hello World");
+});
+
+router.post("/orders/createshipment", checkJwt, async (req, res) => {
+  const {
+    order_no,
+    item_name,
+    customer_name,
+    tracking_number,
+    recipient_email,
+    client,
+  } = req.body;
+  console.log(`/orders/createshipment/${order_no} => Starting route.`);
+  const customer_info = [
+    {
+      email:
+        client === "Alma"
+          ? [recipient_email, "it-team@helloalma.com"]
+          : [recipient_email],
+      title: order_no.toString(),
+      customer_name: customer_name,
+      order_number: item_name,
+      tracking_number: tracking_number,
+    },
+  ];
+
+  await createAftershipTracking(customer_info);
+  console.log(`/orders/createshipment/${order_no} => Finished route.`);
+  res.json({ status: "Successful" });
 });
 
 // router.post("/orderyubikey", async (req, res) => {
