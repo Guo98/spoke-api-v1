@@ -128,37 +128,37 @@ async function mapLineItems(customerInfo) {
         customerInfo.client = "Sona";
       }
 
-      if (item.name.toLowerCase().includes("yubikey 5c")) {
-        const yubikeyBody = {
-          firstname: customerInfo.firstName,
-          lastname: customerInfo.lastName,
-          email: customerInfo.email,
-          phone_number: customerInfo.phone,
-          address: customerInfo.address,
-          quantity: item.quantity,
-        };
-        try {
-          console.log(
-            "mapLineItems() => Creating yubikey shipment:",
-            yubikeyBody
-          );
-          const shipmentId = await createYubikeyShipment(yubikeyBody);
+      // if (item.name.toLowerCase().includes("yubikey 5c")) {
+      //   const yubikeyBody = {
+      //     firstname: customerInfo.firstName,
+      //     lastname: customerInfo.lastName,
+      //     email: customerInfo.email,
+      //     phone_number: customerInfo.phone,
+      //     address: customerInfo.address,
+      //     quantity: item.quantity,
+      //   };
+      //   try {
+      //     console.log(
+      //       "mapLineItems() => Creating yubikey shipment:",
+      //       yubikeyBody
+      //     );
+      //     const shipmentId = await createYubikeyShipment(yubikeyBody);
 
-          if (shipmentId !== "") {
-            item.shipment_id = shipmentId;
-          }
-          console.log("mapLineItems() => Finished creating yubikey shipment.");
-        } catch (e) {
-          console.log(
-            "mapLineItems() => Error in creating yubikey shipment for: ",
-            yubikeyBody
-          );
-          console.log(
-            "mapLineItems() => Error in creating yubikey shipment: ",
-            e
-          );
-        }
-      }
+      //     if (shipmentId !== "") {
+      //       item.shipment_id = shipmentId;
+      //     }
+      //     console.log("mapLineItems() => Finished creating yubikey shipment.");
+      //   } catch (e) {
+      //     console.log(
+      //       "mapLineItems() => Error in creating yubikey shipment for: ",
+      //       yubikeyBody
+      //     );
+      //     console.log(
+      //       "mapLineItems() => Error in creating yubikey shipment: ",
+      //       e
+      //     );
+      //   }
+      // }
     }
   }
   customerInfo.full_name =
