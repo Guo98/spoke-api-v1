@@ -12,11 +12,15 @@ export async function addNewDevice(
   supplier_url,
   sku,
   client,
-  device_line
+  device_line,
+  item_name
 ) {
   try {
     const marketplace = await inventory_db.getAll("MarketplaceInventory");
-    const formatted_specs = screen_size + ", " + cpu + ", " + ram + ", " + ssd;
+    const formatted_specs =
+      type === "phones"
+        ? item_name
+        : screen_size + ", " + cpu + ", " + ram + ", " + ssd;
     let type_exists = false;
     let new_device = false;
 
@@ -45,20 +49,32 @@ export async function addNewDevice(
                   // check specs to makes sure it hasn't been added already
                   let spec_exists = false;
                   d_t.specs.forEach(async (d_s) => {
-                    const no_spaces_spec = d_s.spec
-                      .replace(" ", "")
-                      .toLowerCase();
-                    if (
-                      no_spaces_spec.includes(screen_size) &&
-                      no_spaces_spec.includes(cpu.toLowerCase()) &&
-                      no_spaces_spec.includes(ram.toLowerCase()) &&
-                      no_spaces_spec.includes(ssd.toLowerCase())
-                    ) {
-                      spec_exists = true;
-                      console.log(
-                        `/marketplace/add/${client} => Spec already exists.`
-                      );
-                      return "exists";
+                    if (type.toLowerCase() !== "phones") {
+                      const no_spaces_spec = d_s.spec
+                        .replace(" ", "")
+                        .toLowerCase();
+                      if (
+                        no_spaces_spec.includes(screen_size) &&
+                        no_spaces_spec.includes(cpu.toLowerCase()) &&
+                        no_spaces_spec.includes(ram.toLowerCase()) &&
+                        no_spaces_spec.includes(ssd.toLowerCase())
+                      ) {
+                        spec_exists = true;
+                        console.log(
+                          `/marketplace/add/${client} => Spec already exists.`
+                        );
+                        return "exists";
+                      }
+                    } else {
+                      if (
+                        d_s.spec.toLowerCase() === formatted_specs.toLowerCase()
+                      ) {
+                        spec_exists = true;
+                        console.log(
+                          `/marketplace/add/${client} => Spec already exists.`
+                        );
+                        return "exists";
+                      }
                     }
                   });
 

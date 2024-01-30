@@ -45,7 +45,11 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
   } = req.body;
   console.log(`/marketplace/add/${client} => Starting function.`);
 
-  if (type.toLowerCase() === "laptops" || type.toLowerCase() === "desktops") {
+  if (
+    type.toLowerCase() === "laptops" ||
+    type.toLowerCase() === "desktops" ||
+    type.toLowerCase() === "phones"
+  ) {
     const add_result = await addNewDevice(
       inventory,
       screen_size,
@@ -60,7 +64,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       supplier_url,
       req.body.sku,
       client,
-      device_line
+      device_line,
+      item_name
     );
 
     if (add_result === "error") {
