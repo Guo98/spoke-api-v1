@@ -243,6 +243,7 @@ export async function addNewDevice(
       }
     }
   } catch (e) {
+    console.log(`addNewDevice(${client}) => Error in adding new device:`, e);
     return "error";
   }
 }
