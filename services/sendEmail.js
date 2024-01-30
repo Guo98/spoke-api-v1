@@ -8,16 +8,10 @@ export async function sendAzureEmail(emailMessage) {
     //send mail
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log(
-      "sendAzureEmail() => Successfully sent offboarding tracking email:",
-      response
-    );
+    console.log("sendAzureEmail() => Successfully sent email:", response);
     return response;
   } catch (e) {
-    console.error(
-      "sendAzureEmail() => Error in sending offboarding tracking email:",
-      e
-    );
+    console.error("sendAzureEmail() => Error in sending email:", e);
     throw e;
   }
 }
@@ -49,41 +43,6 @@ async function sendEmail(body) {
   } catch (e) {
     console.error(
       "sendEmail() => Error in sending offboarding tracking email:",
-      e
-    );
-    return false;
-  }
-}
-
-async function sendNotificationEmail() {
-  try {
-    console.log(
-      "sendNotificationEmail() => Starting function to send notification email for new deployment."
-    );
-    //send mail
-    const emailMessage = {
-      senderAddress: "DoNotReply@withspoke.com",
-      content: {
-        subject: `Deployment placed for laptop`,
-        plainText: "Please refer to google sheets for new deployed laptop",
-      },
-      recipients: {
-        to: [
-          {
-            address: "info@withspoke.com",
-          },
-        ],
-      },
-    };
-    const response = await sendAzureEmail(emailMessage);
-    console.log(
-      "sendNotificationEmail() => Successfully sent notification email:",
-      response
-    );
-    return true;
-  } catch (e) {
-    console.error(
-      "sendNotificationEmail() => Error in sending notification email:",
       e
     );
     return false;
@@ -321,7 +280,6 @@ export {
   sendEmail,
   sendAftershipCSV,
   sendSupportEmail,
-  sendNotificationEmail,
   sendOrderConfirmationEmail,
   sendSlackRequestEmail,
 };

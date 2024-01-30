@@ -21,7 +21,8 @@ export const functions = [
         },
         product_name: {
           type: "string",
-          description: 'Name of the product, e.g. MacBook Pro 14"',
+          description:
+            "Device line of the product, e.g. MacBook Pro, ThinkPad E14",
         },
         specs: {
           type: "string",
@@ -34,7 +35,12 @@ export const functions = [
         },
         cdw_part_no: {
           type: "string",
-          description: "CDW part no if it exists",
+          description: "CDW part number if it exists",
+        },
+        color: {
+          type: "string",
+          description:
+            'Color of the device, if data is not available, return "Default", e.g. "Space Gray", "Black", "Default"',
         },
       },
       required: [
@@ -44,6 +50,7 @@ export const functions = [
         "product_name",
         "specs",
         "image_source",
+        "color",
       ],
     },
   },
@@ -76,7 +83,8 @@ export const functions = [
               },
               product_name: {
                 type: "string",
-                description: 'Name of the product, e.g. MacBook Pro 14"',
+                description:
+                  "Device line of the product, e.g. MacBook Pro, ThinkPad E14",
               },
               stock_level: {
                 type: "string",
@@ -95,6 +103,11 @@ export const functions = [
                 type: "string",
                 description: "CDW part no if it exists",
               },
+              color: {
+                type: "string",
+                description:
+                  'Color of the device, if data is not available, return "Default", e.g. "Space Gray", "Black", "Default"',
+              },
             },
             required: [
               "price",
@@ -104,6 +117,7 @@ export const functions = [
               "stock_level",
               "specs",
               "image_source",
+              "color",
             ],
           },
         },
@@ -166,12 +180,12 @@ export const scrape_functions = [
         device_type: {
           type: "string",
           description:
-            'Type of device, can either be "laptops", "desktops", or "accessories"',
+            'Type of device, can either be "laptops", "desktops", "phones", or "accessories"',
         },
         device_line: {
           type: "string",
           description:
-            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad Carbon"',
+            'Which line of device is it, e.g. "Macbook Pro", "ThinkPad Carbon", "iPhone 15 Plus"',
         },
         supplier: {
           type: "string",

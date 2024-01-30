@@ -4,7 +4,10 @@ import { addNewDocument } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import { cdwUpdateOrder } from "./orders.js";
 import { autoAddNewSerialNumber } from "./inventory.js";
-import { createAftershipCSV } from "../services/aftership.js";
+import {
+  createAftershipCSV,
+  createAftershipTracking,
+} from "../services/aftership.js";
 import { sendAftershipCSV } from "../services/sendEmail.js";
 import { placeCDWOrder } from "../services/suppliers/cdw/order.js";
 
@@ -48,6 +51,10 @@ router.post("/cdw/order", async (req, res) => {
       purchase_date: "",
     };
 
+    console.log("/cdw/order => Adding request body to CDW container.");
+    const addresult = await addNewDocument("CDW", req.body);
+    console.log("/cdw/order => Added request body to CDW container.");
+
     if (req.body.records) {
       console.log("/cdw/order => Mutliple records sent.");
       req.body.records.forEach((record) => {
@@ -86,10 +93,6 @@ router.post("/cdw/order", async (req, res) => {
         update_order_obj.purchase_date = req.body.purchase_date;
       }
     }
-
-    console.log("/cdw/order => Adding request body to CDW container.");
-    const addresult = await addNewDocument("CDW", req.body);
-    console.log("/cdw/order => Added request body to CDW container.");
 
     console.log(
       "/cdw/order => Updating order " +
@@ -146,10 +149,10 @@ router.post("/cdw/order", async (req, res) => {
         {
           email:
             client_title_case[update_order_obj.client] === "Alma"
-              ? '"' + updateRes.email + ',it-team@helloalma.com"'
+              ? [updateRes.email, "it-team@helloalma.com"]
               : client_title_case[update_order_obj.client] === "Roivant"
-              ? '"' + updateRes.email + ',ronald.estime@roivant.com"'
-              : updateRes.email,
+              ? [updateRes.email, "ronald.estime@roivant.com"]
+              : [updateRes.email],
           title: updateRes.order_no,
           customer_name: updateRes.full_name,
           order_number: updateRes.item_name,
@@ -159,19 +162,23 @@ router.post("/cdw/order", async (req, res) => {
 
       if (aftershipArray.length > 0) {
         console.log(
-          `/cdw/order/${update_order_obj.order_no} => Sending Aftership CSV file.`
+          `/cdw/order/${update_order_obj.order_no} => Creating aftership tracking.`
         );
-        const base64csv = createAftershipCSV(aftershipArray);
-        try {
-          await sendAftershipCSV(base64csv, updateRes.order_no);
-          console.log(
-            `/cdw/order/${update_order_obj.order_no} => Successfully finished sendAftershipCSV().`
-          );
-        } catch (e) {
-          console.log(
-            `/cdw/order/${update_order_obj.order_no} => Error in sendAftershipCSV() function: ${e}`
-          );
-        }
+        await createAftershipTracking(aftershipArray);
+        console.log(
+          `/cdw/order/${update_order_obj.order_no} => Finished creating aftership tracking.`
+        );
+        // const base64csv = createAftershipCSV(aftershipArray);
+        // try {
+        //   await sendAftershipCSV(base64csv, updateRes.order_no);
+        //   console.log(
+        //     `/cdw/order/${update_order_obj.order_no} => Successfully finished sendAftershipCSV().`
+        //   );
+        // } catch (e) {
+        //   console.log(
+        //     `/cdw/order/${update_order_obj.order_no} => Error in sendAftershipCSV() function: ${e}`
+        //   );
+        // }
       }
     }
 
@@ -251,5 +258,19 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
   if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`/placeorder/${supplier} => Finished path.`);
 });
+
+// router.get("/testaftership", async (req, res) => {
+//   const customer_info = [
+//     {
+//       email: ["andy@withspoke.com"],
+//       title: "00001",
+//       customer_name: "Andy Guo",
+//       order_number: "test shipment",
+//       tracking_number: "1Z8723500310385728",
+//     },
+//   ];
+//   const aftership_result = await createAftershipTracking(customer_info);
+//   res.send("Hello world");
+// });
 
 export default router;

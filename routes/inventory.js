@@ -8,10 +8,8 @@ import inventoryOffboard from "../services/inventory/offboarding.js";
 import { exportInventory } from "../services/excel.js";
 import deployLaptop from "../services/inventory/deploy.js";
 import requestInventory from "../services/inventory/request.js";
-import {
-  sendNotificationEmail,
-  sendOrderConfirmationEmail,
-} from "../services/sendEmail.js";
+import { sendOrderConfirmationEmail } from "../services/sendEmail.js";
+import { sendInventoryDeploymentEmail } from "../services/emails/inventory.js";
 import { sendAddressRequestEmail } from "../services/emails/address_request.js";
 import { resetMockApprovals } from "./orders.js";
 
@@ -153,7 +151,7 @@ router.post("/deployLaptop", checkJwt, async (req, res) => {
 
   try {
     console.log(`/deployLaptop/${client} => Starting notification email.`);
-    await sendNotificationEmail();
+    await sendInventoryDeploymentEmail(req.body);
     console.log(
       `/deployLaptop/${client} => Successfully sent notification email.`
     );
@@ -196,7 +194,8 @@ router.post("/offboarding", checkJwt, async (req, res) => {
     requestor_email,
     requestor_name,
     type,
-    no_address, device_name
+    no_address,
+    device_name
   } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
@@ -497,12 +496,14 @@ router.get("/getmarketplaceinventory/:client", checkJwt, async (req, res) => {
       delete device._etag;
       delete device._attachments;
       delete device._ts;
-      device.brands.push({
-        brand: "Others",
-        types: [],
-        imgSrc:
-          "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
-      });
+      if (device.brands) {
+        device.brands.push({
+          brand: "Others",
+          types: [],
+          imgSrc:
+            "https://spokeimages.blob.core.windows.net/image/defaultlaptop.jpeg",
+        });
+      }
     });
     console.log(
       `/getmarketplaceinventory/${client} => Ending route. Successful.`

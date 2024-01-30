@@ -1,6 +1,7 @@
 import { determineContainer } from "../../utils/utility.js";
 import { createAdminDeploy } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
+import { createYubikeyShipment } from "../../utils/yubikey.js";
 
 async function deployLaptop(res, body, inventoryDB) {
   const {
@@ -17,6 +18,7 @@ async function deployLaptop(res, body, inventoryDB) {
     device_location,
     requestor_email,
     id,
+    addons,
   } = body;
   console.log(`deployLaptop() => Starting function:`, body);
   const containerId = determineContainer(client);
@@ -92,6 +94,34 @@ async function deployLaptop(res, body, inventoryDB) {
             res.status(500).send({ status: "Error" });
           }
 
+          const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+          let shipment_id = "";
+          if (yubikey_index > -1) {
+            console.log(`deployLaptop() => Ordering yubikey.`);
+            try {
+              const yubikeyBody = {
+                firstname: first_name,
+                lastname: last_name,
+                email: email,
+                phone_number: phone_number,
+                address: {
+                  addressLine: address.al1,
+                  addressLine2: address.al2,
+                  city: address.city,
+                  subdivision: address.state,
+                  postalCode: address.postal_code,
+                  country: address.country_code,
+                },
+                quantity: parseInt(addons[yubikey_index].split("x")[0]),
+              };
+
+              shipment_id = await createYubikeyShipment(yubikeyBody);
+              console.log(`deployLaptop() => Successfully ordered yubikey.`);
+            } catch (e) {
+              console.log(`deployLaptop() => Error in ordering yubikey`, e);
+            }
+          }
+
           const deployValues = createAdminDeploy(
             client,
             first_name + " " + last_name,
@@ -103,7 +133,9 @@ async function deployLaptop(res, body, inventoryDB) {
             phone_number,
             note,
             requestor_email,
-            body.warehouse
+            body.warehouse,
+            addons,
+            shipment_id
           );
 
           try {
@@ -114,7 +146,7 @@ async function deployLaptop(res, body, inventoryDB) {
               deployValues,
               "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
               1579665041,
-              13
+              15
             );
             console.log(
               `/deployLaptop/${client} => Finish adding laptop to admin order sheet.`

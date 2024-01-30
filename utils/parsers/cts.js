@@ -1,6 +1,9 @@
 import cheerio from "cheerio";
 import { sendAftershipCSV } from "../../services/sendEmail.js";
-import { createAftershipCSV } from "../../services/aftership.js";
+import {
+  createAftershipCSV,
+  createAftershipTracking,
+} from "../../services/aftership.js";
 import { trackingRegex } from "../constants.js";
 
 function determineAftershipNumber(name) {
@@ -13,7 +16,7 @@ function determineAftershipNumber(name) {
   }
 }
 
-function addCTSTrackingNumber(
+async function addCTSTrackingNumber(
   decodedMessage,
   orders,
   supplier,
@@ -49,10 +52,10 @@ function addCTSTrackingNumber(
             tracking_number: trackNum,
             email:
               orders[index].client === "Alma"
-                ? '"' + orders[index].email + ',it-team@helloalma.com"'
+                ? [orders[index].email, "it-team@helloalma.com"]
                 : orders[index].client === "Roivant"
-                ? '"' + orders[index].email + ',ronald.estime@roivant.com"'
-                : orders[index].email,
+                ? [orders[index].email, "ronald.estime@roivant.com"]
+                : [orders[index].email],
             title: orders[index].orderNo,
             customer_name: orders[index].full_name,
             order_number: determineAftershipNumber(item.name),
@@ -67,17 +70,24 @@ function addCTSTrackingNumber(
   });
 
   if (aftershipArray.length > 0) {
-    const base64csv = createAftershipCSV(aftershipArray);
-    try {
-      sendAftershipCSV(base64csv, orderNum);
-      console.log(
-        `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
-      );
-    } catch (e) {
-      console.log(
-        `addCTSTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
-      );
-    }
+    // const base64csv = createAftershipCSV(aftershipArray);
+    console.log(
+      `addCTSTrackingNumber(${orderNum}) => Creating Aftership tracking.`
+    );
+    await createAftershipTracking(aftershipArray);
+    console.log(
+      `addCTSTrackingNumber(${orderNum}) => Finished creating Aftership tracking.`
+    );
+    // try {
+    //   sendAftershipCSV(base64csv, orderNum);
+    //   console.log(
+    //     `addCTSTrackingNumber(${orderNum}) => Successfully finished sendAftershipCSV().`
+    //   );
+    // } catch (e) {
+    //   console.log(
+    //     `addCTSTrackingNumber(${orderNum}) => Error in sendAftershipCSV() function: ${e}`
+    //   );
+    // }
   }
   if (orders[index].shipping_status !== "Shipped") {
     orders[index].shipping_status = "Shipped";
