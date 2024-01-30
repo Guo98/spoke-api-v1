@@ -161,18 +161,77 @@ async function getOrders(db, client, entity, res) {
 
               updated_order.items[return_box_index].date_reminder_sent =
                 new Date().toISOString().split("T")[0];
-
+              console.log(
+                `getOrders(${client}) => Sent rolling notification for ${updated_order.orderNo}`
+              );
               const update_date = await db.updateOrderByContainer(
-                db_container,
+                "Received",
                 ip_order.id,
                 ip_order.full_name,
-                updated_order
+                updated_order.items
               );
             }
           }
         }
       });
-    } catch (e) {}
+
+      ordersRes.forEach(async (ip_order) => {
+        const return_box_index = ip_order.items.findIndex((item) =>
+          item.name.includes("Return Box")
+        );
+
+        if (return_box_index > -1) {
+          if (!ip_order.items[return_box_index].delivery_status) {
+            let rolling_deadline = new Date(ip_order.date);
+            rolling_deadline.setDate(rolling_deadline.getDate() + 14);
+
+            const today_date = new Date();
+
+            if (
+              !ip_order.items[return_box_index].date_reminder_sent &&
+              today_date.getTime() > rolling_deadline.getTime() &&
+              ip_order.items[return_box_index].tracking_number !== "" &&
+              ip_order.items[return_box_index - 1].delivery_status ===
+                "Delivered"
+            ) {
+              const send_email = await sendRollingNotification(
+                ip_order.client,
+                ip_order.full_name,
+                ip_order.email,
+                ip_order.address.addressLine +
+                  ", " +
+                  ip_order.address.city +
+                  ", " +
+                  ip_order.address.subdivision +
+                  " " +
+                  ip_order.address.postalCode +
+                  ", " +
+                  ip_order.address.country
+              );
+
+              let updated_order = { ...ip_order };
+
+              updated_order.items[return_box_index].date_reminder_sent =
+                new Date().toISOString().split("T")[0];
+              console.log(
+                `getOrders(${client}) => Sent rolling notification for ${updated_order.orderNo}`
+              );
+              const update_date = await db.updateOrderByContainer(
+                db_container,
+                ip_order.id,
+                ip_order.full_name,
+                updated_order.items
+              );
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.log(
+        `getOrders(${client}) => Error in checking for 2 weeks past notice orders:`,
+        e
+      );
+    }
   } catch (e) {
     console.log(`getOrders(${client}) => Error in getting all orders: ${e}`);
     if (!res.headersSent)
