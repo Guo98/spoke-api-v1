@@ -8,16 +8,10 @@ export async function sendAzureEmail(emailMessage) {
     //send mail
     var poller = await client.beginSend(emailMessage);
     const response = await poller.pollUntilDone();
-    console.log(
-      "sendAzureEmail() => Successfully sent offboarding tracking email:",
-      response
-    );
+    console.log("sendAzureEmail() => Successfully sent email:", response);
     return response;
   } catch (e) {
-    console.error(
-      "sendAzureEmail() => Error in sending offboarding tracking email:",
-      e
-    );
+    console.error("sendAzureEmail() => Error in sending email:", e);
     throw e;
   }
 }
