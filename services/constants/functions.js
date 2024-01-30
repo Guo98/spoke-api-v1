@@ -180,7 +180,7 @@ export const scrape_functions = [
         device_type: {
           type: "string",
           description:
-            'Type of device, can either be "laptops", "desktops", or "accessories"',
+            'Type of device, can either be "laptops", "desktops", "phones", or "accessories"',
         },
         device_line: {
           type: "string",
