@@ -205,6 +205,7 @@ export async function addNewDevice(
         id: type.toLowerCase() + "-" + client.toLowerCase(),
         item_type: type.charAt(0).toUpperCase() + type.slice(1),
         client,
+        imgSrc: req.body.img_src,
         brands: [
           {
             imgSrc: req.body.img_src,
