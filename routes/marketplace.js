@@ -65,7 +65,8 @@ router.post("/marketplace/add", checkJwt, async (req, res) => {
       req.body.sku,
       client,
       device_line,
-      item_name
+      item_name,
+      req
     );
 
     if (add_result === "error") {

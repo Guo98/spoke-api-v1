@@ -13,7 +13,8 @@ export async function addNewDevice(
   sku,
   client,
   device_line,
-  item_name
+  item_name,
+  req
 ) {
   try {
     const marketplace = await inventory_db.getAll("MarketplaceInventory");
