@@ -195,7 +195,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
     requestor_name,
     type,
     no_address,
-    device_name,
+    device_name
   } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
