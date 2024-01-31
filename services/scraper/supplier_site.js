@@ -1,6 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
 import { Configuration, OpenAIApi } from "openai";
+import { GPTTokens } from "gpt-tokens";
 
 import { scrape_functions } from "../constants/functions.js";
 
@@ -13,6 +14,8 @@ const openai = new OpenAIApi(configuration);
 async function scrape_supplier_site(supplier_url) {
   let messages = [];
   let sku = "";
+
+  let completion_tokens = 4097 - 400;
   if (supplier_url.includes("www.cdw.com")) {
     let html = await axios.request({
       url: supplier_url,
@@ -34,6 +37,10 @@ async function scrape_supplier_site(supplier_url) {
             .replace(/(\r\n|\n|\r)/gm, ""),
       },
     ];
+
+    const usage_info = new GPTTokens({ model: "gpt-3.5-turbo-0613", messages });
+
+    completion_tokens = completion_tokens - usage_info.usedTokens;
   } else if (supplier_url.includes("www.insight.com")) {
     let url_splits = supplier_url.split("/");
     const product_index = url_splits.findIndex((p) => p === "product");
@@ -60,6 +67,12 @@ async function scrape_supplier_site(supplier_url) {
             JSON.stringify(insight_api_result.data.products),
         },
       ];
+
+      const usage_info = new GPTTokens({
+        model: "gpt-3.5-turbo-0613",
+        messages,
+      });
+      completion_tokens = completion_tokens - usage_info.usedTokens;
     }
   }
 
@@ -68,7 +81,7 @@ async function scrape_supplier_site(supplier_url) {
       model: "gpt-3.5-turbo-0613",
       messages,
       temperature: 0.5,
-      max_tokens: 500,
+      max_tokens: completion_tokens,
       functions: scrape_functions,
       function_call: "auto",
     });

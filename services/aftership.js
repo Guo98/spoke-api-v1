@@ -2,6 +2,16 @@ import { AfterShip } from "aftership";
 
 const aftership = new AfterShip(process.env.AFTERSHIP_API_KEY);
 
+function determineAftershipNumber(name) {
+  if (name === "Returning" || name === "Offboarding") {
+    return "Equipment Return Box";
+  } else if (name.indexOf('"') > -1) {
+    return item.name.split('"')[0];
+  } else {
+    return name;
+  }
+}
+
 function createAftershipCSV(customerInfo) {
   let csvRows = [
     "courier,tracking_number,email,title,customer_name,order_number,language",
@@ -20,7 +30,7 @@ async function createAftershipTracking(customer_info) {
     const tracking_payload = {
       tracking: {
         tracking_number: row.tracking_number,
-        title: row.title,
+        title: determineAftershipNumber(row.title),
         emails: row.email,
         customer_name: row.customer_name,
         order_number: row.order_number,
