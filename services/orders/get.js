@@ -190,6 +190,7 @@ async function getOrders(db, client, entity, res) {
 
             if (
               !ip_order.items[return_box_index].date_reminder_sent &&
+              ip_order.shipping_status !== "Completed" &&
               today_date.getTime() > rolling_deadline.getTime() &&
               ip_order.items[return_box_index].tracking_number !== "" &&
               ip_order.items[return_box_index - 1].delivery_status ===
