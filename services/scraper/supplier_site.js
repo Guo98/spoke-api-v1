@@ -29,7 +29,9 @@ async function scrape_supplier_site(supplier_url) {
         role: "user",
         content:
           "Scrape the following html for item name, specs, price, and color. " +
-          html.data.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, ""),
+          html.data
+            .replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "")
+            .replace(/(\r\n|\n|\r)/gm, ""),
       },
     ];
   } else if (supplier_url.includes("www.insight.com")) {
@@ -66,7 +68,7 @@ async function scrape_supplier_site(supplier_url) {
       model: "gpt-3.5-turbo-0613",
       messages,
       temperature: 0.5,
-      max_tokens: 1000,
+      max_tokens: 500,
       functions: scrape_functions,
       function_call: "auto",
     });
