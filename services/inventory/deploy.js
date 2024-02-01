@@ -94,7 +94,10 @@ async function deployLaptop(res, body, inventoryDB) {
             res.status(500).send({ status: "Error" });
           }
 
-          const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+          let yubikey_index = -1;
+          if (addons) {
+            yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+          }
           let shipment_id = "";
           if (yubikey_index > -1) {
             console.log(`deployLaptop() => Ordering yubikey.`);
