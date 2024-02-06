@@ -14,19 +14,18 @@ const cdw_config = {
 
 async function placeCDWOrder(order_body) {
   console.log(`placeCDWOrder() => Starting function.`);
-  const client = new ClientCredentials(cdw_config);
+  //const client = new ClientCredentials(cdw_config);
 
   try {
-    const accessToken = await client.getToken();
-    console.log(`placeCDWOrder() => Successfully got token.`);
+    // const accessToken = await client.getToken();
+    console.log(`placeCDWOrder() => Placing order.`);
     const options = {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        Authorization:
-          accessToken.token.token_type + " " + accessToken.token.access_token,
+        "subscription-key": process.env.CDW_API_SUBSCRIPTION_KEY,
       },
-      url: process.env.CDW_TOKEN_HOST + "/b2b/customer/inbapi/v1/CustomerOrder",
+      url: process.env.CDW_TOKEN_HOST + "/pprd/b2b/v1/customers/orders",
       data: order_body,
     };
 

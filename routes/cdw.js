@@ -244,7 +244,7 @@ router.post("/placeorder/:supplier", checkJwt, async (req, res) => {
     if (resp !== "" && resp !== "Error") {
       res.json({
         status: "Successful",
-        data: { order_ref: order_resp.data.orderLines[0].CDWOrderReference },
+        data: { order_ref: resp },
       });
     } else if (resp === "Error") {
       throw new Error("Error in placing cdw order.");
