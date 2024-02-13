@@ -167,7 +167,7 @@ function generateMarketplaceRequestEmail(
   // const supplier_blk = `<div dir="ltr">Supplier: ${supplier}</div><div dir="ltr"><br></div>`;
   let addons_blk = "";
 
-  if (addons.length > 0) {
+  if (addons && addons.length > 0) {
     addons_blk = `<div dir="ltr">Add Ons Requested: <div><ul>${addons.map(
       (item) => {
         return `<li>${item}</li>`;
