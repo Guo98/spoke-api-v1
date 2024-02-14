@@ -1,5 +1,14 @@
 import { sendAzureEmail } from "../sendEmail.js";
 
+const cc_emails = {
+  Alma: [{ address: "it-team@helloalma.com" }],
+  FLYR: [
+    { address: "ljupcho.popadinovski@flyrlabs.com" },
+    { address: "matthew.boisjolie@flyrlabs.com" },
+    { address: "michal.marczak@flyrlabs.com" },
+  ],
+};
+
 export async function sendReturnConfirmation(body) {
   // company, name, address
   const { company, name, email, requestor_email, type } = body;
@@ -83,6 +92,38 @@ export async function sendRollingNotification(client, name, email, address) {
     );
     return false;
   }
+}
+
+export async function sendManualReminder(body) {
+  const { client, name, email, address, requestor_email } = body;
+  console.log(`sendManualReminder(${client}) => Starting function.`);
+  try {
+    const email_message = {
+      senderAddress: "info@withspoke.com",
+      content: {
+        subject: `[Action Required] ${client} Equipment Return Reminder`,
+        html: generateRollingNotification(name, address),
+      },
+      recipients: {
+        to: [
+          {
+            address: email,
+          },
+        ],
+        cc: cc_emails[client]
+          ? [...cc_emails[client], { address: requestor_email }]
+          : [{ address: requestor_email }],
+      },
+    };
+
+    const response = await sendAzureEmail(email_message);
+    console.log(`sendManualReminder(${client}) => Successfully sent email.`);
+    return true;
+  } catch (e) {
+    console.log(`sendManualReminder(${client}) => Error in sending email:`, e);
+    return false;
+  }
+  console.log(`sendManualReminder(${client}) => Finished function.`);
 }
 
 function generateReturnEmailBody(company, name, address) {

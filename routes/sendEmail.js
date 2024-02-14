@@ -3,7 +3,10 @@ import { body } from "express-validator";
 import { sendEmail } from "../services/sendEmail.js";
 import { basicAuth } from "../services/basicAuth.js";
 import { sendMarketplaceRequestEmail } from "../services/emails/marketplace.js";
-import { sendReturnConfirmation } from "../services/emails/offboard.js";
+import {
+  sendReturnConfirmation,
+  sendManualReminder,
+} from "../services/emails/offboard.js";
 import { checkJwt } from "../services/auth0.js";
 import { marketplaceSentApprovalEmail } from "./orders.js";
 
@@ -78,6 +81,15 @@ router.post("/sendemail/:email_type", checkJwt, async (req, res) => {
       await sendMarketplaceRequestEmail({ ...req.body, type: email_type });
       console.log(`/sendemail/${email_type} -=> Updating db.`);
       await marketplaceSentApprovalEmail(req.body.id, req.body.client);
+    } else if (email_type === "manualreminder") {
+      console.log(
+        `/sendemail/${email_type} => Sending return manual reminder email.`
+      );
+      const manual_resp = await sendManualReminder(req.body);
+
+      if (!manual_resp) {
+        throw new Error("Error sending manual reminder email");
+      }
     }
   } catch (e) {
     console.log(`/sendemail/${email_type} => Error in sending email:`, e);
