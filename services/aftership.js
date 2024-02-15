@@ -30,10 +30,10 @@ async function createAftershipTracking(customer_info) {
     const tracking_payload = {
       tracking: {
         tracking_number: row.tracking_number,
-        title: determineAftershipNumber(row.title),
+        title: row.title,
         emails: row.email,
         customer_name: row.customer_name,
-        order_number: row.order_number,
+        order_number: determineAftershipNumber(row.order_number),
       },
     };
     try {
