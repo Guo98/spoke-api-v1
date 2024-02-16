@@ -1,4 +1,4 @@
-import { inventory } from "../../routes/inventory";
+import { inventory } from "../../routes/inventory.js";
 
 const slack_channel_ids = {
   C052PJMB8G0: "Alma",
