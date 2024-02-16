@@ -58,32 +58,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
             text: "Select an item",
             emoji: true,
           },
-          options: [
-            {
-              text: {
-                type: "plain_text",
-                text: "*this is plain_text text*",
-                emoji: true,
-              },
-              value: "value-0",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "*this is plain_text text*",
-                emoji: true,
-              },
-              value: "value-1",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "*this is plain_text text*",
-                emoji: true,
-              },
-              value: "value-2",
-            },
-          ],
+          options: available_items,
           action_id: "static_select-action",
         },
         label: {
