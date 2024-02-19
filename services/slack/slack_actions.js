@@ -10,7 +10,13 @@ export async function handleSlackAction(payload, resp_url) {
     text: `Thank you for your request <@${userId}>!\n`,
     mrkdwn: true,
   };
-  if (payload.actions[0].type !== "static_select") {
+  const trigger_id = payload.trigger_id;
+
+  console.log("trigger id ::::::::::::::: ", trigger_id);
+  if (
+    payload.actions[0].type !== "static_select" &&
+    payload.actions[0].type !== "external_select"
+  ) {
     if (payload.actions[0].value === "next") {
       response = slackRecipientForm();
     } else if (payload.actions[0].value === "cancel") {
