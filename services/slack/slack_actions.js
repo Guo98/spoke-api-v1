@@ -1,4 +1,6 @@
 import axios from "axios";
+import { addMarketplaceOrder } from "../../routes/orders.js";
+import { slackRecipientForm } from "./slack_forms.js";
 
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
@@ -8,55 +10,37 @@ export async function handleSlackAction(payload, resp_url) {
     mrkdwn: true,
   };
   if (payload.actions[0].type !== "static_select") {
-    const inputKeys = [
-      { key: "client_input", new_key: "client", field_name: "Client" },
-      {
-        key: "item_name_input",
-        new_key: "device_type",
-        field_name: "Item Name",
-      },
-      {
-        key: "item_color_input",
-        new_key: "color",
-        field_name: "Item Color",
-      },
-      {
-        key: "item_quantity_input",
-        new_key: "quantity",
-        field_name: "Item Quantity",
-      },
-      {
-        key: "req_specs_input",
-        new_key: "specs",
-        field_name: "Required Specs",
-      },
-      {
-        key: "recipient_name_input",
-        new_key: "recipient_name",
-        field_name: "Recipient Name",
-      },
-      {
-        key: "recipient_addr_input",
-        new_key: "address",
-        field_name: "Recipient Address",
-      },
-      {
-        key: "recipient_email_input",
-        new_key: "email",
-        field_name: "Recipient Email",
-      },
-      {
-        key: "recipient_pn_input",
-        new_key: "phone_number",
-        field_name: "Recipient Phone Number",
-      },
-      { key: "ref_url_input", new_key: "ref_url", field_name: "Reference URL" },
-      { key: "notes_input", new_key: "notes", field_name: "Notes" },
-    ];
-    let orderObj = {};
-    if (payload.actions[0].value !== "submit") {
+    if (payload.actions[0].value === "next") {
+      response = slackRecipientForm();
+    } else if (payload.actions[0].value === "cancel") {
       response.text = "Requested canceled.";
-    } else {
+    } else if (payload.actions[0].value === "submit") {
+      const inputKeys = [
+        {
+          key: "recipient_name_input",
+          new_key: "recipient_name",
+          field_name: "Recipient Name",
+        },
+        {
+          key: "recipient_addr_input",
+          new_key: "address",
+          field_name: "Recipient Address",
+        },
+        {
+          key: "recipient_email_input",
+          new_key: "email",
+          field_name: "Recipient Email",
+        },
+        {
+          key: "recipient_pn_input",
+          new_key: "phone_number",
+          field_name: "Recipient Phone Number",
+        },
+        { key: "notes_input", new_key: "notes", field_name: "Notes" },
+      ];
+
+      let orderObj = {};
+
       Object.keys(payload.state.values).forEach((objKey, index) => {
         const input = payload.state.values[objKey];
         const inputMapping = inputKeys[index];
@@ -71,8 +55,9 @@ export async function handleSlackAction(payload, resp_url) {
       orderObj.date = new Date().toLocaleDateString("en-US");
       orderObj.notes = { device: orderObj.notes };
 
-      await addMarketplaceOrder(orderObj);
+      // await addMarketplaceOrder(orderObj);
     }
+
     axios
       .post(resp_url, response)
       .then((resp) => {
