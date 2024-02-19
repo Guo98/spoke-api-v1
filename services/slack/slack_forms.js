@@ -21,7 +21,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
                 "[" +
                 brand.brand +
                 "] " +
-                line.type.replace('\\"', "") +
+                line.type.replace('\\"', "").replace('"', "") +
                 ": " +
                 spec.spec;
               available_items.push({
