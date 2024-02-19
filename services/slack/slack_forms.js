@@ -16,6 +16,13 @@ export async function slackMarketplaceRequestForm(channel_id) {
       if (market.type !== "accessories") {
         market.brands.forEach((brand) => {
           brand.types.forEach((line) => {
+            let option_group = {
+              label: {
+                type: "plain_text",
+                text: "[" + brand.brand + "] " + line.type,
+              },
+              options: [],
+            };
             line.specs.forEach((spec) => {
               // const item_option = JSON.stringify(
               //   "[" +
@@ -26,23 +33,24 @@ export async function slackMarketplaceRequestForm(channel_id) {
               //     spec.spec.replace(/\"/g, "")
               // );
 
-              const item_option = JSON.stringify(
-                "[" +
-                  brand.brand +
-                  "] " +
-                  line.type +
-                  " " +
-                  spec.spec.replace(/\"/g, "")
-              );
-              available_items.push({
+              option_group.options.push({
                 text: {
                   type: "plain_text",
-                  text: item_option,
-                  emoji: true,
+                  text: spec.spec.replace(/\"/g, ""),
                 },
-                value: item_option,
+                value: spec.spec.replace(/\"/g, ""),
               });
+              // const item_option = JSON.stringify(
+              //   "[" +
+              //     brand.brand +
+              //     "] " +
+              //     line.type +
+              //     " " +
+              //     spec.spec.replace(/\"/g, "")
+              // );
             });
+
+            available_items.push(option_group);
           });
         });
       }
@@ -74,7 +82,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
             text: "Select an item",
             emoji: true,
           },
-          options: available_items,
+          option_groups: available_items,
           action_id: "static_select-action",
         },
         label: {
