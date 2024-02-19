@@ -24,14 +24,6 @@ export async function slackMarketplaceRequestForm(channel_id) {
               options: [],
             };
             line.specs.forEach((spec) => {
-              // const item_option = JSON.stringify(
-              //   "[" +
-              //     brand.brand +
-              //     "] " +
-              //     line.type +
-              //     ": " +
-              //     spec.spec.replace(/\"/g, "")
-              // );
               console.log(
                 "text length ::::::::::::::::: ",
                 spec.spec.replace(/\"/g, "").length
@@ -39,18 +31,10 @@ export async function slackMarketplaceRequestForm(channel_id) {
               option_group.options.push({
                 text: {
                   type: "plain_text",
-                  text: spec.spec.replace(/\"/g, "").replace(",", ">"),
+                  text: spec.spec.replaceAll(",", " |"),
                 },
                 value: "test text with comma",
               });
-              // const item_option = JSON.stringify(
-              //   "[" +
-              //     brand.brand +
-              //     "] " +
-              //     line.type +
-              //     " " +
-              //     spec.spec.replace(/\"/g, "")
-              // );
             });
             if (line.specs.length > 0) {
               available_items.push(option_group);
