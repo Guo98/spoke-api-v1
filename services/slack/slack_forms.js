@@ -76,6 +76,23 @@ export async function slackMarketplaceRequestForm(channel_id) {
         },
       },
       {
+        type: "input",
+        element: {
+          type: "external_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select a location",
+            emoji: true,
+          },
+          action_id: "external_select-action",
+        },
+        label: {
+          type: "plain_text",
+          text: "Location",
+          emoji: true,
+        },
+      },
+      {
         type: "actions",
         block_id: "actionblock789",
         elements: [

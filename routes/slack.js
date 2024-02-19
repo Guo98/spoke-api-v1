@@ -231,6 +231,36 @@ router.post("/slackactions", slack, async (req, res) => {
   }
 });
 
+router.post("/slackoptions", slack, async (req, res) => {
+  console.log("/slackoptions => req.body", req.body);
+  console.log("/slackoptions => payload", req.body.payload);
+  res.json({
+    options: [
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-0",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-1",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-2",
+      },
+    ],
+  });
+});
+
 const resultState2 = {
   type: "block_actions",
   user: {
