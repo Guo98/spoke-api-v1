@@ -11,11 +11,11 @@ export async function slackMarketplaceRequestForm(channel_id) {
   const marketplace_items = await inventory.getAll("MarketplaceInventory");
   let available_items = [];
 
-  marketplace_items.forEach((market) => {
+  marketplace_items.forEach((market, m_index) => {
     if (market.client === client) {
       if (market.type !== "accessories") {
-        market.brands.forEach((brand) => {
-          brand.types.forEach((line) => {
+        market.brands.forEach((brand, b_index) => {
+          brand.types.forEach((line, l_index) => {
             let option_group = {
               label: {
                 type: "plain_text",
@@ -23,17 +23,13 @@ export async function slackMarketplaceRequestForm(channel_id) {
               },
               options: [],
             };
-            line.specs.forEach((spec) => {
-              console.log(
-                "text length ::::::::::::::::: ",
-                spec.spec.replace(/\"/g, "").length
-              );
+            line.specs.forEach((spec, s_index) => {
               option_group.options.push({
                 text: {
                   type: "plain_text",
                   text: spec.spec.replaceAll(",", " |"),
                 },
-                value: "test text with comma",
+                value: `${m_index}:${b_index}:${l_index}:${s_index}`,
               });
             });
             if (line.specs.length > 0) {

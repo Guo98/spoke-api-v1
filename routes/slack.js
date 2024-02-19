@@ -5,6 +5,7 @@ import { sendSlackRequestEmail } from "../services/sendEmail.js";
 import { addMarketplaceOrder } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import { slackMarketplaceRequestForm } from "../services/slack/slack_forms.js";
+import { handleSlackAction } from "../services/slack/slack_actions.js";
 
 import pkg from "@slack/bolt";
 const { App } = pkg;
@@ -149,7 +150,7 @@ router.post("/slackactions", slack, async (req, res) => {
     text: `Thank you for your request <@${userId}>!\n`,
     mrkdwn: true,
   };
-
+  handleSlackAction(payload, resp_url);
   const inputKeys = [
     { key: "client_input", new_key: "client", field_name: "Client" },
     { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
