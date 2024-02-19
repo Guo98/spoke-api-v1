@@ -4,6 +4,7 @@ import { slackRecipientForm } from "./slack_forms.js";
 
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
+  const userId = payload.user.id;
   let response = {
     response_type: "in_channel",
     text: `Thank you for your request <@${userId}>!\n`,
