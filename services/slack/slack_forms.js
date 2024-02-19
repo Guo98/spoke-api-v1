@@ -39,7 +39,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
               option_group.options.push({
                 text: {
                   type: "plain_text",
-                  text: "test text with comma",
+                  text: spec.spec.replace(/\"/g, "").replace(",", ">"),
                 },
                 value: "test text with comma",
               });
