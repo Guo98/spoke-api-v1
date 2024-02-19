@@ -27,7 +27,12 @@ export async function slackMarketplaceRequestForm(channel_id) {
               // );
 
               const item_option = JSON.stringify(
-                "[" + brand.brand + "] " + line.type
+                "[" +
+                  brand.brand +
+                  "] " +
+                  line.type +
+                  " " +
+                  spec.spec.replace(/\"/g, "")
               );
               available_items.push({
                 text: {
