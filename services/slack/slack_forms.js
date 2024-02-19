@@ -17,13 +17,17 @@ export async function slackMarketplaceRequestForm(channel_id) {
         market.brands.forEach((brand) => {
           brand.types.forEach((line) => {
             line.specs.forEach((spec) => {
+              // const item_option = JSON.stringify(
+              //   "[" +
+              //     brand.brand +
+              //     "] " +
+              //     line.type +
+              //     ": " +
+              //     spec.spec.replace(/\"/g, "")
+              // );
+
               const item_option = JSON.stringify(
-                "[" +
-                  brand.brand +
-                  "] " +
-                  line.type +
-                  ": " +
-                  spec.spec.replace(/\"/g, "")
+                "[" + brand.brand + "] " + line.type
               );
               available_items.push({
                 text: {
