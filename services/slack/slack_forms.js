@@ -16,18 +16,14 @@ export async function slackMarketplaceRequestForm(channel_id) {
       if (market.type !== "accessories") {
         market.brands.forEach((brand) => {
           brand.types.forEach((line) => {
-            console.log(
-              "seeing if the replace works :::::::::::::::: ",
-              line.type.replace(/\"/g, "")
-            );
             line.specs.forEach((spec) => {
               const item_option =
                 "[" +
                 brand.brand +
                 "] " +
-                line.type.replace('\\"', "").replace(/\"/g, "") +
+                line.type +
                 ": " +
-                spec.spec;
+                spec.spec.replace(/\"/g, "");
               available_items.push({
                 text: {
                   type: "plain_text",
