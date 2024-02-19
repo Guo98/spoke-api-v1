@@ -32,7 +32,10 @@ export async function slackMarketplaceRequestForm(channel_id) {
               //     ": " +
               //     spec.spec.replace(/\"/g, "")
               // );
-
+              console.log(
+                "text length ::::::::::::::::: ",
+                spec.spec.replace(/\"/g, "").length
+              );
               option_group.options.push({
                 text: {
                   type: "plain_text",
