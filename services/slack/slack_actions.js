@@ -15,12 +15,11 @@ export async function handleSlackAction(payload, resp_url) {
     payload.actions[0].type !== "static_select" &&
     payload.actions[0].type !== "external_select"
   ) {
-    if (payload.actions[0].value === "next") {
-      response = slackRecipientForm();
-    } else if (payload.actions[0].value === "cancel") {
+    if (payload.actions[0].value === "cancel") {
       response.text = "Requested canceled.";
     } else if (payload.actions[0].value === "submit") {
       const inputKeys = [
+        { key: "static_select-action", new_key: "item", field_name: "Items" },
         {
           key: "recipient_name_input",
           new_key: "recipient_name",
@@ -59,26 +58,10 @@ export async function handleSlackAction(payload, resp_url) {
 
       orderObj.date = new Date().toLocaleDateString("en-US");
       orderObj.notes = { device: orderObj.notes };
-
+      console.log("order obj ::::::::::::: ", orderObj);
       // await addMarketplaceOrder(orderObj);
     }
 
-    axios
-      .post(resp_url, response)
-      .then((resp) => {
-        console.log("/slackactions => Posted to response url.");
-      })
-      .catch((err) => {
-        console.log(
-          "/slackactions => Error in posting response url. Error:",
-          err
-        );
-      });
-  } else {
-    let response = {
-      text: `Device deployable within\n`,
-      mrkdwn: true,
-    };
     axios
       .post(resp_url, response)
       .then((resp) => {

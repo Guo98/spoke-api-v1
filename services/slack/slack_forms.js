@@ -40,10 +40,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
       }
     }
   });
-  console.log(
-    "slackMarketplaceRequestForm() => Available items:",
-    available_items
-  );
+
   const response = {
     response_type: "in_channel",
     channel: channel_id,
