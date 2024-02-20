@@ -76,7 +76,6 @@ export async function handleSlackAction(payload, resp_url) {
       });
   } else {
     let response = {
-      response_type: "in_channel",
       text: `Device deployable within\n`,
       mrkdwn: true,
     };
