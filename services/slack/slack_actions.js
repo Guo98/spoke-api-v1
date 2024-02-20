@@ -10,9 +10,7 @@ export async function handleSlackAction(payload, resp_url) {
     text: `Thank you for your request <@${userId}>!\n`,
     mrkdwn: true,
   };
-  const trigger_id = payload.trigger_id;
 
-  console.log("trigger id ::::::::::::::: ", trigger_id);
   if (
     payload.actions[0].type !== "static_select" &&
     payload.actions[0].type !== "external_select"
@@ -65,6 +63,23 @@ export async function handleSlackAction(payload, resp_url) {
       // await addMarketplaceOrder(orderObj);
     }
 
+    axios
+      .post(resp_url, response)
+      .then((resp) => {
+        console.log("/slackactions => Posted to response url.");
+      })
+      .catch((err) => {
+        console.log(
+          "/slackactions => Error in posting response url. Error:",
+          err
+        );
+      });
+  } else {
+    let response = {
+      response_type: "in_channel",
+      text: `Device deployable within\n`,
+      mrkdwn: true,
+    };
     axios
       .post(resp_url, response)
       .then((resp) => {

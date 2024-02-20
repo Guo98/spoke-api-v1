@@ -76,6 +76,70 @@ export async function slackMarketplaceRequestForm(channel_id) {
         },
       },
       {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "recipient_name_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Recipient Name",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "recipient_addr_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Recipient Address",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "recipient_email_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Recipient Email",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "recipient_pn_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Recipient Phone Number",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "notes_input",
+        },
+        label: {
+          type: "plain_text",
+          text: "Notes",
+          emoji: true,
+        },
+      },
+      {
         type: "actions",
         block_id: "actionblock789",
         elements: [
@@ -83,10 +147,10 @@ export async function slackMarketplaceRequestForm(channel_id) {
             type: "button",
             text: {
               type: "plain_text",
-              text: "Next",
+              text: "Submit",
             },
             style: "primary",
-            value: "next",
+            value: "submit",
           },
           {
             type: "button",
