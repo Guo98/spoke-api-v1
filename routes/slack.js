@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import crypto from "crypto";
-import { sendSlackRequestEmail } from "../services/sendEmail.js";
+
 import { addMarketplaceOrder } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import { slackMarketplaceRequestForm } from "../services/slack/slack_forms.js";
