@@ -1,5 +1,5 @@
 import { inventory } from "../../routes/inventory.js";
-import { slack_channel_ids } from "./slack_mappings.js";
+import { slack_channel_ids, recipient_form_inputs } from "./slack_mappings.js";
 
 export async function slackMarketplaceRequestForm(channel_id) {
   const client = slack_channel_ids[channel_id]
@@ -86,70 +86,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
           emoji: true,
         },
       },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_name_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Name",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_addr_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Address",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_email_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Email",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_pn_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Phone Number",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "notes_input",
-        },
-        label: {
-          type: "plain_text",
-          text: "Notes",
-          emoji: true,
-        },
-      },
+      ...recipient_form_inputs,
       {
         type: "actions",
         block_id: "actionblock789",
@@ -236,6 +173,19 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
+          action_id: "return_device_type_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Return Device Type",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
           action_id: "serial_number_input",
           min_length: 1,
         },
@@ -249,66 +199,16 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
-          action_id: "recipient_name_input",
+          action_id: "condition_input",
           min_length: 1,
         },
         label: {
           type: "plain_text",
-          text: "Recipient Name",
+          text: "Return Device Condition",
           emoji: true,
         },
       },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_addr_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Address",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_email_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Email",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_pn_input",
-          min_length: 1,
-        },
-        label: {
-          type: "plain_text",
-          text: "Recipient Phone Number",
-          emoji: true,
-        },
-      },
-      {
-        type: "input",
-        element: {
-          type: "plain_text_input",
-          action_id: "notes_input",
-        },
-        label: {
-          type: "plain_text",
-          text: "Notes",
-          emoji: true,
-        },
-      },
+      ...recipient_form_inputs,
       {
         type: "actions",
         block_id: "actionblock789",

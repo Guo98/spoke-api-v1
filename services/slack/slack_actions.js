@@ -3,7 +3,7 @@ import { addMarketplaceOrder } from "../../routes/orders.js";
 import { inventory } from "../../routes/inventory.js";
 import { slack_channel_ids } from "./slack_mappings.js";
 import { sendSlackRequestEmail } from "../emails/slack.js";
-import { marketplace_input_keys } from "./slack_mappings.js";
+import { marketplace_input_keys, return_input_keys } from "./slack_mappings.js";
 
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
@@ -52,16 +52,40 @@ export async function handleSlackAction(payload, resp_url) {
       if (payload.actions[0].value === "submit_request") {
         await handleMarketplaceRequest(client, payload, resp_url, user_id);
       } else if (payload.actions[0].value === "submit_return") {
-        await handleReturnRequest();
+        await handleReturnRequest(client, payload, resp_url, user_id);
       }
     }
   }
 }
 
-async function handleReturnRequest() {
-  let response = {};
+async function handleReturnRequest(client, payload, resp_url, user_id) {
+  let response = {
+    replace_original: true,
+    text: `Thank you for your request <@${user_id}>!\n`,
+    mrkdwn: true,
+  };
 
-  return response;
+  let return_obj = { client };
+
+  Object.keys(payload.state.values).forEach((objKey, index) => {
+    const input = payload.state.values[objKey];
+    const input_mapping = input[return_input_keys[index].key].value;
+
+    return_obj[return_input_keys[index].new_key] = input_mapping;
+  });
+
+  console.log("return obj :::::::::::: ", return_obj);
+  axios
+    .post(resp_url, response)
+    .then((resp) => {
+      console.log("handleReturnRequest() => Posted to response url.");
+    })
+    .catch((err) => {
+      console.log(
+        "handleReturnRequest() => Error in posting response url. Error:",
+        err
+      );
+    });
 }
 
 async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
@@ -127,13 +151,13 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
       }
     }
     orderObj[inputMapping.new_key] = input_value;
-    orderObj.client = client;
 
     response.text =
       response.text + `*${inputMapping.field_name}:*\n${input_value}\n`;
     console.log("/slackactions => orderobj: ", JSON.stringify(orderObj));
   });
 
+  orderObj.client = client;
   orderObj.date = new Date().toLocaleDateString("en-US");
   orderObj.notes = { device: orderObj.notes };
   await addMarketplaceOrder(orderObj);
@@ -143,11 +167,11 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
   axios
     .post(resp_url, response)
     .then((resp) => {
-      console.log("/slackactions => Posted to response url.");
+      console.log("handleMarketplaceRequest() => Posted to response url.");
     })
     .catch((err) => {
       console.log(
-        "/slackactions => Error in posting response url. Error:",
+        "handleMarketplaceRequest() => Error in posting response url. Error:",
         err
       );
     });
