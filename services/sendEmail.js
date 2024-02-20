@@ -281,5 +281,4 @@ export {
   sendAftershipCSV,
   sendSupportEmail,
   sendOrderConfirmationEmail,
-  sendSlackRequestEmail,
 };

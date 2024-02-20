@@ -3,6 +3,7 @@ import { addMarketplaceOrder } from "../../routes/orders.js";
 import { slackRecipientForm } from "./slack_forms.js";
 import { inventory } from "../../routes/inventory.js";
 import { slack_channel_ids } from "./slack_mappings.js";
+import { sendSlackRequestEmail } from "../emails/slack.js";
 
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
@@ -97,6 +98,7 @@ export async function handleSlackAction(payload, resp_url) {
           }
         }
         orderObj[inputMapping.new_key] = input_value;
+        orderObj.client = client;
 
         response.text =
           response.text + `*${inputMapping.field_name}:*\n${input_value}\n`;
@@ -105,7 +107,9 @@ export async function handleSlackAction(payload, resp_url) {
 
       orderObj.date = new Date().toLocaleDateString("en-US");
       orderObj.notes = { device: orderObj.notes };
-      // await addMarketplaceOrder(orderObj);
+      await addMarketplaceOrder(orderObj);
+
+      await sendSlackRequestEmail(orderObj);
     }
 
     axios
