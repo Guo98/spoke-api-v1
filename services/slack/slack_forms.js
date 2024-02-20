@@ -161,7 +161,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
               text: "Submit",
             },
             style: "primary",
-            value: "submit",
+            value: "submit_request",
           },
           {
             type: "button",
@@ -229,6 +229,19 @@ export async function slackReturnForm(channel_id) {
         label: {
           type: "plain_text",
           text: "Return Type",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "plain_text_input",
+          action_id: "serial_number_input",
+          min_length: 1,
+        },
+        label: {
+          type: "plain_text",
+          text: "Return Device Serial Number",
           emoji: true,
         },
       },
@@ -307,7 +320,7 @@ export async function slackReturnForm(channel_id) {
               text: "Submit",
             },
             style: "primary",
-            value: "submit-return",
+            value: "submit_return",
           },
           {
             type: "button",
