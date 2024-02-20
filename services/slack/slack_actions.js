@@ -27,7 +27,7 @@ export async function handleSlackAction(payload, resp_url) {
     if (payload.actions[0].value === "cancel") {
       response.text = "Requested canceled.";
     } else if (payload.actions[0].value === "submit_request") {
-      await handleMarketplaceRequest(client, payload, resp_url);
+      await handleMarketplaceRequest(client, payload, resp_url, user_id);
     } else if (payload.actions[0].value === "submit_return") {
       await handleReturnRequest();
     }
@@ -52,7 +52,7 @@ async function handleReturnRequest() {
   return response;
 }
 
-async function handleMarketplaceRequest(client, payload, resp_url) {
+async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
   let response = {
     replace_original: true,
     text: `Thank you for your request <@${user_id}>!\n`,
