@@ -51,7 +51,7 @@ export async function handleSlackAction(payload, resp_url) {
         const inputMapping = inputKeys[index];
         let input_value = input[inputMapping.key].value;
         if (index === 0) {
-          input_value = input[inputMapping.key].selected_option[0];
+          input_value = input[inputMapping.key].selected_option;
           console.log("input value :::::::::: ", input_value);
         }
         orderObj[inputMapping.new_key] = input_value;
@@ -63,7 +63,6 @@ export async function handleSlackAction(payload, resp_url) {
 
       orderObj.date = new Date().toLocaleDateString("en-US");
       orderObj.notes = { device: orderObj.notes };
-      console.log("order obj ::::::::::::: ", orderObj);
       // await addMarketplaceOrder(orderObj);
     }
 
