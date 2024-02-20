@@ -69,7 +69,12 @@ async function handleReturnRequest(client, payload, resp_url, user_id) {
 
   Object.keys(payload.state.values).forEach((objKey, index) => {
     const input = payload.state.values[objKey];
-    const input_mapping = input[return_input_keys[index].key].value;
+
+    let input_mapping = input[return_input_keys[index].key].value;
+
+    if (index === 0) {
+      input_mapping = input[return_input_keys[index].key].selected_option.value;
+    }
 
     return_obj[return_input_keys[index].new_key] = input_mapping;
   });
