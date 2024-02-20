@@ -141,16 +141,15 @@ router.post("/slackorder", slack, async (req, res) => {
 
 router.post("/slackactions", slack, async (req, res) => {
   console.log("/slackactions => req.body", req.body);
+  res.send("Ok");
+  console.log("/slackactions => Sent acknowledgment response");
 
+  console.log("/slackactions => Starting handleSlackAction()");
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
-  const userId = payload.user.id;
-  let response = {
-    response_type: "in_channel",
-    text: `Thank you for your request <@${userId}>!\n`,
-    mrkdwn: true,
-  };
+
   await handleSlackAction(payload, resp_url);
+  console.log("/slackactions => Finished handleSlackAction()");
   // const inputKeys = [
   //   { key: "client_input", new_key: "client", field_name: "Client" },
   //   { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
@@ -225,7 +224,6 @@ router.post("/slackactions", slack, async (req, res) => {
   //     );
   //   });
 
-  res.send("Ok");
   // if (payload.actions[0].value === "submit") {
   //   await sendSlackRequestEmail(orderObj);
   // }

@@ -1,13 +1,21 @@
 import axios from "axios";
 import { addMarketplaceOrder } from "../../routes/orders.js";
 import { slackRecipientForm } from "./slack_forms.js";
+import { inventory } from "../../routes/inventory.js";
+import { slack_channel_ids } from "./slack_mappings.js";
 
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
-  const userId = payload.user.id;
+  const user_id = payload.user.id;
+  const channel_id = payload.container.channel_id;
+
+  const client = slack_channel_ids[channel_id]
+    ? slack_channel_ids[channel_id]
+    : "public";
+
   let response = {
     response_type: "in_channel",
-    text: `Thank you for your request <@${userId}>!\n`,
+    text: `Thank you for your request <@${user_id}>!\n`,
     mrkdwn: true,
   };
 
@@ -44,6 +52,15 @@ export async function handleSlackAction(payload, resp_url) {
       ];
 
       let orderObj = {};
+      let marketplace = [];
+      try {
+        marketplace = await inventory.getAll("MarketplaceInventory");
+      } catch (e) {
+        console.log(
+          `handleSlackAction(${client}) => Error in pulling marketplace data:`,
+          e
+        );
+      }
 
       Object.keys(payload.state.values).forEach((objKey, index) => {
         const input = payload.state.values[objKey];
@@ -51,7 +68,33 @@ export async function handleSlackAction(payload, resp_url) {
         const inputMapping = inputKeys[index];
         let input_value = input[inputMapping.key].value;
         if (index === 0) {
-          input_value = input[inputMapping.key].selected_option.value;
+          const market_indexes =
+            input[inputMapping.key].selected_option.value.split(":");
+
+          if (market_indexes[0]) {
+            if (
+              marketplace[market_indexes[0]].item_type !== "Accessories" &&
+              marketplace[market_indexes[0]].client === client
+            ) {
+              const item_type = marketplace[market_indexes[0]];
+              if (item_type.brands[market_indexes[1]]) {
+                input_value =
+                  item_type.brands[market_indexes[1]].brand +
+                  " " +
+                  item_type.brands[market_indexes[1]].types[market_indexes[2]]
+                    .type +
+                  " " +
+                  item_type.brands[market_indexes[1]].types[market_indexes[2]]
+                    .specs[market_indexes[3]].spec;
+              }
+            } else if (
+              marketplace[market_indexes[0]].item_type === "Accessories" &&
+              marketplace[market_indexes[0]].client === client
+            ) {
+              input_value =
+                marketplace[market_indexes[0]].items[market_indexes[1]].name;
+            }
+          }
         }
         orderObj[inputMapping.new_key] = input_value;
 

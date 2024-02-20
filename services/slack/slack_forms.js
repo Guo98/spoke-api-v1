@@ -1,8 +1,5 @@
 import { inventory } from "../../routes/inventory.js";
-
-const slack_channel_ids = {
-  C052PJMB8G0: "Alma",
-};
+import { slack_channel_ids } from "./slack_mappings.js";
 
 export async function slackMarketplaceRequestForm(channel_id) {
   const client = slack_channel_ids[channel_id]
@@ -35,6 +32,23 @@ export async function slackMarketplaceRequestForm(channel_id) {
             if (line.specs.length > 0) {
               available_items.push(option_group);
             }
+          });
+        });
+      } else {
+        let option_group = {
+          label: {
+            type: "plain_text",
+            text: "Accessories",
+          },
+          options: [],
+        };
+        market.items.forEach((item, i_index) => {
+          option_group.options.push({
+            text: {
+              type: "plain_text",
+              text: item.name,
+            },
+            value: `${m_index}:${i_index}`,
           });
         });
       }
