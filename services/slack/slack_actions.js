@@ -26,23 +26,35 @@ export async function handleSlackAction(payload, resp_url) {
   ) {
     if (payload.actions[0].value === "cancel") {
       response.text = "Requested canceled.";
-    } else if (payload.actions[0].value === "submit_request") {
-      await handleMarketplaceRequest(client, payload, resp_url, user_id);
-    } else if (payload.actions[0].value === "submit_return") {
-      await handleReturnRequest();
+      axios
+        .post(resp_url, response)
+        .then((resp) => {
+          console.log("/slackactions => Posted to response url.");
+        })
+        .catch((err) => {
+          console.log(
+            "/slackactions => Error in posting response url. Error:",
+            err
+          );
+        });
+    } else {
+      axios
+        .post(resp_url, response)
+        .then((resp) => {
+          console.log("/slackactions => Posted to response url.");
+        })
+        .catch((err) => {
+          console.log(
+            "/slackactions => Error in posting response url. Error:",
+            err
+          );
+        });
+      if (payload.actions[0].value === "submit_request") {
+        await handleMarketplaceRequest(client, payload, resp_url, user_id);
+      } else if (payload.actions[0].value === "submit_return") {
+        await handleReturnRequest();
+      }
     }
-
-    axios
-      .post(resp_url, response)
-      .then((resp) => {
-        console.log("/slackactions => Posted to response url.");
-      })
-      .catch((err) => {
-        console.log(
-          "/slackactions => Error in posting response url. Error:",
-          err
-        );
-      });
   }
 }
 
