@@ -46,6 +46,7 @@ export async function handleSlackAction(payload, resp_url) {
       let orderObj = {};
 
       Object.keys(payload.state.values).forEach((objKey, index) => {
+        console.log("logging payload state :::::::::: ", payload.state.values);
         const input = payload.state.values[objKey];
         const inputMapping = inputKeys[index];
         orderObj[inputMapping.new_key] = input[inputMapping.key].value;
