@@ -226,9 +226,9 @@ router.post("/slackactions", slack, async (req, res) => {
   //   });
 
   res.send("Ok");
-  if (payload.actions[0].value === "submit") {
-    await sendSlackRequestEmail(orderObj);
-  }
+  // if (payload.actions[0].value === "submit") {
+  //   await sendSlackRequestEmail(orderObj);
+  // }
 });
 
 router.post("/slackoptions", slack, async (req, res) => {
