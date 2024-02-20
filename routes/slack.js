@@ -4,7 +4,10 @@ import crypto from "crypto";
 
 import { addMarketplaceOrder } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
-import { slackMarketplaceRequestForm } from "../services/slack/slack_forms.js";
+import {
+  slackMarketplaceRequestForm,
+  slackReturnForm,
+} from "../services/slack/slack_forms.js";
 import { handleSlackAction } from "../services/slack/slack_actions.js";
 
 import pkg from "@slack/bolt";
@@ -117,6 +120,18 @@ router.post("/slackorder", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
   try {
     const response = await slackMarketplaceRequestForm(req.body.channel_id);
+
+    return res.json(response);
+  } catch (e) {
+    return res.status(500).send("Ooops");
+  }
+});
+
+router.post("/slack/return", slack, async (req, res) => {
+  console.log("/slack/return => Starting route.");
+  console.log("/slack/return :::::::::::::::::::: ", req.body);
+  try {
+    const response = await slackReturnForm(req.body.channel_id);
 
     return res.json(response);
   } catch (e) {

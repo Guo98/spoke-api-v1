@@ -1,6 +1,5 @@
 import axios from "axios";
 import { addMarketplaceOrder } from "../../routes/orders.js";
-import { slackRecipientForm } from "./slack_forms.js";
 import { inventory } from "../../routes/inventory.js";
 import { slack_channel_ids } from "./slack_mappings.js";
 import { sendSlackRequestEmail } from "../emails/slack.js";
@@ -87,6 +86,15 @@ export async function handleSlackAction(payload, resp_url) {
                   " " +
                   item_type.brands[market_indexes[1]].types[market_indexes[2]]
                     .specs[market_indexes[3]].spec;
+                orderObj.device_type =
+                  item_type.brands[market_indexes[1]].brand +
+                  " " +
+                  item_type.brands[market_indexes[1]].types[market_indexes[2]]
+                    .type;
+                orderObj.specs =
+                  item_type.brands[market_indexes[1]].types[
+                    market_indexes[2]
+                  ].specs[market_indexes[3]].spec;
               }
             } else if (
               marketplace[market_indexes[0]].item_type === "Accessories" &&

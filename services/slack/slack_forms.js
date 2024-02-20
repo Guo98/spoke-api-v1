@@ -179,11 +179,59 @@ export async function slackMarketplaceRequestForm(channel_id) {
   return response;
 }
 
-export async function slackRecipientForm() {
+export async function slackReturnForm(channel_id) {
+  const client = slack_channel_ids[channel_id]
+    ? slack_channel_ids[channel_id]
+    : "public";
+
   const response = {
     response_type: "in_channel",
-    text: "New Marketplace Request - Recipient Information",
+    channel: channel_id,
+    text: "Return Request",
     blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "Start a return",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        element: {
+          type: "static_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select a return type",
+            emoji: true,
+          },
+          options: [
+            {
+              text: {
+                type: "plain_text",
+                text: "Returning",
+                emoji: true,
+              },
+              value: "Returning",
+            },
+            {
+              text: {
+                type: "plain_text",
+                text: "Offboarding",
+                emoji: true,
+              },
+              value: "Offboarding",
+            },
+          ],
+          action_id: "select_return_type",
+        },
+        label: {
+          type: "plain_text",
+          text: "Return Type",
+          emoji: true,
+        },
+      },
       {
         type: "input",
         element: {
@@ -259,7 +307,7 @@ export async function slackRecipientForm() {
               text: "Submit",
             },
             style: "primary",
-            value: "submit",
+            value: "submit-return",
           },
           {
             type: "button",
