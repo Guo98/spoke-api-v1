@@ -50,7 +50,7 @@ export const return_input_keys = [
   ...recipient_keys,
 ];
 
-export const marketplace__input_keys = [
+export const marketplace_input_keys = [
   { key: "static_select-action", new_key: "item", field_name: "Items" },
   ...recipient_keys,
 ];
