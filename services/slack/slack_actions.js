@@ -8,6 +8,8 @@ import { marketplace_input_keys, return_input_keys } from "./slack_mappings.js";
 import { createOffboardRow } from "../../utils/googleSheetsRows.js";
 import { addOrderRow } from "../googleSheets.js";
 
+import { sendSlackReturnNotification } from "../emails/offboard.js";
+
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
   const user_id = payload.user.id;
@@ -55,16 +57,28 @@ export async function handleSlackAction(payload, resp_url) {
       if (payload.actions[0].value === "submit_request") {
         await handleMarketplaceRequest(client, payload, resp_url, user_id);
       } else if (payload.actions[0].value === "submit_return") {
-        await handleReturnRequest(client, payload, resp_url, user_id);
+        await handleReturnRequest(
+          client,
+          payload,
+          resp_url,
+          user_id,
+          payload.user.user.name
+        );
       }
     }
   }
 }
 
-async function handleReturnRequest(client, payload, resp_url, user_id) {
+async function handleReturnRequest(
+  client,
+  payload,
+  resp_url,
+  user_id,
+  username
+) {
   let response = {
     replace_original: true,
-    text: `Thank you for your request <@${user_id}>!\n`,
+    text: `Thank you for your request <@${user_id}>! Request has been submitted!\n`,
     mrkdwn: true,
   };
 
@@ -85,16 +99,19 @@ async function handleReturnRequest(client, payload, resp_url, user_id) {
   console.log("return obj :::::::::::: ", return_obj);
 
   try {
+    console.log(
+      `handleReturnRequest(${client}) => Adding return row in google sheets.`
+    );
     const offboardValues = createOffboardRow(
       1,
       client,
       return_obj.recipient_name,
-      return_obj.emai,
-      return_obj.return_device_name,
+      return_obj.email,
+      return_obj.return_device_type,
       return_obj.return_type,
       return_obj.address,
       return_obj.phone_number,
-      user_id,
+      username,
       return_obj.notes,
       return_obj.return_condition,
       return_obj.activation_key
@@ -106,10 +123,34 @@ async function handleReturnRequest(client, payload, resp_url, user_id) {
       1831291341,
       27
     );
+    console.log(`handleReturnRequest(${client}) => Successfully added row.`);
   } catch (e) {
     console.log(
-      `handleReturnRequest(${client}) => Error in adding offboarding row.`
+      `handleReturnRequest(${client}) => Error in adding offboarding row:`,
+      e
     );
+    response.text = "An error has occurred...";
+  }
+
+  try {
+    console.log(
+      `handleReturnRequest(${client}) => Sending slack notification email.`
+    );
+    await sendSlackRequestEmail({
+      client,
+      username,
+      recipient_name: return_obj.recipient_name,
+      address: return_obj.address,
+      email: return_obj.email,
+      return_type: return_obj.return_type,
+    });
+    console.log(`handleReturnRequest(${client}) => Successfully sent email.`);
+  } catch (e) {
+    console.log(
+      `handleReturnRequest(${client}) => Error in sending slack notification email:`,
+      e
+    );
+    response.text = "An error has occurred...";
   }
 
   axios
