@@ -62,7 +62,7 @@ export async function handleSlackAction(payload, resp_url) {
           payload,
           resp_url,
           user_id,
-          payload.user.user.name
+          payload.user.username
         );
       }
     }
