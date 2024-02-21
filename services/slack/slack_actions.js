@@ -138,7 +138,7 @@ async function handleReturnRequest(
     );
     await sendSlackRequestEmail({
       client,
-      username,
+      requestor_name: username,
       recipient_name: return_obj.recipient_name,
       address: return_obj.address,
       email: return_obj.email,
