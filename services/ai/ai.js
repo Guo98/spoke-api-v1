@@ -193,7 +193,7 @@ export async function newCheckStock(
           },
         ],
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 500,
         functions: functions,
         function_call: "auto",
       });
