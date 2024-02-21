@@ -1,9 +1,14 @@
 import { Router } from "express";
 import axios from "axios";
 import crypto from "crypto";
-import { sendSlackRequestEmail } from "../services/sendEmail.js";
+
 import { addMarketplaceOrder } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
+import {
+  slackMarketplaceRequestForm,
+  slackReturnForm,
+} from "../services/slack/slack_forms.js";
+import { handleSlackAction } from "../services/slack/slack_actions.js";
 
 import pkg from "@slack/bolt";
 const { App } = pkg;
@@ -114,185 +119,19 @@ router.post("/message", checkJwt, async (req, res) => {
 router.post("/slackorder", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
   try {
-    const response = {
-      response_type: "in_channel",
-      channel: req.body.channel_id,
-      text: "Hello, World!",
-      blocks: [
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: "New request",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "client_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Client",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "item_name_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Item Name",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "item_color_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Item Color",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "item_quantity_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Item Quantity",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "req_specs_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Requested Specs",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "recipient_name_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Recipient Name",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "recipient_addr_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Recipient Address",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "recipient_email_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Recipient Email",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "recipient_pn_input",
-            min_length: 1,
-          },
-          label: {
-            type: "plain_text",
-            text: "Recipient Phone Number",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "ref_url_input",
-          },
-          label: {
-            type: "plain_text",
-            text: "Reference URL",
-            emoji: true,
-          },
-        },
-        {
-          type: "input",
-          element: {
-            type: "plain_text_input",
-            action_id: "notes_input",
-          },
-          label: {
-            type: "plain_text",
-            text: "Notes",
-            emoji: true,
-          },
-        },
-        {
-          type: "actions",
-          block_id: "actionblock789",
-          elements: [
-            {
-              type: "button",
-              text: {
-                type: "plain_text",
-                text: "Submit",
-              },
-              style: "primary",
-              value: "submit",
-            },
-            {
-              type: "button",
-              text: {
-                type: "plain_text",
-                text: "Close",
-              },
-              value: "close",
-            },
-          ],
-        },
-      ],
-    };
+    const response = await slackMarketplaceRequestForm(req.body.channel_id);
+
+    return res.json(response);
+  } catch (e) {
+    return res.status(500).send("Ooops");
+  }
+});
+
+router.post("/slack/return", slack, async (req, res) => {
+  console.log("/slack/return => Starting route.");
+  console.log("/slack/return :::::::::::::::::::: ", req.body);
+  try {
+    const response = await slackReturnForm(req.body.channel_id);
 
     return res.json(response);
   } catch (e) {
@@ -320,91 +159,45 @@ router.post("/slackactions", slack, async (req, res) => {
 
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
-  const userId = payload.user.id;
-  let response = {
-    response_type: "in_channel",
-    text: `Thank you for your request <@${userId}>!\n`,
-    mrkdwn: true,
-  };
 
-  const inputKeys = [
-    { key: "client_input", new_key: "client", field_name: "Client" },
-    { key: "item_name_input", new_key: "device_type", field_name: "Item Name" },
-    {
-      key: "item_color_input",
-      new_key: "color",
-      field_name: "Item Color",
-    },
-    {
-      key: "item_quantity_input",
-      new_key: "quantity",
-      field_name: "Item Quantity",
-    },
-    {
-      key: "req_specs_input",
-      new_key: "specs",
-      field_name: "Required Specs",
-    },
-    {
-      key: "recipient_name_input",
-      new_key: "recipient_name",
-      field_name: "Recipient Name",
-    },
-    {
-      key: "recipient_addr_input",
-      new_key: "address",
-      field_name: "Recipient Address",
-    },
-    {
-      key: "recipient_email_input",
-      new_key: "email",
-      field_name: "Recipient Email",
-    },
-    {
-      key: "recipient_pn_input",
-      new_key: "phone_number",
-      field_name: "Recipient Phone Number",
-    },
-    { key: "ref_url_input", new_key: "ref_url", field_name: "Reference URL" },
-    { key: "notes_input", new_key: "notes", field_name: "Notes" },
-  ];
-  let orderObj = {};
-  if (payload.actions[0].value !== "submit") {
-    response.text = "Requested canceled.";
+  if (payload.actions[0].type === "static_select") {
+    res.send("Ok");
+    console.log("/slackactions => Sent acknowledgment response");
   } else {
-    Object.keys(payload.state.values).forEach((objKey, index) => {
-      const input = payload.state.values[objKey];
-      const inputMapping = inputKeys[index];
-      orderObj[inputMapping.new_key] = input[inputMapping.key].value;
-
-      response.text =
-        response.text +
-        `*${inputMapping.field_name}:*\n${input[inputMapping.key].value}\n`;
-      console.log("/slackactions => orderobj: ", JSON.stringify(orderObj));
-    });
-
-    orderObj.date = new Date().toLocaleDateString("en-US");
-    orderObj.notes = { device: orderObj.notes };
-
-    await addMarketplaceOrder(orderObj);
+    console.log("/slackactions => Starting handleSlackAction()");
+    await handleSlackAction(payload, resp_url);
+    console.log("/slackactions => Finished handleSlackAction()");
   }
+});
 
-  axios
-    .post(resp_url, response)
-    .then((resp) => {
-      console.log("/slackactions => Posted to response url.");
-    })
-    .catch((err) => {
-      console.log(
-        "/slackactions => Error in posting response url. Error:",
-        err
-      );
-    });
-
-  res.send("Ok");
-  if (payload.actions[0].value === "submit") {
-    await sendSlackRequestEmail(orderObj);
-  }
+router.post("/slackoptions", slack, async (req, res) => {
+  console.log("/slackoptions => req.body", req.body);
+  console.log("/slackoptions => payload", req.body.payload);
+  res.json({
+    options: [
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-0",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-1",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "*this is plain_text text*",
+        },
+        value: "value-2",
+      },
+    ],
+  });
 });
 
 const resultState2 = {
