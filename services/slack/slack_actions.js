@@ -5,6 +5,9 @@ import { slack_channel_ids } from "./slack_mappings.js";
 import { sendSlackRequestEmail } from "../emails/slack.js";
 import { marketplace_input_keys, return_input_keys } from "./slack_mappings.js";
 
+import { createOffboardRow } from "../../utils/googleSheetsRows.js";
+import { addOrderRow } from "../googleSheets.js";
+
 export async function handleSlackAction(payload, resp_url) {
   console.log(`handleSlackAction() => Starting function:`, payload);
   const user_id = payload.user.id;
@@ -80,6 +83,35 @@ async function handleReturnRequest(client, payload, resp_url, user_id) {
   });
 
   console.log("return obj :::::::::::: ", return_obj);
+
+  try {
+    const offboardValues = createOffboardRow(
+      1,
+      client,
+      return_obj.recipient_name,
+      return_obj.emai,
+      return_obj.return_device_name,
+      return_obj.return_type,
+      return_obj.address,
+      return_obj.phone_number,
+      user_id,
+      return_obj.notes,
+      return_obj.return_condition,
+      return_obj.activation_key
+    );
+
+    const resp = addOrderRow(
+      offboardValues,
+      "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+      1831291341,
+      27
+    );
+  } catch (e) {
+    console.log(
+      `handleReturnRequest(${client}) => Error in adding offboarding row.`
+    );
+  }
+
   axios
     .post(resp_url, response)
     .then((resp) => {

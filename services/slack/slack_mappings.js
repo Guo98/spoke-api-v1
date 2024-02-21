@@ -38,14 +38,14 @@ export const return_input_keys = [
     field_name: "Return Device Type",
   },
   {
-    key: "serial_number_input",
-    new_key: "return_sn",
-    field_name: "Return Device Serial Number",
-  },
-  {
     key: "condition_input",
     new_key: "return_condition",
     field_name: "Return Device Condition",
+  },
+  {
+    key: "activation_key_input",
+    new_key: "activation_key",
+    field_name: "Activation Key",
   },
   ...recipient_keys,
 ];

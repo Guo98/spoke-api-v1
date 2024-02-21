@@ -174,7 +174,6 @@ export async function slackReturnForm(channel_id) {
         element: {
           type: "plain_text_input",
           action_id: "return_device_type_input",
-          min_length: 1,
         },
         label: {
           type: "plain_text",
@@ -186,12 +185,11 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
-          action_id: "serial_number_input",
-          min_length: 1,
+          action_id: "condition_input",
         },
         label: {
           type: "plain_text",
-          text: "Return Device Serial Number",
+          text: "Return Device Condition",
           emoji: true,
         },
       },
@@ -199,12 +197,11 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
-          action_id: "condition_input",
-          min_length: 1,
+          action_id: "activation_key_input",
         },
         label: {
           type: "plain_text",
-          text: "Return Device Condition",
+          text: "Activation Key",
           emoji: true,
         },
       },
