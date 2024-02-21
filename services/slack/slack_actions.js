@@ -136,7 +136,7 @@ async function handleReturnRequest(
     console.log(
       `handleReturnRequest(${client}) => Sending slack notification email.`
     );
-    await sendSlackRequestEmail({
+    await sendSlackReturnNotification({
       client,
       requestor_name: username,
       recipient_name: return_obj.recipient_name,
