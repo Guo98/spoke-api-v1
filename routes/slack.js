@@ -200,6 +200,21 @@ router.post("/slackoptions", slack, async (req, res) => {
   });
 });
 
+router.post("/slack/authorize", checkJwt, async (req, res) => {
+  const { code } = req.body;
+
+  axios
+    .post("https://slack.com/api/oauth.v2.access", {
+      code,
+      client_id: "2122873212368.5093004197398",
+      client_secret: "609ef3ca6cc4407dfd1c959d35131ff0",
+    })
+    .then((resp) => console.log("resp :::::::: ", resp))
+    .catch((err) => console.log("/slack/authorize => Error in getting token"));
+
+  res.send("Yay");
+});
+
 const resultState2 = {
   type: "block_actions",
   user: {
