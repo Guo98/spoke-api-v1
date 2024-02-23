@@ -88,6 +88,41 @@ export async function slackMarketplaceRequestForm(channel_id) {
       },
       ...recipient_form_inputs,
       {
+        type: "input",
+        element: {
+          type: "static_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select shipping rate",
+            emoji: true,
+          },
+          option: [
+            {
+              text: {
+                type: "plain_text",
+                text: "Standard",
+                emoji: true,
+              },
+              value: "Standard",
+            },
+            {
+              text: {
+                type: "plain_text",
+                text: "Expedited",
+                emoji: true,
+              },
+              value: "Expedited",
+            },
+          ],
+          action_id: "static_select_shipping",
+        },
+        label: {
+          type: "plain_text",
+          text: "Shipping",
+          emoji: true,
+        },
+      },
+      {
         type: "actions",
         block_id: "actionblock789",
         elements: [

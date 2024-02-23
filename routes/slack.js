@@ -209,6 +209,9 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
       client_id: "2122873212368.5093004197398",
       client_secret: "609ef3ca6cc4407dfd1c959d35131ff0",
     });
+    const team_id = oauth_resp.team.id;
+    const team_name = oauth_resp.team.name;
+    const bot_access_token = oauth_resp.access_token;
     console.log("/slack/authorize => Successful: ", oauth_resp);
     res.send({ status: "Successful" });
   } catch (e) {

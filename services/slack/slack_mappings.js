@@ -53,6 +53,11 @@ export const return_input_keys = [
 export const marketplace_input_keys = [
   { key: "static_select-action", new_key: "item", field_name: "Items" },
   ...recipient_keys,
+  {
+    key: "static_select_shipping",
+    new_key: "shipping",
+    field_name: "Shipping",
+  },
 ];
 
 export const recipient_form_inputs = [

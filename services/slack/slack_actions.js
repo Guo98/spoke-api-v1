@@ -227,6 +227,8 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
             marketplace[market_indexes[0]].items[market_indexes[1]].name;
         }
       }
+    } else if (index === Object.keys(payload.state.values).length - 1) {
+      input_value = input[inputMapping.key].selected_option.value;
     }
     orderObj[inputMapping.new_key] = input_value;
 

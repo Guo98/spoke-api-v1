@@ -67,7 +67,7 @@ async function placeCDWOrder(order_body) {
         "content-type": "application/json",
         "subscription-key": process.env.CDW_API_SUBSCRIPTION_KEY,
       },
-      url: process.env.CDW_TOKEN_HOST + "/pprd/b2b/v1/customers/orders",
+      url: process.env.CDW_TOKEN_HOST + "/b2b/v1/customers/orders",
       data: order_body,
     };
 
