@@ -96,7 +96,7 @@ export async function slackMarketplaceRequestForm(channel_id) {
             text: "Select shipping rate",
             emoji: true,
           },
-          option: [
+          options: [
             {
               text: {
                 type: "plain_text",
