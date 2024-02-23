@@ -35,14 +35,7 @@ export async function sendSlackRequestEmail(body) {
 }
 
 function generateSlackBody(body) {
-  const {
-    item,
-    recipient_name,
-    address,
-    email,
-    phone_number,
-    notes: { devices },
-  } = body;
-  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>Slack Request</b><br><br>Item Name: ${item}</div><div dir="ltr"><br></div><div>Recipient Name: ${recipient_name}</div><div><br></div><div>Recipient Address: ${address}</div><div><br></div><div>Recipient Email Address: <a href="mailto:${email}" target="_blank">${email}</a></div><div><br></div><div>Recipient Phone Number: ${phone_number}</div><div><br></div><div><br></div><div>Notes: ${devices}</div><div dir="ltr"><br><table width="500" cellspacing="0" cellpadding="0" border="0" style="color:rgb(72,101,137);font-family:Montserrat,sans-serif;font-size:17px"><tbody><tr><td style="margin:0.1px"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td valign="top" style="padding:0px 8px 0px 0px;vertical-align:top"></td><td valign="top" style="margin:0.1px;font-size:1em;padding:0px 15px 0px 8px;vertical-align:top"><br></td></tr></tbody></table></td></tr></tbody></table></div></div>`;
+  const { item, recipient_name, address, email, phone_number, notes } = body;
+  const emailBody = `<div dir="ltr" data-smartmail="gmail_signature"><div dir="ltr"><b>Slack Request</b><br><br>Item Name: ${item}</div><div dir="ltr"><br></div><div>Recipient Name: ${recipient_name}</div><div><br></div><div>Recipient Address: ${address}</div><div><br></div><div>Recipient Email Address: <a href="mailto:${email}" target="_blank">${email}</a></div><div><br></div><div>Recipient Phone Number: ${phone_number}</div><div><br></div><div><br></div><div>Notes: ${notes.devices}</div><div dir="ltr"><br><table width="500" cellspacing="0" cellpadding="0" border="0" style="color:rgb(72,101,137);font-family:Montserrat,sans-serif;font-size:17px"><tbody><tr><td style="margin:0.1px"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td valign="top" style="padding:0px 8px 0px 0px;vertical-align:top"></td><td valign="top" style="margin:0.1px;font-size:1em;padding:0px 15px 0px 8px;vertical-align:top"><br></td></tr></tbody></table></td></tr></tbody></table></div></div>`;
   return emailBody;
 }
