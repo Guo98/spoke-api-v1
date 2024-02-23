@@ -129,7 +129,7 @@ router.post("/slackorder", slack, async (req, res) => {
 
 router.post("/slack/return", slack, async (req, res) => {
   console.log("/slack/return => Starting route.");
-  console.log("/slack/return :::::::::::::::::::: ", req.body);
+
   try {
     const response = await slackReturnForm(req.body.channel_id);
 
@@ -203,15 +203,6 @@ router.post("/slackoptions", slack, async (req, res) => {
 router.post("/slack/authorize", checkJwt, async (req, res) => {
   const { code } = req.body;
 
-  // axios
-  //   .post("https://slack.com/api/oauth.v2.access", {
-  //     code,
-  //     client_id: "2122873212368.5093004197398",
-  //     client_secret: "609ef3ca6cc4407dfd1c959d35131ff0",
-  //   })
-  //   .then((resp) => console.log("resp :::::::: ", resp))
-  //   .catch((err) => console.log("/slack/authorize => Error in getting token"));
-
   try {
     const oauth_resp = await app.client.oauth.v2.access({
       code,
@@ -219,188 +210,13 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
       client_secret: "609ef3ca6cc4407dfd1c959d35131ff0",
     });
     console.log("/slack/authorize => Successful: ", oauth_resp);
+    res.send({ status: "Successful" });
   } catch (e) {
     console.log("/slack/authorize => Error:", e);
+    res.status(500).json({ status: "Error" });
   }
 
-  res.send("Yay");
+  if (!res.headersSent) res.send("Yay");
 });
-
-const resultState2 = {
-  type: "block_actions",
-  user: {
-    id: "U03LK1CPU8G",
-    username: "andy",
-    name: "andy",
-    team_id: "T023LRP68AU",
-  },
-  api_app_id: "A052R045TBQ",
-  token: "k6lF4wZuPjjtqm70AIBQ6Qh3",
-  container: {
-    type: "message",
-    message_ts: "1682043910.192159",
-    channel_id: "D03L7TX0BHP",
-    is_ephemeral: false,
-  },
-  trigger_id: "5158803129777.2122873212368.c609db5d2f955c57564ba5c235e5f7a4",
-  team: { id: "T023LRP68AU", domain: "spoke-technology" },
-  enterprise: null,
-  is_enterprise_install: false,
-  channel: { id: "D03L7TX0BHP", name: "directmessage" },
-  message: {
-    type: "message",
-    subtype: "bot_message",
-    text: "Hello, World!",
-    ts: "1682043910.192159",
-    bot_id: "B054039ST9R",
-    blocks: [
-      {
-        type: "header",
-        block_id: "eRP4",
-        text: { type: "plain_text", text: "New request", emoji: true },
-      },
-      {
-        type: "input",
-        block_id: "lB8k/",
-        label: { type: "plain_text", text: "Item Name", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "item_name_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "xBc",
-        label: { type: "plain_text", text: "Requested Specs", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "req_specs_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "s6VG",
-        label: { type: "plain_text", text: "Recipient Name", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_name_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "lJpx",
-        label: { type: "plain_text", text: "Recipient Address", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_addr_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "u+Ce",
-        label: { type: "plain_text", text: "Recipient Email", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_email_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "yqL",
-        label: {
-          type: "plain_text",
-          text: "Recipient Phone Number",
-          emoji: true,
-        },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_pn_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "BvuBP",
-        label: { type: "plain_text", text: "Reference URL", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "ref_url_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "aZxg",
-        label: { type: "plain_text", text: "Notes", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "notes_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "actions",
-        block_id: "actionblock789",
-        elements: [
-          {
-            type: "button",
-            action_id: "YkZIQ",
-            text: { type: "plain_text", text: "Submit", emoji: true },
-            style: "primary",
-            value: "submit",
-          },
-        ],
-      },
-    ],
-  },
-  state: {
-    values: {
-      "lB8k/": { item_name_input: { type: "plain_text_input", value: null } },
-      xBc: { req_specs_input: { type: "plain_text_input", value: null } },
-      s6VG: { recipient_name_input: { type: "plain_text_input", value: null } },
-      lJpx: { recipient_addr_input: { type: "plain_text_input", value: null } },
-      "u+Ce": {
-        recipient_email_input: { type: "plain_text_input", value: null },
-      },
-      yqL: { recipient_pn_input: { type: "plain_text_input", value: null } },
-      BvuBP: { ref_url_input: { type: "plain_text_input", value: null } },
-      aZxg: { notes_input: { type: "plain_text_input", value: null } },
-    },
-  },
-  response_url:
-    "https://hooks.slack.com/actions/T023LRP68AU/5169866150336/Psy0TmQkSjqDQoYH80X4b2xS",
-  actions: [
-    {
-      action_id: "YkZIQ",
-      block_id: "actionblock789",
-      text: { type: "plain_text", text: "Submit", emoji: true },
-      value: "submit",
-      style: "primary",
-      type: "button",
-      action_ts: "1682043913.561467",
-    },
-  ],
-};
 
 export default router;

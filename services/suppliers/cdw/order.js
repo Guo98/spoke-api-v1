@@ -12,7 +12,7 @@ const cdw_config = {
   },
 };
 
-async function placeCDWOrder(order_body) {
+async function placeCDWOrder2(order_body) {
   console.log(`placeCDWOrder() => Starting function.`);
   const client = new ClientCredentials(cdw_config);
 
@@ -54,7 +54,7 @@ async function placeCDWOrder(order_body) {
   }
 }
 
-async function placeCDWOrder2(order_body) {
+async function placeCDWOrder(order_body) {
   console.log(`placeCDWOrder() => Starting function.`);
   //const client = new ClientCredentials(cdw_config);
 
