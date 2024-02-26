@@ -268,7 +268,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
         orderObj.recipient_name,
         orderObj.email,
         "",
-        "",
+        "Return",
         orderObj.address,
         orderObj.phone_number,
         orderObj.requestor_name,
