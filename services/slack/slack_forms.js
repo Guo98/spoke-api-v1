@@ -86,6 +86,28 @@ export async function slackMarketplaceRequestForm(channel_id) {
           emoji: true,
         },
       },
+      {
+        type: "input",
+        element: {
+          type: "checkboxes",
+          options: [
+            {
+              text: {
+                type: "plain_text",
+                text: "Include Return Box",
+                emoji: true,
+              },
+              value: "include-return-box",
+            },
+          ],
+          action_id: "return-box-checkbox",
+        },
+        label: {
+          type: "plain_text",
+          text: "Add ons",
+          emoji: true,
+        },
+      },
       ...recipient_form_inputs,
       {
         type: "input",

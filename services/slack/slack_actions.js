@@ -188,7 +188,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
 
   Object.keys(payload.state.values).forEach((objKey, index) => {
     const input = payload.state.values[objKey];
-
+    console.log("input :::::::::::: ", input);
     const inputMapping = inputKeys[index];
     let input_value = input[inputMapping.key].value;
     if (index === 0) {
