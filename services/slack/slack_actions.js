@@ -173,7 +173,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
     text: `Thank you for your request <@${user_id}>!\n`,
     mrkdwn: true,
   };
-
+  console.log("payload user info ::::::::::: ", payload);
   const inputKeys = marketplace_input_keys;
 
   let orderObj = {};
@@ -236,8 +236,9 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
         if (
           input[inputMapping.key].selected_options[0].value ===
           "include-return-box"
-        )
+        ) {
           input_value = true;
+        }
       } else {
         input_value = false;
       }
@@ -245,7 +246,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
       input_value = input[inputMapping.key].selected_option.value;
     }
     orderObj[inputMapping.new_key] = input_value;
-
+    orderObj["requestor_name"] = payload.user.username;
     response.text =
       response.text + `*${inputMapping.field_name}:*\n${input_value}\n`;
     console.log("/slackactions => orderobj: ", JSON.stringify(orderObj));
