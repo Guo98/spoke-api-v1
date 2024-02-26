@@ -259,6 +259,41 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
 
   await sendSlackRequestEmail(orderObj);
 
+  if (orderObj.return_box === true) {
+    try {
+      console.log(`handleMarketplaceRequest() => Creating offboarding row.`);
+      const offboardValues = createOffboardRow(
+        1,
+        client,
+        orderObj.recipient_name,
+        orderObj.email,
+        "",
+        "",
+        orderObj.address,
+        orderObj.phone_number,
+        orderObj.requestor_name,
+        orderObj.notes.device ? orderObj.notes.device : "",
+        "",
+        ""
+      );
+
+      const resp = await addOrderRow(
+        offboardValues,
+        "1cZKr-eP9bi169yKb5OQtYNX117Q_dr3LNg8Bb4Op7SE",
+        1831291341,
+        27
+      );
+      console.log(
+        `handleMarketplaceRequest() => Successfully created offboarding row.`
+      );
+    } catch (e) {
+      console.log(
+        `handleMarketplaceRequest() => Error  in adding offboarding row to google sheets:`,
+        e
+      );
+    }
+  }
+
   axios
     .post(resp_url, response)
     .then((resp) => {
