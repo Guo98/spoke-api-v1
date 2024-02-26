@@ -189,7 +189,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
 
   Object.keys(payload.state.values).forEach((objKey, index) => {
     const input = payload.state.values[objKey];
-    console.log("input :::::::::::: ", input);
+
     const inputMapping = inputKeys[index];
     let input_value = input[inputMapping.key].value;
     if (index === 0) {
@@ -228,6 +228,12 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
             marketplace[market_indexes[0]].items[market_indexes[1]].name;
         }
       }
+    } else if (index === 1) {
+      console.log(
+        "double checking >>>>>>>>>>>>>>>> ",
+        input[inputMapping.key].selected_option[0]
+      );
+      input_value = input[inputMapping.key].selected_option[0].value;
     } else if (index === Object.keys(payload.state.values).length - 1) {
       input_value = input[inputMapping.key].selected_option.value;
     }
