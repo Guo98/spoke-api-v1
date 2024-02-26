@@ -231,9 +231,9 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
     } else if (index === 1) {
       console.log(
         "double checking >>>>>>>>>>>>>>>> ",
-        input[inputMapping.key].selected_option[0]
+        input[inputMapping.key].selected_options[0]
       );
-      input_value = input[inputMapping.key].selected_option[0].value;
+      input_value = input[inputMapping.key].selected_options[0].value;
     } else if (index === Object.keys(payload.state.values).length - 1) {
       input_value = input[inputMapping.key].selected_option.value;
     }
