@@ -116,7 +116,7 @@ router.post("/message", checkJwt, async (req, res) => {
   console.log("/message => Finished route.");
 });
 
-router.post("/slackorder", slack, async (req, res) => {
+router.post("/slack/order", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
   try {
     const response = await slackMarketplaceRequestForm(req.body.channel_id);
