@@ -24,10 +24,11 @@ export async function handleSlackAction(payload, resp_url) {
     text: `Thank you for your request <@${user_id}>! Your request is processsing...\n`,
     mrkdwn: true,
   };
-  console.log("payload actions type >>>>>>>>>>> ", payload.actions[0].type);
+
   if (
     payload.actions[0].type !== "static_select" &&
-    payload.actions[0].type !== "external_select"
+    payload.actions[0].type !== "external_select" &&
+    payload.actions[0].type !== "checkboxes"
   ) {
     if (payload.actions[0].value === "cancel") {
       response.text = "Requested canceled.";
