@@ -52,7 +52,11 @@ export const return_input_keys = [
 
 export const marketplace_input_keys = [
   { key: "static_select-action", new_key: "item", field_name: "Items" },
-  { key: "return-box-checkbox", new_key: "return_box", field_name: "Add ons" },
+  {
+    key: "return-box-checkbox",
+    new_key: "return_box",
+    field_name: "Inlude Return Box",
+  },
   ...recipient_keys,
   {
     key: "static_select_shipping",

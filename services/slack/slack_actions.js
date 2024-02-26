@@ -229,11 +229,18 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
         }
       }
     } else if (index === 1) {
-      console.log(
-        "double checking >>>>>>>>>>>>>>>> ",
-        input[inputMapping.key].selected_options[0]
-      );
-      input_value = input[inputMapping.key].selected_options[0].value;
+      if (
+        input[inputMapping.key].selected_options &&
+        input[inputMapping.key].selected_options.length > 0
+      ) {
+        if (
+          input[inputMapping.key].selected_options[0].value ===
+          "include-return-box"
+        )
+          input_value = true;
+      } else {
+        input_value = false;
+      }
     } else if (index === Object.keys(payload.state.values).length - 1) {
       input_value = input[inputMapping.key].selected_option.value;
     }
