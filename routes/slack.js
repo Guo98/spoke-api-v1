@@ -200,6 +200,13 @@ router.post("/slackoptions", slack, async (req, res) => {
   });
 });
 
+router.post("/slack/order_info", slack, async (req, res) => {
+  console.log("/slack/order_info => Starting route.", req.body);
+  console.log("/slack/order_info => Finished route.");
+
+  res.send("Hello World");
+});
+
 router.post("/slack/authorize", checkJwt, async (req, res) => {
   const { code } = req.body;
 
