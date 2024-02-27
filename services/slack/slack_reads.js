@@ -88,7 +88,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
           type: "mrkdwn",
           text: `*${item.name}*\n${
             track_num !== ""
-              ? `*Tracking Number*: [${track_num}](${tracking_link})`
+              ? `*Tracking Number*: ${track_num} - ${tracking_link}`
               : ""
           }`,
         },
