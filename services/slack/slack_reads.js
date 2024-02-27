@@ -24,7 +24,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
         const client_orders = await orders.getAllOrders(
           client === "public" ? "Mock" : client
         );
-
+        console.log("client orders >>>>>>>>> ", client_orders);
         const client_orders_filter = client_orders.findIndex(
           (order) => order.orderNo === parseInt(order_no)
         );
