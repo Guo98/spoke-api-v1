@@ -198,11 +198,17 @@ router.post("/slack/order_info", slack, async (req, res) => {
       order_number,
       req.body.channel_id
     );
+
+    res.json(response);
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Currently not supported. Please reach out to Spoke.",
+    });
   }
 
   console.log("/slack/order_info => Finished route.");
-
-  res.send("Hello World");
 });
 
 router.post("/slack/authorize", checkJwt, async (req, res) => {
