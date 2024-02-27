@@ -2,6 +2,11 @@ export const slack_channel_ids = {
   C052PJMB8G0: "Alma",
 };
 
+export const slack_team_ids = {
+  T023LRP68AU: "public",
+  T06LTS7RPBJ: "Alma",
+};
+
 const recipient_keys = [
   {
     key: "recipient_name_input",

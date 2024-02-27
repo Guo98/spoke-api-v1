@@ -1,14 +1,13 @@
 import { Router } from "express";
-import axios from "axios";
 import crypto from "crypto";
 
-import { addMarketplaceOrder } from "./orders.js";
 import { checkJwt } from "../services/auth0.js";
 import {
   slackMarketplaceRequestForm,
   slackReturnForm,
 } from "../services/slack/slack_forms.js";
 import { handleSlackAction } from "../services/slack/slack_actions.js";
+import { slack_channel_ids } from "../services/slack/slack_mappings.js";
 
 import pkg from "@slack/bolt";
 const { App } = pkg;
@@ -154,23 +153,23 @@ router.post("/slack/return", slack, async (req, res) => {
     "status": "Received",
 */
 
-router.post("/slackactions", slack, async (req, res) => {
-  console.log("/slackactions => req.body", req.body);
+router.post("/slack/actions", slack, async (req, res) => {
+  console.log("/slack/actions => req.body", req.body);
 
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
 
   if (payload.actions[0].type === "static_select") {
     res.send("Ok");
-    console.log("/slackactions => Sent acknowledgment response");
+    console.log("/slack/actions => Sent acknowledgment response");
   } else {
-    console.log("/slackactions => Starting handleSlackAction()");
+    console.log("/slack/actions => Starting handleSlackAction()");
     await handleSlackAction(payload, resp_url);
-    console.log("/slackactions => Finished handleSlackAction()");
+    console.log("/slack/actions => Finished handleSlackAction()");
   }
 });
 
-router.post("/slackoptions", slack, async (req, res) => {
+router.post("/slack/options", slack, async (req, res) => {
   console.log("/slackoptions => req.body", req.body);
   console.log("/slackoptions => payload", req.body.payload);
   res.json({
@@ -202,6 +201,9 @@ router.post("/slackoptions", slack, async (req, res) => {
 
 router.post("/slack/order_info", slack, async (req, res) => {
   console.log("/slack/order_info => Starting route.", req.body);
+
+  const order_number = req.body.text;
+
   console.log("/slack/order_info => Finished route.");
 
   res.send("Hello World");
