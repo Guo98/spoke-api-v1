@@ -26,6 +26,7 @@ function createAftershipCSV(customerInfo) {
 }
 
 async function createAftershipTracking(customer_info) {
+  let error = false;
   customer_info.forEach(async (row) => {
     const tracking_payload = {
       tracking: {
@@ -52,8 +53,11 @@ async function createAftershipTracking(customer_info) {
         `createAftershipTracking(${row.title}) => Error in creating tracking:`,
         e
       );
+      error = true;
     }
   });
+
+  return error;
 }
 
 export { createAftershipCSV, createAftershipTracking };
