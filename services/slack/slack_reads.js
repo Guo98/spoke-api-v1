@@ -24,12 +24,19 @@ export async function getOrderInfo(client, order_no, channel_id) {
         const client_orders = await orders.getAllOrders(
           client === "public" ? "Mock" : client
         );
-        console.log("client orders >>>>>>>>> ", client_orders);
-        console.log("parsed int >>>>>>>>>>>>>> ", parseInt(order_no));
-        const client_orders_filter = client_orders.findIndex(
-          (order) => order.orderNo === parseInt(order_no)
-        );
 
+        // console.log("client orders >>>>>>>>> ", client_orders);
+        console.log("parsed int >>>>>>>>>>>>>> ", parseInt(order_no));
+
+        const client_orders_filter = client_orders.findIndex((order) => {
+          console.log(
+            "checking order no ????????????? ",
+            order.orderNo === parseInt(order_no)
+          );
+          return order.orderNo === parseInt(order_no);
+        });
+
+        console.log("client orders filter ==========>", client_orders_filter);
         if (client_orders_filter > -1) {
           const order = received_orders[received_filter];
           response.text = response.text + `Name: ${order.full_name}`;
