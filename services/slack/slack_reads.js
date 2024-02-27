@@ -49,7 +49,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*Name:* ${order.full_name}\n\n*Order Items*`,
+          text: `*Order #*${order_no} \n*Name:* ${order.full_name}\n\n*Order Items*`,
         },
       },
       {
@@ -57,7 +57,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
       },
     ];
 
-    order.items.forEach((item) => {
+    order.items.forEach((item, index) => {
       let tracking_link = "";
       let track_num = "";
       if (item.tracking_number !== "") {
@@ -88,11 +88,16 @@ export async function getOrderInfo(client, order_no, channel_id) {
           type: "mrkdwn",
           text: `*${item.name}*\n${
             track_num !== ""
-              ? `*Tracking Number*: ${track_num} - ${tracking_link}`
+              ? `*Tracking Number*: ${track_num}\n Tracking Link: ${tracking_link}`
               : ""
           }`,
         },
       });
+      if (index !== order.items.length - 1) {
+        response.blocks.push({
+          type: "divider",
+        });
+      }
     });
   }
 
