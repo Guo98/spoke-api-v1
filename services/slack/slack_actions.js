@@ -173,7 +173,7 @@ async function handleMarketplaceRequest(client, payload, resp_url, user_id) {
     text: `Thank you for your request <@${user_id}>!\n`,
     mrkdwn: true,
   };
-  console.log("payload user info ::::::::::: ", payload);
+
   const inputKeys = marketplace_input_keys;
 
   let orderObj = {};

@@ -1047,4 +1047,5 @@ export {
   createOrdersContainer,
   addNewDocument,
   cdwUpdateOrder,
+  orders,
 };

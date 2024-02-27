@@ -7,7 +7,8 @@ import {
   slackReturnForm,
 } from "../services/slack/slack_forms.js";
 import { handleSlackAction } from "../services/slack/slack_actions.js";
-import { slack_channel_ids } from "../services/slack/slack_mappings.js";
+import { getOrderInfo } from "../services/slack/slack_reads.js";
+import { slack_team_ids } from "../services/slack/slack_mappings.js";
 
 import pkg from "@slack/bolt";
 const { App } = pkg;
@@ -138,21 +139,6 @@ router.post("/slack/return", slack, async (req, res) => {
   }
 });
 
-/*
-    "client": "Test client",
-    "color": "Gray",
-    "notes": {
-        "device": "device notes",
-        "recipient": "employee notes here"
-    },
-    "order_type": "Deploy",
-    "email": "andy@withspoke.com",
-    "phone_number": "1234567890",
-    "shipping_rate": "standard",
-    "date": "4/5/2023",
-    "status": "Received",
-*/
-
 router.post("/slack/actions", slack, async (req, res) => {
   console.log("/slack/actions => req.body", req.body);
 
@@ -203,6 +189,16 @@ router.post("/slack/order_info", slack, async (req, res) => {
   console.log("/slack/order_info => Starting route.", req.body);
 
   const order_number = req.body.text;
+
+  const client = slack_team_ids[req.body.team_id];
+
+  if (client) {
+    const response = await getOrderInfo(
+      client,
+      order_number,
+      req.body.channel_id
+    );
+  }
 
   console.log("/slack/order_info => Finished route.");
 
