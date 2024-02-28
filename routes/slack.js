@@ -7,7 +7,10 @@ import {
   slackReturnForm,
 } from "../services/slack/slack_forms.js";
 import { handleSlackAction } from "../services/slack/slack_actions.js";
-import { getOrderInfo } from "../services/slack/slack_reads.js";
+import {
+  getOrderInfo,
+  getOutstandingReturns,
+} from "../services/slack/slack_reads.js";
 import { slack_team_ids } from "../services/slack/slack_mappings.js";
 
 import pkg from "@slack/bolt";
@@ -186,7 +189,7 @@ router.post("/slack/options", slack, async (req, res) => {
 });
 
 router.post("/slack/order_info", slack, async (req, res) => {
-  console.log("/slack/order_info => Starting route.", req.body);
+  console.log("/slack/order_info => Starting route.");
 
   const order_number = req.body.text;
 
@@ -209,6 +212,23 @@ router.post("/slack/order_info", slack, async (req, res) => {
   }
 
   console.log("/slack/order_info => Finished route.");
+});
+
+router.post("/slack/outstanding_returns", slack, async (req, res) => {
+  console.log("/slack/outstanding_returns => Starting route.");
+  const client = slack_team_ids[req.body.team_id];
+
+  if (client) {
+    const response = await getOutstandingReturns(client, req.body.channel_id);
+    res.json(response);
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Currently not supported. Please reach out to Spoke.",
+    });
+  }
+  console.log("/slack/outstanding_returns => Finished route.");
 });
 
 router.post("/slack/authorize", checkJwt, async (req, res) => {
