@@ -106,7 +106,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
 
 function determineMissingReturn(order) {
   const return_box_index = order.items.findIndex((item) =>
-    item.name.toLowerCase.includes("return box")
+    item.name.toLowerCase().includes("return box")
   );
 
   if (return_box_index > -1) {
