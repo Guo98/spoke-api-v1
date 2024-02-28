@@ -105,37 +105,35 @@ export async function getOrderInfo(client, order_no, channel_id) {
 }
 
 function determineMissingReturn(order) {
-  if (order.client === client) {
-    const return_box_index = order.items.findIndex((item) =>
-      item.name.toLowerCase.includes("return box")
-    );
+  const return_box_index = order.items.findIndex((item) =>
+    item.name.toLowerCase.includes("return box")
+  );
 
-    if (return_box_index > -1) {
-      if (
-        !order.items[return_box_index].delivery_status &&
-        order.items[return_box_index - 1].delivery_status === "Delivered"
-      ) {
-        let return_blk = [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*Order Number:* ${order.orderNo}\n *Name:* ${
-                order.full_name
-              }\n *Date Requested:* ${order.date}\n ${
-                order.items[return_box_index].date_reminder_sent
-                  ? `*Reminder Sent:* ${order.items[return_box_index].date_reminder_sent}\n`
-                  : "\n"
-              }`,
-            },
+  if (return_box_index > -1) {
+    if (
+      !order.items[return_box_index].delivery_status &&
+      order.items[return_box_index - 1].delivery_status === "Delivered"
+    ) {
+      let return_blk = [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Order Number:* ${order.orderNo}\n *Name:* ${
+              order.full_name
+            }\n *Date Requested:* ${order.date}\n ${
+              order.items[return_box_index].date_reminder_sent
+                ? `*Reminder Sent:* ${order.items[return_box_index].date_reminder_sent}\n`
+                : "\n"
+            }`,
           },
-          {
-            type: "divider",
-          },
-        ];
+        },
+        {
+          type: "divider",
+        },
+      ];
 
-        return return_blk;
-      }
+      return return_blk;
     }
   }
 
@@ -155,10 +153,12 @@ export async function getOutstandingReturns(client, channel_id) {
     const received_orders = await orders.getAllReceived();
 
     received_orders.forEach((order) => {
-      const return_blk = determineMissingReturn(order);
+      if (order.client === client) {
+        const return_blk = determineMissingReturn(order);
 
-      if (return_blk.length > 0) {
-        outstanding_returns = [...outstanding_returns, ...return_blk];
+        if (return_blk.length > 0) {
+          outstanding_returns = [...outstanding_returns, ...return_blk];
+        }
       }
     });
   } catch (e) {
