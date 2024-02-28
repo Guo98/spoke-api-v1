@@ -1,5 +1,9 @@
 import { Router } from "express";
 import crypto from "crypto";
+import { CosmosClient } from "@azure/cosmos";
+
+import { config } from "../utils/config.js";
+import { Spoke } from "../models/spoke.js";
 
 import { checkJwt } from "../services/auth0.js";
 import {
@@ -50,6 +54,22 @@ const slack = (req, res, next) => {
 
   next();
 };
+
+const cosmosClient = new CosmosClient({
+  endpoint: config.endpoint,
+  key: config.key,
+});
+
+const spoke = new Spoke(cosmosClient, "Spoke");
+
+spoke
+  .init((err) => {
+    console.log("cosmos spoke db init err: ", err);
+  })
+  .catch((err) => {
+    console.error("shutting down spoke db because of error: ", err);
+    process.exit(1);
+  });
 
 // C05NMSAF4F3
 
@@ -121,24 +141,56 @@ router.post("/message", checkJwt, async (req, res) => {
 
 router.post("/slack/order", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
-  try {
-    const response = await slackMarketplaceRequestForm(req.body.channel_id);
+  const client = slack_team_ids[req.body.team_id];
 
-    return res.json(response);
-  } catch (e) {
-    return res.status(500).send("Ooops");
+  if (client) {
+    try {
+      const response = await slackMarketplaceRequestForm(
+        req.body.channel_id,
+        client
+      );
+
+      res.json(response);
+    } catch (e) {
+      res.json({
+        response_type: "in_channel",
+        channel: req.body.channel_id,
+        text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
+      });
+    }
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Functionality currently not supported. Please reach out to Spoke team for assistance.",
+    });
   }
 });
 
 router.post("/slack/return", slack, async (req, res) => {
   console.log("/slack/return => Starting route.");
+  const client = slack_team_ids[req.body.team_id];
+  if (client) {
+    try {
+      const response = await slackReturnForm(
+        req.body.channel_id,
+        req.body.team_id
+      );
 
-  try {
-    const response = await slackReturnForm(req.body.channel_id);
-
-    return res.json(response);
-  } catch (e) {
-    return res.status(500).send("Ooops");
+      res.json(response);
+    } catch (e) {
+      res.json({
+        response_type: "in_channel",
+        channel: req.body.channel_id,
+        text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
+      });
+    }
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Functionality currently not supported. Please reach out to Spoke team for assistance.",
+    });
   }
 });
 
@@ -232,25 +284,42 @@ router.post("/slack/outstanding_returns", slack, async (req, res) => {
 });
 
 router.post("/slack/authorize", checkJwt, async (req, res) => {
-  const { code } = req.body;
+  const { code, client } = req.body;
 
   try {
-    const oauth_resp = await app.client.oauth.v2.access({
-      code,
-      client_id: "2122873212368.5093004197398",
-      client_secret: "609ef3ca6cc4407dfd1c959d35131ff0",
-    });
-    const team_id = oauth_resp.team.id;
-    const team_name = oauth_resp.team.name;
-    const bot_access_token = oauth_resp.access_token;
-    console.log("/slack/authorize => Successful: ", oauth_resp);
-    res.send({ status: "Successful" });
-  } catch (e) {
-    console.log("/slack/authorize => Error:", e);
-    res.status(500).json({ status: "Error" });
-  }
+    const slack_teams = await spoke.getSlackTeams();
+
+    const team_index = slack_teams.findIndex((team) => team.client === client);
+
+    if (team_index > -1) {
+      res.json({ status: "Already exists" });
+    } else {
+      try {
+        const oauth_resp = await app.client.oauth.v2.access({
+          code,
+          client_id: process.env.SLACK_CLIENT_ID,
+          client_secret: process.env.SLACK_CLIENT_SECRET,
+        });
+        const team_id = oauth_resp.team.id;
+        const team_name = oauth_resp.team.name;
+        const bot_access_token = oauth_resp.access_token;
+        const add_team = await spoke.add_team(
+          team_name,
+          team_id,
+          bot_access_token
+        );
+        console.log("/slack/authorize => Successfully authorized.");
+        res.json({ status: "Successful" });
+      } catch (e) {
+        console.log("/slack/authorize => Error:", e);
+        res.status(500).json({ status: "Error" });
+      }
+    }
+  } catch (e) {}
 
   if (!res.headersSent) res.send("Yay");
 });
 
 export default router;
+
+export { slack };

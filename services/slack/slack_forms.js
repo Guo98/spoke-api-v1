@@ -1,10 +1,7 @@
 import { inventory } from "../../routes/inventory.js";
-import { slack_channel_ids, recipient_form_inputs } from "./slack_mappings.js";
+import { recipient_form_inputs, slack_team_ids } from "./slack_mappings.js";
 
-export async function slackMarketplaceRequestForm(channel_id) {
-  const client = slack_channel_ids[channel_id]
-    ? slack_channel_ids[channel_id]
-    : "public";
+export async function slackMarketplaceRequestForm(channel_id, client) {
   const marketplace_items = await inventory.getAll("MarketplaceInventory");
   let available_items = [];
 
@@ -174,10 +171,6 @@ export async function slackMarketplaceRequestForm(channel_id) {
 }
 
 export async function slackReturnForm(channel_id) {
-  const client = slack_channel_ids[channel_id]
-    ? slack_channel_ids[channel_id]
-    : "public";
-
   const response = {
     response_type: "in_channel",
     channel: channel_id,

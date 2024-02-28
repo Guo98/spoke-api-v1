@@ -15,7 +15,8 @@ export async function getOrderInfo(client, order_no, channel_id) {
 
       const received_filter = received_orders.findIndex(
         (order) =>
-          order.orderNo === parseInt(order_no) && order.client === client
+          order.orderNo === parseInt(order_no) &&
+          (order.client === client || client === "public")
       );
 
       if (received_filter > -1) {
@@ -49,7 +50,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
         type: "header",
         text: {
           type: "plain_text",
-          text: "*Order \\#*" + order_no,
+          text: "*Order # *" + order_no,
           emoji: true,
         },
       },
