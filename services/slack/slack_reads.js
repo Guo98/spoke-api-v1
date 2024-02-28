@@ -49,7 +49,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
         type: "header",
         text: {
           type: "plain_text",
-          text: "*Order #*" + order_no,
+          text: "*Order \\#*" + order_no,
           emoji: true,
         },
       },
