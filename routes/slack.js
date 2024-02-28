@@ -303,10 +303,11 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
         const team_id = oauth_resp.team.id;
         const team_name = oauth_resp.team.name;
         const bot_access_token = oauth_resp.access_token;
-        const add_team = await spoke.add_team(
+        const add_team = await spoke.newSlackTeam(
           team_name,
           team_id,
-          bot_access_token
+          bot_access_token,
+          client
         );
         console.log("/slack/authorize => Successfully authorized.");
         res.json({ status: "Successful" });

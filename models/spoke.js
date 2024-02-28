@@ -29,16 +29,7 @@ class Spoke {
     return receivedList;
   }
 
-  async newSlackTeam(team_name, team_id, access_token) {
-    const lowercase_team_name = team_name.toLowerCase();
-    let client = "";
-
-    if (lowercase_team_name.includes("alma")) {
-      client = "Alma";
-    } else if (lowercase_team_name.includes("flyr")) {
-      client = "FLYR";
-    }
-
+  async newSlackTeam(team_name, team_id, access_token, client) {
     const { resource: doc } = await this.slackContainer.items.create({
       id: team_id,
       slack_team_name: team_name,
