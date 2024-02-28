@@ -46,10 +46,18 @@ export async function getOrderInfo(client, order_no, channel_id) {
   if (order !== null) {
     response.blocks = [
       {
+        type: "header",
+        text: {
+          type: "plaintext",
+          text: "*Order #*" + order_no,
+          emoji: true,
+        },
+      },
+      {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*Order #*${order_no}\n*Name:* ${order.full_name}\n\n*Order Items*`,
+          text: `*Name:* ${order.full_name}\n*Date Requested:* ${order.date}\n\n*Order Items*`,
         },
       },
       {
@@ -188,7 +196,20 @@ export async function getOutstandingReturns(client, channel_id) {
   }
 
   if (outstanding_returns.length > 0) {
-    response.blocks = outstanding_returns;
+    response.blocks = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "Outstanding Returns",
+          emoji: true,
+        },
+      },
+      {
+        type: "divider",
+      },
+      ...outstanding_returns,
+    ];
   } else {
     response.text = response.text + "No returns outstanding.";
   }
