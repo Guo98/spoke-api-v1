@@ -73,6 +73,18 @@ spoke
 
 // C05NMSAF4F3
 
+async function getClient(team_id) {
+  const slack_clients = await spoke.getSlackTeams();
+
+  const slack_index = slack_clients.findIndex((sc) => sc.id === team_id);
+
+  if (slack_index > -1) {
+    return slack_clients[slack_index].client;
+  } else {
+    return "";
+  }
+}
+
 router.post("/message", checkJwt, async (req, res) => {
   console.log("/message => Starting route.");
   const {
@@ -141,9 +153,9 @@ router.post("/message", checkJwt, async (req, res) => {
 
 router.post("/slack/order", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
-  const client = slack_team_ids[req.body.team_id];
+  const client = await getClient(req.body.team_id);
 
-  if (client) {
+  if (client !== "") {
     try {
       const response = await slackMarketplaceRequestForm(
         req.body.channel_id,
@@ -169,8 +181,9 @@ router.post("/slack/order", slack, async (req, res) => {
 
 router.post("/slack/return", slack, async (req, res) => {
   console.log("/slack/return => Starting route.");
-  const client = slack_team_ids[req.body.team_id];
-  if (client) {
+  const client = await getClient(req.body.team_id);
+
+  if (client !== "") {
     try {
       const response = await slackReturnForm(
         req.body.channel_id,
@@ -245,9 +258,9 @@ router.post("/slack/order_info", slack, async (req, res) => {
 
   const order_number = req.body.text;
 
-  const client = slack_team_ids[req.body.team_id];
+  const client = await getClient(req.body.team_id);
 
-  if (client) {
+  if (client !== "") {
     const response = await getOrderInfo(
       client,
       order_number,
@@ -268,9 +281,9 @@ router.post("/slack/order_info", slack, async (req, res) => {
 
 router.post("/slack/outstanding_returns", slack, async (req, res) => {
   console.log("/slack/outstanding_returns => Starting route.");
-  const client = slack_team_ids[req.body.team_id];
+  const client = await getClient(req.body.team_id);
 
-  if (client) {
+  if (client !== "") {
     const response = await getOutstandingReturns(client, req.body.channel_id);
     res.json(response);
   } else {
