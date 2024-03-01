@@ -1,4 +1,5 @@
 import { orders } from "../../routes/orders.js";
+import { slack_clients } from "./slack_mappings.js";
 
 export async function getOrderInfo(client, order_no, channel_id) {
   let response = {
@@ -21,22 +22,38 @@ export async function getOrderInfo(client, order_no, channel_id) {
 
       if (received_filter > -1) {
         order = received_orders[received_filter];
-        //response.text = response.text + `Name: ${order.full_name}`;
       } else {
-        const client_orders = await orders.getAllOrders(
-          client === "public" ? "Mock" : client
-        );
+        if (client !== "public") {
+          const client_orders = await orders.getAllOrders(client);
 
-        const client_orders_filter = client_orders.findIndex(
-          (order) => order.orderNo === parseInt(order_no)
-        );
+          const client_orders_filter = client_orders.findIndex(
+            (order) => order.orderNo === parseInt(order_no)
+          );
 
-        if (client_orders_filter > -1) {
-          order = client_orders[client_orders_filter];
-          //response.text = response.text + `Name: ${order.full_name}`;
+          if (client_orders_filter > -1) {
+            order = client_orders[client_orders_filter];
+          } else {
+            response.text =
+              response.text + "Sorry, couldn't retrieve order info.\n";
+          }
         } else {
-          response.text =
-            response.text + "Sorry, couldn't retrieve order info.\n";
+          for await (const c of slack_clients) {
+            const client_orders = await orders.getAllOrders(c);
+
+            const client_orders_filter = client_orders.findIndex(
+              (order) => order.orderNo === parseInt(order_no)
+            );
+
+            if (client_orders_filter > -1) {
+              order = client_orders[client_orders_filter];
+              break;
+            }
+          }
+
+          if (order === null) {
+            response.text =
+              response.text + "Sorry, couldn't retrieve order info.\n";
+          }
         }
       }
     } catch (e) {

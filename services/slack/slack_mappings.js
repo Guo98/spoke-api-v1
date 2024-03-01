@@ -7,6 +7,8 @@ export const slack_team_ids = {
   T06LTS7RPBJ: "Alma",
 };
 
+export const slack_clients = ["Alma", "FLYR", "Bowery", "Sona", "Mock"];
+
 const recipient_keys = [
   {
     key: "recipient_name_input",
