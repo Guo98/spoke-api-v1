@@ -140,26 +140,37 @@ function determineMissingReturn(order, requesting_client) {
       !order.items[return_box_index].delivery_status &&
       order.items[return_box_index - 1].delivery_status === "Delivered"
     ) {
-      let return_blk = [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `*Order Number:* ${order.orderNo}\n ${
-              requesting_client === "public"
-                ? `*Client:* ${order.client}\n`
-                : ""
-            } *Name:* ${order.full_name}\n *Date Requested:* ${order.date}\n ${
-              order.items[return_box_index].date_reminder_sent
-                ? `*Reminder Sent:* ${order.items[return_box_index].date_reminder_sent}\n`
-                : "\n"
-            }`,
+      let return_blk = [];
+      if (requesting_client !== "public") {
+        return_blk = [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*Order Number:* ${order.orderNo}\n *Name:* ${
+                order.full_name
+              }\n *Date Requested:* ${order.date}\n ${
+                order.items[return_box_index].date_reminder_sent
+                  ? `*Reminder Sent:* ${order.items[return_box_index].date_reminder_sent}\n`
+                  : "\n"
+              }`,
+            },
           },
-        },
-        {
-          type: "divider",
-        },
-      ];
+          {
+            type: "divider",
+          },
+        ];
+      } else {
+        return_blk = [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*Order Number:* ${order.orderNo}\n`,
+            },
+          },
+        ];
+      }
 
       return return_blk;
     }
