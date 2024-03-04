@@ -73,18 +73,19 @@ spoke
 
 // C05NMSAF4F3
 
-async function getClientAndUsers(team_id) {
+async function checkClientAndUsers(team_id, user_id) {
   const slack_clients = await spoke.getSlackTeams();
 
   const slack_index = slack_clients.findIndex((sc) => sc.id === team_id);
 
   if (slack_index > -1) {
-    return {
-      client: slack_clients[slack_index].client,
-      allowed_users: slack_clients[slack_index].allowed_users,
-    };
+    if (slack_clients[slack_index].allowed_users.findIndex(user_id) < 0) {
+      return "User not allowed";
+    } else {
+      return slack_clients[slack_index].client;
+    }
   } else {
-    return { client: "", allowed_users: [] };
+    return "";
   }
 }
 
@@ -156,9 +157,9 @@ router.post("/message", checkJwt, async (req, res) => {
 
 router.post("/slack/order", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
-  const { client, allowed_users } = await getClientAndUsers(req.body.team_id);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-  if (client !== "") {
+  if (client !== "" && client !== "User not allowed") {
     try {
       const response = await slackMarketplaceRequestForm(
         req.body.channel_id,
@@ -173,6 +174,12 @@ router.post("/slack/order", slack, async (req, res) => {
         text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
       });
     }
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
   } else {
     res.json({
       response_type: "in_channel",
@@ -184,9 +191,9 @@ router.post("/slack/order", slack, async (req, res) => {
 
 router.post("/slack/return", slack, async (req, res) => {
   console.log("/slack/return => Starting route.", req.body);
-  const { client, allowed_users } = await getClientAndUsers(req.body.team_id);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-  if (client !== "") {
+  if (client !== "" && client !== "User not allowed") {
     try {
       const response = await slackReturnForm(
         req.body.channel_id,
@@ -201,6 +208,12 @@ router.post("/slack/return", slack, async (req, res) => {
         text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
       });
     }
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
   } else {
     res.json({
       response_type: "in_channel",
@@ -261,9 +274,9 @@ router.post("/slack/order_info", slack, async (req, res) => {
 
   const order_number = req.body.text;
 
-  const { client, allowed_users } = await getClientAndUsers(req.body.team_id);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-  if (client !== "") {
+  if (client !== "" && client !== "User not allowed") {
     const response = await getOrderInfo(
       client,
       order_number,
@@ -271,6 +284,12 @@ router.post("/slack/order_info", slack, async (req, res) => {
     );
 
     res.json(response);
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
   } else {
     res.json({
       response_type: "in_channel",
@@ -284,11 +303,17 @@ router.post("/slack/order_info", slack, async (req, res) => {
 
 router.post("/slack/outstanding_returns", slack, async (req, res) => {
   console.log("/slack/outstanding_returns => Starting route.");
-  const { client, allowed_users } = await getClientAndUsers(req.body.team_id);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-  if (client !== "") {
+  if (client !== "" && client !== "User not allowed") {
     const response = await getOutstandingReturns(client, req.body.channel_id);
     res.json(response);
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
   } else {
     res.json({
       response_type: "in_channel",
