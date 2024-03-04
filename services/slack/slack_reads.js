@@ -161,15 +161,7 @@ function determineMissingReturn(order, requesting_client) {
           },
         ];
       } else {
-        return_blk = [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*Order Number:* ${order.orderNo}\n`,
-            },
-          },
-        ];
+        return_blk = [`*Order Number:* ${order.orderNo}\n`];
       }
 
       return return_blk;
@@ -188,6 +180,16 @@ export async function getOutstandingReturns(client, channel_id) {
 
   let outstanding_returns = [];
 
+  if (client === "public") {
+    outstanding_returns.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "",
+      },
+    });
+  }
+
   try {
     const received_orders = await orders.getAllReceived();
 
@@ -196,7 +198,12 @@ export async function getOutstandingReturns(client, channel_id) {
         const return_blk = determineMissingReturn(order, client);
 
         if (return_blk.length > 0) {
-          outstanding_returns = [...outstanding_returns, ...return_blk];
+          if (client !== "public") {
+            outstanding_returns = [...outstanding_returns, ...return_blk];
+          } else {
+            outstanding_returns[0].text.text =
+              outstanding_returns[0].text.text + return_blk[0];
+          }
         }
       }
     });
@@ -235,7 +242,8 @@ export async function getOutstandingReturns(client, channel_id) {
           const return_blk = determineMissingReturn(order, client);
 
           if (return_blk.length > 0) {
-            outstanding_returns = [...outstanding_returns, ...return_blk];
+            outstanding_returns[0].text.text =
+              outstanding_returns[0].text.text + return_blk[0];
           }
         });
       } catch (e) {
