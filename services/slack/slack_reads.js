@@ -130,7 +130,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
   return response;
 }
 
-function determineMissingReturn(order) {
+function determineMissingReturn(order, requesting_client) {
   const return_box_index = order.items.findIndex((item) =>
     item.name.toLowerCase().includes("return box")
   );
@@ -145,9 +145,11 @@ function determineMissingReturn(order) {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*Order Number:* ${order.orderNo}\n *Name:* ${
-              order.full_name
-            }\n *Date Requested:* ${order.date}\n ${
+            text: `*Order Number:* ${order.orderNo}\n ${
+              requesting_client === "public"
+                ? `*Client:* ${order.client}\n`
+                : ""
+            } *Name:* ${order.full_name}\n *Date Requested:* ${order.date}\n ${
               order.items[return_box_index].date_reminder_sent
                 ? `*Reminder Sent:* ${order.items[return_box_index].date_reminder_sent}\n`
                 : "\n"
@@ -179,8 +181,8 @@ export async function getOutstandingReturns(client, channel_id) {
     const received_orders = await orders.getAllReceived();
 
     received_orders.forEach((order) => {
-      if (order.client === client) {
-        const return_blk = determineMissingReturn(order);
+      if (order.client === client || client === "public") {
+        const return_blk = determineMissingReturn(order, client);
 
         if (return_blk.length > 0) {
           outstanding_returns = [...outstanding_returns, ...return_blk];
@@ -194,23 +196,44 @@ export async function getOutstandingReturns(client, channel_id) {
     );
   }
 
-  try {
-    const client_orders = await orders.getAllOrders(
-      client === "public" ? "Mock" : client
-    );
+  if (client !== "public") {
+    try {
+      const client_orders = await orders.getAllOrders(
+        client === "public" ? "Mock" : client
+      );
 
-    client_orders.forEach((order) => {
-      const return_blk = determineMissingReturn(order);
+      client_orders.forEach((order) => {
+        const return_blk = determineMissingReturn(order, client);
 
-      if (return_blk.length > 0) {
-        outstanding_returns = [...outstanding_returns, ...return_blk];
+        if (return_blk.length > 0) {
+          outstanding_returns = [...outstanding_returns, ...return_blk];
+        }
+      });
+    } catch (e) {
+      console.log(
+        `getOutstandingReturns(${client}) => Error in getting client orders:`,
+        e
+      );
+    }
+  } else {
+    for await (const c of slack_clients) {
+      try {
+        const client_orders = await orders.getAllOrders(c);
+
+        client_orders.forEach((order) => {
+          const return_blk = determineMissingReturn(order, client);
+
+          if (return_blk.length > 0) {
+            outstanding_returns = [...outstanding_returns, ...return_blk];
+          }
+        });
+      } catch (e) {
+        console.log(
+          `getOutstandingReturns(${c}) => Error in getting client orders:`,
+          e
+        );
       }
-    });
-  } catch (e) {
-    console.log(
-      `getOutstandingReturns(${client}) => Error in getting client orders:`,
-      e
-    );
+    }
   }
 
   if (outstanding_returns.length > 0) {
