@@ -251,6 +251,8 @@ export async function getOutstandingReturns(client, channel_id) {
       },
       ...outstanding_returns,
     ];
+
+    console.log("response blocks >>>>>>>>>>>> ", response.blocks);
   } else {
     response.text = response.text + "No returns outstanding.";
   }
