@@ -297,7 +297,7 @@ router.post("/slack/outstanding_returns", slack, async (req, res) => {
 });
 
 router.post("/slack/authorize", checkJwt, async (req, res) => {
-  const { code, client } = req.body;
+  const { code, client, user_email } = req.body;
 
   try {
     const slack_teams = await spoke.getSlackTeams();
@@ -305,7 +305,29 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
     const team_index = slack_teams.findIndex((team) => team.client === client);
 
     if (team_index > -1) {
-      res.json({ status: "Already exists" });
+      try {
+        const user_resp = await app.client.users.lookupByEmail({
+          token: slack_teams[team_index].access_token,
+          email: user_email,
+        });
+
+        if (
+          slack_teams[team_index].allowed_teams.findIndex(
+            (user_id) => user_id === user_resp.user.id
+          ) < 0
+        ) {
+          const add_user = await spoke.addNewUser(
+            slack_teams[team_index].id,
+            user_resp.user.id
+          );
+          res.json({ status: "Added user" });
+        } else {
+          res.json({ status: "Already exists" });
+        }
+      } catch (e) {
+        console.log("/slack/authorize => Error in adding user:", e);
+        res.status(500).json({ status: "Error" });
+      }
     } else {
       try {
         const oauth_resp = await app.client.oauth.v2.access({
@@ -316,11 +338,13 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
         const team_id = oauth_resp.team.id;
         const team_name = oauth_resp.team.name;
         const bot_access_token = oauth_resp.access_token;
+        const user_id = oauth_resp.authed_user.id;
         const add_team = await spoke.newSlackTeam(
           team_name,
           team_id,
           bot_access_token,
-          client
+          client,
+          user_id
         );
         console.log("/slack/authorize => Successfully authorized.");
         res.json({ status: "Successful" });
