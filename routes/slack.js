@@ -79,7 +79,11 @@ async function checkClientAndUsers(team_id, user_id) {
   const slack_index = slack_clients.findIndex((sc) => sc.id === team_id);
 
   if (slack_index > -1) {
-    if (slack_clients[slack_index].allowed_users.findIndex(user_id) < 0) {
+    if (
+      slack_clients[slack_index].allowed_users.findIndex(
+        (user) => user === user_id
+      ) < 0
+    ) {
       return "User not allowed";
     } else {
       return slack_clients[slack_index].client;
