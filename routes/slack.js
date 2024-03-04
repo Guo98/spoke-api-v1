@@ -312,7 +312,7 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
         });
 
         if (
-          slack_teams[team_index].allowed_teams.findIndex(
+          slack_teams[team_index].allowed_users.findIndex(
             (user_id) => user_id === user_resp.user.id
           ) < 0
         ) {
