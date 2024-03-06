@@ -71,16 +71,9 @@ async function getOrders(db, client, entity, res) {
       delete order._attachments;
       delete order._ts;
 
-      const delResult = await orderItemsDelivery(db, order, client, ups_token);
-
-      if (delResult.status === 200 && delResult.data !== "No Change") {
-        order = { ...delResult.data };
-      } else if (
-        delResult.status === 200 &&
-        delResult.fedex_items &&
-        delResult.fedex_items.length > 0
-      ) {
-        fedex_items = [...fedex_items, ...delResult.fedex_items];
+      const del_result = await orderItemsDelivery(db, order, client, ups_token);
+      if (del_result.length > 0) {
+        fedex_items = fedex_items.concat(del_result);
       }
     }
     console.log(
@@ -98,29 +91,53 @@ async function getOrders(db, client, entity, res) {
       delete order._attachments;
       delete order._ts;
 
-      const delResult = await orderItemsDelivery(
+      const del_result = await orderItemsDelivery(
         db,
         order,
         "Received",
         ups_token
       );
-      if (delResult.status === 200 && delResult.data !== "No Change") {
-        order = { ...delResult.data };
-      } else if (
-        delResult.status === 200 &&
-        delResult.fedex_items &&
-        delResult.fedex_items.length > 0
-      ) {
-        fedex_items = [...fedex_items, ...delResult.fedex_items];
+
+      if (del_result.length > 0) {
+        fedex_items = fedex_items.concat(del_result);
       }
     }
     if (fedex_items.length > 0) {
-      await updateFedexStatus(fedex_token, fedex_items.splice(0, 30), db);
+      await updateFedexStatus(fedex_token, fedex_items, db, client);
     }
     console.log(
       `getOrders(${client}) => Finished getting all in progress orders for company: ${client}`
     );
-    res.json({ data: { in_progress: inProgRes, completed: ordersRes } });
+
+    let updt_orders_res = await db.getAllOrders(db_container);
+    let updt_ip_res = await db.find(querySpec);
+    if (entity) {
+      updt_orders_res = updt_orders_res.filter(
+        (order) => order.entity === req.params.entity
+      );
+      updt_ip_res = updt_ip_res.filter(
+        (order) => order.entity === req.params.entity
+      );
+    }
+
+    for await (let order of updt_orders_res) {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    }
+
+    for await (let order of updt_ip_res) {
+      delete order._rid;
+      delete order._self;
+      delete order._etag;
+      delete order._attachments;
+      delete order._ts;
+    }
+    res.json({
+      data: { in_progress: updt_ip_res, completed: updt_orders_res },
+    });
 
     try {
       inProgRes.forEach(async (ip_order) => {
@@ -241,108 +258,83 @@ async function getOrders(db, client, entity, res) {
   }
 }
 
-const orderItemsDelivery = async (db, order, containerId, ups_token) => {
-  console.log(
-    `orderItemDelivery(${order.client}) => Starting function:`,
-    order.id
-  );
+const updateUPSItem = async (
+  db,
+  ups_token,
+  containerId,
+  item_index,
+  tracking_number,
+  order
+) => {
+  try {
+    const deliveryResult = await trackUPSPackage(
+      tracking_number.trim(),
+      ups_token
+    );
 
-  if (order.shipping_status !== "Completed") {
-    let change = false;
-    let fedex_items = [];
-    let index = 0;
-
-    for await (const item of order.items) {
-      if (item.courier) {
-        if (item.courier.toLowerCase() === "fedex") {
-          if (
-            item.tracking_number?.length > 0 &&
-            item.delivery_status !== "Delivered"
-          ) {
-            fedex_items.push({
-              order_no: order.orderNo,
-              full_name: order.full_name,
-              item_index: index,
-              tracking_no: item.tracking_number[0],
-              id: order.id,
-              items: order.items,
-              containerId,
-            });
-          }
-        } else if (item.courier.toLowerCase() === "ups") {
-          if (
-            item.tracking_number?.length > 0 &&
-            item.delivery_status !== "Delivered"
-          ) {
-            const deliveryResult = await trackUPSPackage(
-              item.tracking_number[0].trim(),
-              ups_token
-            );
-            if (deliveryResult.status === 200) {
-              change = true;
-              item.delivery_status = deliveryResult.data;
-            }
-          }
-        }
-      }
-      if (item.name.toLowerCase().includes("yubikey 5c nfc (automox)")) {
-        if (item.shipment_id) {
-          const yubiShipping = await getYubikeyShipmentInfo(item.shipment_id);
-          if (yubiShipping) {
-            change = true;
-            if (
-              yubiShipping.tracking_number &&
-              item.delivery_status !== "Delivered"
-            ) {
-              if (item.tracking_number === "") {
-                item.tracking_number = [yubiShipping.tracking_number];
-                item.courier = yubiShipping.courier;
-                item.delivery_status = yubiShipping.delivery_description;
-              } else if (
-                item.delivery_status !== yubiShipping.delivery_description
-              ) {
-                item.delivery_status = yubiShipping.delivery_description;
-              }
-            } else {
-              item.delivery_status = yubiShipping.delivery_description;
-            }
-          }
-        }
-      }
-
-      index++;
+    if (
+      deliveryResult.status === 200 &&
+      order.items[item_index].delivery_status !== deliveryResult.data
+    ) {
+      order.items[item_index].delivery_status = deliveryResult.data;
+      const updateDelivery = await db.updateOrderByContainer(
+        containerId,
+        order.id,
+        order.full_name,
+        order.items
+      );
     }
-
-    if (change) {
-      try {
-        console.log(
-          `orderItemDelivery(${order.client}) => Updating shipping status:`,
-          order.id
-        );
-        const updateDelivery = await db.updateOrderByContainer(
-          containerId,
-          order.id,
-          order.full_name,
-          order.items
-        );
-        console.log(
-          `orderItemDelivery(${order.client}) => Finished updating shipping status:`,
-          order.id
-        );
-        return { status: 200, data: updateDelivery, fedex_items: fedex_items };
-      } catch (e) {
-        console.log(
-          `orderItemDelivery(${order.client}) => Error in updating delivery status of order:`,
-          order.id
-        );
-        return { status: 500, data: "Error" };
-      }
-    } else {
-      return { status: 200, data: "No Change", fedex_items: fedex_items };
-    }
-  } else {
-    return { status: 200, data: "No Change" };
+  } catch (e) {
+    console.log(
+      `updateUPSItem(${order.client}) => Error in updating ups delivery status:`,
+      e
+    );
   }
+};
+
+const orderItemsDelivery = async (db, order, containerId, ups_token) => {
+  let check_items = [];
+  if (order.shipping_status !== "Completed") {
+    order.items.forEach(async (item, index) => {
+      if (
+        item.tracking_number?.length > 0 &&
+        (!item.delivery_status || item.delivery_status !== "Delivered")
+      ) {
+        if (item.courier) {
+          if (item.courier.toLowerCase() === "fedex") {
+            if (
+              item.name.toLowerCase().includes("return box") &&
+              (!order.items[index - 1].delivery_status ||
+                order.items[index - 1].delivery_status !== "Delivered")
+            ) {
+            } else {
+              check_items.push({
+                courier: "fedex",
+                tracking_number: item.tracking_number[0],
+                order_full_name: order.full_name,
+                order_id: order.id,
+                containerId,
+                item_index: index,
+                current_delivery_status: item.delivery_status,
+                items: order.items,
+              });
+            }
+          } else if (item.courier.toLowerCase() === "ups") {
+            await updateUPSItem(
+              db,
+              ups_token,
+              containerId,
+              index,
+              item.tracking_number[0],
+              order
+            );
+          }
+        }
+      }
+    });
+  }
+
+  return check_items;
 };
 
 export { getOrders };
