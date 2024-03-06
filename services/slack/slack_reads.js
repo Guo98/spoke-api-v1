@@ -2,6 +2,7 @@ import { orders } from "../../routes/orders.js";
 import { slack_clients } from "./slack_mappings.js";
 
 export async function getOrderInfo(client, order_no, channel_id) {
+  console.log(`getOrderInfo(${client}) => Starting function.`);
   let response = {
     response_type: "in_channel",
     channel: channel_id,
@@ -9,9 +10,15 @@ export async function getOrderInfo(client, order_no, channel_id) {
   };
   let order = null;
   if (isNaN(order_no)) {
+    console.log(
+      `getOrderInfo(${client}) => Order number was not entered correctly.`
+    );
     response.text = "Please enter order number as just a number.";
   } else {
     try {
+      console.log(
+        `getOrderInfo(${client}) => Checking Received container first.`
+      );
       const received_orders = await orders.getAllReceived();
 
       const received_filter = received_orders.findIndex(
@@ -21,9 +28,13 @@ export async function getOrderInfo(client, order_no, channel_id) {
       );
 
       if (received_filter > -1) {
+        console.log(
+          `getOrderInfo(${client}) => Found order in Received container.`
+        );
         order = received_orders[received_filter];
       } else {
         if (client !== "public") {
+          console.log(`getOrderInfo(${client}) => Checking client container.`);
           const client_orders = await orders.getAllOrders(client);
 
           const client_orders_filter = client_orders.findIndex(
@@ -31,8 +42,14 @@ export async function getOrderInfo(client, order_no, channel_id) {
           );
 
           if (client_orders_filter > -1) {
+            console.log(
+              `getOrderInfo(${client}) => Found order in client container.`
+            );
             order = client_orders[client_orders_filter];
           } else {
+            console.log(
+              `getOrderInfo(${client}) => Order ${order_no} was not found.`
+            );
             response.text =
               response.text + "Sorry, couldn't retrieve order info.\n";
           }
@@ -62,6 +79,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
   }
 
   if (order !== null) {
+    console.log(`getOrderInfo(${client}) => Forming order info blocks.`);
     response.blocks = [
       {
         type: "header",
@@ -126,7 +144,7 @@ export async function getOrderInfo(client, order_no, channel_id) {
       }
     });
   }
-
+  console.log(`getOrderInfo(${client}) => Finished function.`);
   return response;
 }
 
@@ -172,6 +190,7 @@ function determineMissingReturn(order, requesting_client) {
 }
 
 export async function getOutstandingReturns(client, channel_id) {
+  console.log(`getOutstandingReturns(${client}) => Starting function.`);
   let response = {
     response_type: "in_channel",
     channel: channel_id,
@@ -191,6 +210,9 @@ export async function getOutstandingReturns(client, channel_id) {
   }
 
   try {
+    console.log(
+      `getOutstandingReturns(${client}) => Checking orders from Received contasiner.`
+    );
     const received_orders = await orders.getAllReceived();
 
     received_orders.forEach((order) => {
@@ -216,6 +238,9 @@ export async function getOutstandingReturns(client, channel_id) {
 
   if (client !== "public") {
     try {
+      console.log(
+        `getOutstandingReturns(${client}) => Checking orders from client container.`
+      );
       const client_orders = await orders.getAllOrders(
         client === "public" ? "Mock" : client
       );
@@ -256,6 +281,7 @@ export async function getOutstandingReturns(client, channel_id) {
   }
 
   if (outstanding_returns.length > 0) {
+    console.log(`getOutstandingReturns(${client}) => Returning order blocks.`);
     response.blocks = [
       {
         type: "header",
@@ -271,8 +297,9 @@ export async function getOutstandingReturns(client, channel_id) {
       ...outstanding_returns,
     ];
   } else {
+    console.log(`getOutstandingReturns(${client}) => No outstanding returns.`);
     response.text = response.text + "No returns outstanding.";
   }
-
+  console.log(`getOutstandingReturns(${client}) => Finished function.`);
   return response;
 }

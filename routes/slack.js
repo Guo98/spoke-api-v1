@@ -330,6 +330,7 @@ router.post("/slack/outstanding_returns", slack, async (req, res) => {
 
 router.post("/slack/authorize", checkJwt, async (req, res) => {
   const { code, client, user_email } = req.body;
+  console.log(`/slack/authorize/${client} => Starting route.`);
 
   try {
     const slack_teams = await spoke.getSlackTeams();
@@ -338,6 +339,9 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
 
     if (team_index > -1) {
       try {
+        console.log(
+          `/slack/authorize/${client} => Checking user: ${user_email}`
+        );
         const user_resp = await app.client.users.lookupByEmail({
           token: slack_teams[team_index].access_token,
           email: user_email,
@@ -348,12 +352,16 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
             (user_id) => user_id === user_resp.user.id
           ) < 0
         ) {
+          console.log(
+            `/slack/authorize/${client} => Adding user: ${user_email}`
+          );
           const add_user = await spoke.addNewUser(
             slack_teams[team_index].id,
             user_resp.user.id
           );
           res.json({ status: "Added user" });
         } else {
+          console.log(`/slack/authorize/${client} => User already whitelisted`);
           res.json({ status: "Already exists" });
         }
       } catch (e) {
@@ -361,12 +369,18 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
         res.status(500).json({ status: "Error" });
       }
     } else {
+      console.log(
+        `/slack/authorize/${client} => Connecting to new client workspace`
+      );
       try {
         const oauth_resp = await app.client.oauth.v2.access({
           code,
           client_id: process.env.SLACK_CLIENT_ID,
           client_secret: process.env.SLACK_CLIENT_SECRET,
         });
+        console.log(
+          `/slack/authorize/${client} => Successfully connected to new workspace.`
+        );
         const team_id = oauth_resp.team.id;
         const team_name = oauth_resp.team.name;
         const bot_access_token = oauth_resp.access_token;
