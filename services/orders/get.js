@@ -140,7 +140,7 @@ async function getOrders(db, client, entity, res) {
     });
 
     try {
-      inProgRes.forEach(async (ip_order) => {
+      updt_ip_res.forEach(async (ip_order) => {
         const return_box_index = ip_order.items.findIndex((item) =>
           item.name.includes("Return Box")
         );
@@ -193,7 +193,7 @@ async function getOrders(db, client, entity, res) {
         }
       });
 
-      ordersRes.forEach(async (ip_order) => {
+      updt_orders_res.forEach(async (ip_order) => {
         const return_box_index = ip_order.items.findIndex((item) =>
           item.name.includes("Return Box")
         );
