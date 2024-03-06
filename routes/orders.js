@@ -832,7 +832,7 @@ router.post("/orders/createshipment", checkJwt, async (req, res) => {
 
   const resp = await createAftershipTracking(customer_info);
   console.log(`/orders/createshipment/${order_no} => Finished route.`);
-  if (resp) {
+  if (!resp) {
     res.json({ status: "Successful" });
   } else {
     res.json({ status: "Error" });
