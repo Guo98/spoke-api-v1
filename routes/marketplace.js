@@ -20,7 +20,7 @@ router.post("/marketplace/specs", checkJwt, async (req, res) => {
       res.json({ status: "Could not retrieve info" });
     }
   } catch (e) {
-    console.log("/marketplace/specs => Error:", e);
+    console.log("/marketplace/specs => Error:", e.response);
     res.json({ status: "Error" });
   }
   console.log("/marketplace/specs => Finished route.");

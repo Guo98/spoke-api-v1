@@ -34,7 +34,8 @@ async function scrape_supplier_site(supplier_url) {
           "Scrape the following html for item name, specs, price, and color. " +
           html.data
             .replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "")
-            .replace(/(\r\n|\n|\r)/gm, ""),
+            .replace(/(\r\n|\n|\r)/gm, "")
+            .slice(0, 5000),
       },
     ];
 
