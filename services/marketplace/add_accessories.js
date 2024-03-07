@@ -46,7 +46,7 @@ export async function addNewAccessory(
 
     if (!item_type_exists) {
       let new_doc = {
-        id: "accessories-" + client.toLowerCase(),
+        id: "accessories-" + client.toLowerCase().replace(" ", "-"),
         item_type: "Accessories",
         client,
         items: [
