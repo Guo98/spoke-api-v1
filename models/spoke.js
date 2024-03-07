@@ -5,6 +5,7 @@ class Spoke {
 
     this.database = null;
     this.slackContainer = null;
+    this.clientContainer = null;
   }
 
   async init() {
@@ -19,6 +20,12 @@ class Spoke {
     });
 
     this.slackContainer = coResponse.container;
+
+    const clientResponse = await this.database.containers.createIfNotExists({
+      id: "client",
+    });
+
+    this.clientContainer = clientResponse.container;
   }
 
   async getSlackTeams() {
@@ -51,6 +58,41 @@ class Spoke {
       .replace(resource);
 
     return replaced;
+  }
+
+  async addNewClient(
+    client,
+    allowed_pages = ["Orders", "Inventory", "Marketplace", "Approvals"],
+    org_id,
+    connections
+  ) {
+    const { resource: doc } = await this.clientContainer.items.create({
+      client,
+      allowed_pages,
+      users: [],
+      entities: [],
+      connections,
+      org_id,
+    });
+
+    return doc;
+  }
+
+  async checkUserClient(user_email) {
+    const { resources: receivedList } = await this.clientContainer.items
+      .readAll()
+      .fetchAll();
+
+    let client_obj = {};
+
+    for (const client of receivedList) {
+      if (client.users.findIndex((user) => user === user_email) > -1) {
+        client_obj = client;
+        break;
+      }
+    }
+
+    return client_obj;
   }
 }
 

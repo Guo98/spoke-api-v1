@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ManagementClient } from "auth0";
+
 import {
   orgMappings,
   connectionsMappings,
@@ -7,16 +7,16 @@ import {
   idToOrgMappings,
   clientIdList,
 } from "../utils/mappings/auth0.js";
-import { checkJwt } from "../services/auth0.js";
+import { checkJwt, management } from "../services/auth0.js";
 
 const router = Router();
 
-var management = new ManagementClient({
-  domain: "withspoke.us.auth0.com",
-  clientId: process.env.AUTH0_API_CLIENT_ID,
-  clientSecret: process.env.AUTH0_CLIENT_SECRET,
-  scope: "update:users delete:role_members create:role_members read:roles",
-});
+// var management = new ManagementClient({
+//   domain: "withspoke.us.auth0.com",
+//   clientId: process.env.AUTH0_API_CLIENT_ID,
+//   clientSecret: process.env.AUTH0_CLIENT_SECRET,
+//   scope: "update:users delete:role_members create:role_members read:roles",
+// });
 
 router.post("/invites", checkJwt, async (req, res) => {
   const { client, connection, invite_email, role, hasIds } = req.body;

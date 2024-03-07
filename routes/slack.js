@@ -406,4 +406,4 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
 
 export default router;
 
-export { slack };
+export { slack, spoke };
