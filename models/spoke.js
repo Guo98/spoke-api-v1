@@ -94,6 +94,25 @@ class Spoke {
 
     return client_obj;
   }
+
+  async addNewUserPortal(client, user_email) {
+    const { resources: receivedList } = await this.clientContainer.items
+      .readAll()
+      .fetchAll();
+
+    const client_index = receivedList.findIndex((c) => c.client === client);
+
+    if (client_index > -1) {
+      let client_resource = receivedList[client_index];
+      client_resource.users.push(user_email);
+      const { resource: replaced } = await this.clientContainer
+        .item(client_resource.id, client)
+        .replace(client_resource);
+      return replaced;
+    } else {
+      return "";
+    }
+  }
 }
 
 export { Spoke };

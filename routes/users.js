@@ -7,6 +7,7 @@ import {
   idToOrgMappings,
   clientIdList,
 } from "../utils/mappings/auth0.js";
+import { spoke } from "./slack.js";
 import { checkJwt, management } from "../services/auth0.js";
 
 const router = Router();
@@ -56,6 +57,15 @@ router.post("/invites", checkJwt, async (req, res) => {
       res.json({ status: "Successful" });
     }
   );
+
+  try {
+    await spoke.addNewUserPortal(client, invite_email);
+    console.log(
+      `[POST] /invites/${client} => Successfully added new user to portal db.`
+    );
+  } catch (e) {
+    console.log(`[POST] /invites/${client} => Error in adding to db:`, e);
+  }
   // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`[POST] /invites/${client} => Ending route.`);
 });
