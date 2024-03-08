@@ -830,9 +830,13 @@ router.post("/orders/createshipment", checkJwt, async (req, res) => {
     },
   ];
 
-  await createAftershipTracking(customer_info);
+  const resp = await createAftershipTracking(customer_info);
   console.log(`/orders/createshipment/${order_no} => Finished route.`);
-  res.json({ status: "Successful" });
+  if (!resp) {
+    res.json({ status: "Successful" });
+  } else {
+    res.json({ status: "Error" });
+  }
 });
 
 // router.post("/orderyubikey", async (req, res) => {
@@ -1047,4 +1051,5 @@ export {
   createOrdersContainer,
   addNewDocument,
   cdwUpdateOrder,
+  orders,
 };

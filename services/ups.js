@@ -61,9 +61,16 @@ export async function trackUPSPackage(tracking_number, token) {
   const result = await axios
     .request(options)
     .then((resp) => {
-      const shipmentDescription =
-        resp.data.trackResponse.shipment[0].package[0].currentStatus
-          .description;
+      let shipmentDescription = "";
+
+      if (resp.data.trackResponse?.shipment[0].package) {
+        shipmentDescription =
+          resp.data.trackResponse?.shipment[0]?.package[0]?.currentStatus
+            .description;
+      } else {
+        shipmentDescription = "";
+      }
+
       return { status: 200, data: shipmentDescription };
     })
     .catch((err) => {

@@ -143,79 +143,98 @@ async function trackPackage(tracking_number, token) {
   return result;
 }
 
-const updateFedexStatus = async (fedex_token, fedex_orders, ordersDB) => {
-  console.log("updateFedexStatus() => Starting function.", fedex_orders);
-  let post_data = {
-    includeDetailedScans: true,
-    trackingInfo: fedex_orders.map((fo) => {
-      return {
-        trackingNumberInfo: {
-          trackingNumber: fo.tracking_no,
-        },
-      };
-    }),
-  };
+const updateFedexStatus = async (
+  fedex_token,
+  fedex_orders,
+  ordersDB,
+  client
+) => {
+  console.log(`updateFedexStatus(${client}) => Starting function.`);
+  let fedex_orders_copy = [...fedex_orders];
 
-  const options = {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: fedex_token,
-    },
-    data: JSON.stringify(post_data),
-    url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
-  };
+  while (fedex_orders_copy.length > 0) {
+    let get_status_fedex_orders = fedex_orders_copy;
+    if (fedex_orders_copy.length > 30) {
+      get_status_fedex_orders = fedex_orders_copy.splice(0, 30);
+    } else {
+      fedex_orders_copy = [];
+    }
 
-  const result = await axios(options)
-    .then((trackResp) => {
-      return trackResp.data.output.completeTrackResults;
-    })
-    .catch((err) => {
-      console.log(
-        `trackPackage() => Error in getting tracking info:`,
-        err.response.data
-      );
-      return [];
-    });
+    let post_data = {
+      includeDetailedScans: true,
+      trackingInfo: get_status_fedex_orders.map((fo) => {
+        return {
+          trackingNumberInfo: {
+            trackingNumber: fo.tracking_number,
+          },
+        };
+      }),
+    };
 
-  let index = 0;
-  let current_order = { ...fedex_orders[0] };
-  let changed = false;
-  for await (let item of fedex_orders) {
-    if (current_order.order_no !== item.current_order) {
-      if (changed) {
-        try {
-          await ordersDB.updateOrderByContainer(
-            current_order.containerId,
-            current_order.id,
-            current_order.full_name,
-            current_order.items
-          );
-        } catch (e) {
-          console.log(
-            "updateFedexStatus() => Error in updating delivery status:",
-            e
-          );
+    const options = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: fedex_token,
+      },
+      data: JSON.stringify(post_data),
+      url: process.env.FEDEX_URL + "/track/v1/trackingnumbers",
+    };
+
+    const result = await axios(options)
+      .then((trackResp) => {
+        console.log(
+          `updateFedexStatus(${client}) => Successfully got fedex tracking results.`
+        );
+        return trackResp.data.output.completeTrackResults;
+      })
+      .catch((err) => {
+        console.log(
+          `updateFedexStatus(${client}) => Error in getting tracking info:`,
+          err.response.data
+        );
+        return [];
+      });
+
+    result.forEach(async (fedex_obj, index) => {
+      if (
+        fedex_obj.trackingNumber ===
+        get_status_fedex_orders[index].tracking_number
+      ) {
+        if (
+          fedex_obj.trackResults[0]?.latestStatusDetail?.description &&
+          fedex_obj.trackResults[0]?.latestStatusDetail?.description !==
+            get_status_fedex_orders[index].current_delivery_status
+        ) {
+          get_status_fedex_orders[index].items[
+            get_status_fedex_orders[index].item_index
+          ].delivery_status =
+            fedex_obj.trackResults[0]?.latestStatusDetail?.description;
+          try {
+            console.log(
+              `updateFedexStatus(${client}) => Updating order ${get_status_fedex_orders[index].order_id}`
+            );
+            const updateDelivery = await ordersDB.updateOrderByContainer(
+              get_status_fedex_orders[index].containerId,
+              get_status_fedex_orders[index].order_id,
+              get_status_fedex_orders[index].order_full_name,
+              get_status_fedex_orders[index].items
+            );
+            console.log(
+              `updateFedexStatus(${client}) => Successfully updated order ${get_status_fedex_orders[index].order_id}`
+            );
+          } catch (e) {
+            console.log(
+              `updateFedexStatus(${client}) => Error in updating order ${get_status_fedex_orders[index].order_id}:`,
+              e
+            );
+          }
         }
       }
-      changed = false;
-      current_order = { ...item };
-    }
-
-    if (result[index].trackResults[0]?.latestStatusDetail?.description) {
-      const fedex_tracking_number =
-        result[index].trackResults[0].trackingNumberInfo.trackingNumber;
-
-      if (item.tracking_no === fedex_tracking_number) {
-        current_order.items[item.item_index].delivery_status =
-          result[index].trackResults[0].latestStatusDetail.description;
-        changed = true;
-      }
-    }
-    index++;
+    });
   }
 
-  console.log("updateFedexStatus() => Ending function.");
+  console.log(`updateFedexStatus(${client}) => Finished function.`);
 };
 
 export { validateAddress, getFedexToken, trackPackage, updateFedexStatus };

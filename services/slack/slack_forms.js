@@ -1,10 +1,7 @@
 import { inventory } from "../../routes/inventory.js";
-import { slack_channel_ids, recipient_form_inputs } from "./slack_mappings.js";
+import { recipient_form_inputs, slack_team_ids } from "./slack_mappings.js";
 
-export async function slackMarketplaceRequestForm(channel_id) {
-  const client = slack_channel_ids[channel_id]
-    ? slack_channel_ids[channel_id]
-    : "public";
+export async function slackMarketplaceRequestForm(channel_id, client) {
   const marketplace_items = await inventory.getAll("MarketplaceInventory");
   let available_items = [];
 
@@ -86,7 +83,64 @@ export async function slackMarketplaceRequestForm(channel_id) {
           emoji: true,
         },
       },
+      {
+        type: "input",
+        element: {
+          type: "checkboxes",
+          options: [
+            {
+              text: {
+                type: "plain_text",
+                text: "Include Return Box",
+                emoji: true,
+              },
+              value: "include-return-box",
+            },
+          ],
+          action_id: "return-box-checkbox",
+        },
+        label: {
+          type: "plain_text",
+          text: "Add ons",
+          emoji: true,
+        },
+      },
       ...recipient_form_inputs,
+      {
+        type: "input",
+        element: {
+          type: "static_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select shipping rate",
+            emoji: true,
+          },
+          options: [
+            {
+              text: {
+                type: "plain_text",
+                text: "Standard",
+                emoji: true,
+              },
+              value: "Standard",
+            },
+            {
+              text: {
+                type: "plain_text",
+                text: "Expedited",
+                emoji: true,
+              },
+              value: "Expedited",
+            },
+          ],
+          action_id: "static_select_shipping",
+        },
+        label: {
+          type: "plain_text",
+          text: "Shipping",
+          emoji: true,
+        },
+      },
       {
         type: "actions",
         block_id: "actionblock789",
@@ -117,10 +171,6 @@ export async function slackMarketplaceRequestForm(channel_id) {
 }
 
 export async function slackReturnForm(channel_id) {
-  const client = slack_channel_ids[channel_id]
-    ? slack_channel_ids[channel_id]
-    : "public";
-
   const response = {
     response_type: "in_channel",
     channel: channel_id,
@@ -174,7 +224,6 @@ export async function slackReturnForm(channel_id) {
         element: {
           type: "plain_text_input",
           action_id: "return_device_type_input",
-          min_length: 1,
         },
         label: {
           type: "plain_text",
@@ -186,12 +235,11 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
-          action_id: "serial_number_input",
-          min_length: 1,
+          action_id: "condition_input",
         },
         label: {
           type: "plain_text",
-          text: "Return Device Serial Number",
+          text: "Return Device Condition",
           emoji: true,
         },
       },
@@ -199,12 +247,11 @@ export async function slackReturnForm(channel_id) {
         type: "input",
         element: {
           type: "plain_text_input",
-          action_id: "condition_input",
-          min_length: 1,
+          action_id: "activation_key_input",
         },
         label: {
           type: "plain_text",
-          text: "Return Device Condition",
+          text: "Activation Key",
           emoji: true,
         },
       },

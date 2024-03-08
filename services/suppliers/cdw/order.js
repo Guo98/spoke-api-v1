@@ -12,7 +12,7 @@ const cdw_config = {
   },
 };
 
-async function placeCDWOrder(order_body) {
+async function placeCDWOrder2(order_body) {
   console.log(`placeCDWOrder() => Starting function.`);
   const client = new ClientCredentials(cdw_config);
 
@@ -54,7 +54,7 @@ async function placeCDWOrder(order_body) {
   }
 }
 
-async function placeCDWOrder2(order_body) {
+async function placeCDWOrder(order_body) {
   console.log(`placeCDWOrder() => Starting function.`);
   //const client = new ClientCredentials(cdw_config);
 
@@ -67,7 +67,7 @@ async function placeCDWOrder2(order_body) {
         "content-type": "application/json",
         "subscription-key": process.env.CDW_API_SUBSCRIPTION_KEY,
       },
-      url: process.env.CDW_TOKEN_HOST + "/pprd/b2b/v1/customers/orders",
+      url: process.env.CDW_TOKEN_HOST + "/b2b/v1/customers/orders",
       data: order_body,
     };
 

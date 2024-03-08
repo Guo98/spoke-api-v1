@@ -202,7 +202,7 @@ export async function addNewDevice(
         `/marketplace/add/${client} => Adding new device type, brand, line and spec.`
       );
       let new_doc = {
-        id: type.toLowerCase() + "-" + client.toLowerCase(),
+        id: type.toLowerCase() + "-" + client.toLowerCase().replace(" ", "-"),
         item_type: type.charAt(0).toUpperCase() + type.slice(1),
         client,
         imgSrc: req.body.img_src,

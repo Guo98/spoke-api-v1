@@ -1,14 +1,21 @@
 import { Router } from "express";
-import axios from "axios";
 import crypto from "crypto";
+import { CosmosClient } from "@azure/cosmos";
 
-import { addMarketplaceOrder } from "./orders.js";
+import { config } from "../utils/config.js";
+import { Spoke } from "../models/spoke.js";
+
 import { checkJwt } from "../services/auth0.js";
 import {
   slackMarketplaceRequestForm,
   slackReturnForm,
 } from "../services/slack/slack_forms.js";
 import { handleSlackAction } from "../services/slack/slack_actions.js";
+import {
+  getOrderInfo,
+  getOutstandingReturns,
+} from "../services/slack/slack_reads.js";
+import { slack_team_ids } from "../services/slack/slack_mappings.js";
 
 import pkg from "@slack/bolt";
 const { App } = pkg;
@@ -48,7 +55,43 @@ const slack = (req, res, next) => {
   next();
 };
 
+const cosmosClient = new CosmosClient({
+  endpoint: config.endpoint,
+  key: config.key,
+});
+
+const spoke = new Spoke(cosmosClient, "Spoke");
+
+spoke
+  .init((err) => {
+    console.log("cosmos spoke db init err: ", err);
+  })
+  .catch((err) => {
+    console.error("shutting down spoke db because of error: ", err);
+    process.exit(1);
+  });
+
 // C05NMSAF4F3
+
+async function checkClientAndUsers(team_id, user_id) {
+  const slack_clients = await spoke.getSlackTeams();
+
+  const slack_index = slack_clients.findIndex((sc) => sc.id === team_id);
+
+  if (slack_index > -1) {
+    if (
+      slack_clients[slack_index].allowed_users.findIndex(
+        (user) => user === user_id
+      ) < 0
+    ) {
+      return "User not allowed";
+    } else {
+      return slack_clients[slack_index].client;
+    }
+  } else {
+    return "";
+  }
+}
 
 router.post("/message", checkJwt, async (req, res) => {
   console.log("/message => Starting route.");
@@ -116,61 +159,91 @@ router.post("/message", checkJwt, async (req, res) => {
   console.log("/message => Finished route.");
 });
 
-router.post("/slackorder", slack, async (req, res) => {
+router.post("/slack/order", slack, async (req, res) => {
   console.log("/slackorder => Starting route.");
-  try {
-    const response = await slackMarketplaceRequestForm(req.body.channel_id);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-    return res.json(response);
-  } catch (e) {
-    return res.status(500).send("Ooops");
+  if (client !== "" && client !== "User not allowed") {
+    try {
+      const response = await slackMarketplaceRequestForm(
+        req.body.channel_id,
+        client
+      );
+
+      res.json(response);
+    } catch (e) {
+      res.json({
+        response_type: "in_channel",
+        channel: req.body.channel_id,
+        text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
+      });
+    }
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Functionality currently not supported. Please reach out to Spoke team for assistance.",
+    });
   }
 });
 
 router.post("/slack/return", slack, async (req, res) => {
-  console.log("/slack/return => Starting route.");
-  console.log("/slack/return :::::::::::::::::::: ", req.body);
-  try {
-    const response = await slackReturnForm(req.body.channel_id);
+  console.log("/slack/return => Starting route.", req.body);
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
-    return res.json(response);
-  } catch (e) {
-    return res.status(500).send("Ooops");
+  if (client !== "" && client !== "User not allowed") {
+    try {
+      const response = await slackReturnForm(
+        req.body.channel_id,
+        req.body.team_id
+      );
+
+      res.json(response);
+    } catch (e) {
+      res.json({
+        response_type: "in_channel",
+        channel: req.body.channel_id,
+        text: "Service unavailable right now. Please reach out to Spoke team for assistance.",
+      });
+    }
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Functionality currently not supported. Please reach out to Spoke team for assistance.",
+    });
   }
 });
 
-/*
-    "client": "Test client",
-    "color": "Gray",
-    "notes": {
-        "device": "device notes",
-        "recipient": "employee notes here"
-    },
-    "order_type": "Deploy",
-    "email": "andy@withspoke.com",
-    "phone_number": "1234567890",
-    "shipping_rate": "standard",
-    "date": "4/5/2023",
-    "status": "Received",
-*/
-
-router.post("/slackactions", slack, async (req, res) => {
-  console.log("/slackactions => req.body", req.body);
+router.post("/slack/actions", slack, async (req, res) => {
+  console.log("/slack/actions => req.body", req.body);
 
   const payload = JSON.parse(req.body.payload);
   const resp_url = payload.response_url;
 
   if (payload.actions[0].type === "static_select") {
     res.send("Ok");
-    console.log("/slackactions => Sent acknowledgment response");
+    console.log("/slack/actions => Sent acknowledgment response");
   } else {
-    console.log("/slackactions => Starting handleSlackAction()");
+    console.log("/slack/actions => Starting handleSlackAction()");
     await handleSlackAction(payload, resp_url);
-    console.log("/slackactions => Finished handleSlackAction()");
+    console.log("/slack/actions => Finished handleSlackAction()");
   }
 });
 
-router.post("/slackoptions", slack, async (req, res) => {
+router.post("/slack/options", slack, async (req, res) => {
   console.log("/slackoptions => req.body", req.body);
   console.log("/slackoptions => payload", req.body.payload);
   res.json({
@@ -200,181 +273,137 @@ router.post("/slackoptions", slack, async (req, res) => {
   });
 });
 
-const resultState2 = {
-  type: "block_actions",
-  user: {
-    id: "U03LK1CPU8G",
-    username: "andy",
-    name: "andy",
-    team_id: "T023LRP68AU",
-  },
-  api_app_id: "A052R045TBQ",
-  token: "k6lF4wZuPjjtqm70AIBQ6Qh3",
-  container: {
-    type: "message",
-    message_ts: "1682043910.192159",
-    channel_id: "D03L7TX0BHP",
-    is_ephemeral: false,
-  },
-  trigger_id: "5158803129777.2122873212368.c609db5d2f955c57564ba5c235e5f7a4",
-  team: { id: "T023LRP68AU", domain: "spoke-technology" },
-  enterprise: null,
-  is_enterprise_install: false,
-  channel: { id: "D03L7TX0BHP", name: "directmessage" },
-  message: {
-    type: "message",
-    subtype: "bot_message",
-    text: "Hello, World!",
-    ts: "1682043910.192159",
-    bot_id: "B054039ST9R",
-    blocks: [
-      {
-        type: "header",
-        block_id: "eRP4",
-        text: { type: "plain_text", text: "New request", emoji: true },
-      },
-      {
-        type: "input",
-        block_id: "lB8k/",
-        label: { type: "plain_text", text: "Item Name", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "item_name_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "xBc",
-        label: { type: "plain_text", text: "Requested Specs", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "req_specs_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "s6VG",
-        label: { type: "plain_text", text: "Recipient Name", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_name_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "lJpx",
-        label: { type: "plain_text", text: "Recipient Address", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_addr_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "u+Ce",
-        label: { type: "plain_text", text: "Recipient Email", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_email_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "yqL",
-        label: {
-          type: "plain_text",
-          text: "Recipient Phone Number",
-          emoji: true,
-        },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "recipient_pn_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "BvuBP",
-        label: { type: "plain_text", text: "Reference URL", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "ref_url_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "input",
-        block_id: "aZxg",
-        label: { type: "plain_text", text: "Notes", emoji: true },
-        optional: false,
-        dispatch_action: false,
-        element: {
-          type: "plain_text_input",
-          action_id: "notes_input",
-          dispatch_action_config: { trigger_actions_on: ["on_enter_pressed"] },
-        },
-      },
-      {
-        type: "actions",
-        block_id: "actionblock789",
-        elements: [
-          {
-            type: "button",
-            action_id: "YkZIQ",
-            text: { type: "plain_text", text: "Submit", emoji: true },
-            style: "primary",
-            value: "submit",
-          },
-        ],
-      },
-    ],
-  },
-  state: {
-    values: {
-      "lB8k/": { item_name_input: { type: "plain_text_input", value: null } },
-      xBc: { req_specs_input: { type: "plain_text_input", value: null } },
-      s6VG: { recipient_name_input: { type: "plain_text_input", value: null } },
-      lJpx: { recipient_addr_input: { type: "plain_text_input", value: null } },
-      "u+Ce": {
-        recipient_email_input: { type: "plain_text_input", value: null },
-      },
-      yqL: { recipient_pn_input: { type: "plain_text_input", value: null } },
-      BvuBP: { ref_url_input: { type: "plain_text_input", value: null } },
-      aZxg: { notes_input: { type: "plain_text_input", value: null } },
-    },
-  },
-  response_url:
-    "https://hooks.slack.com/actions/T023LRP68AU/5169866150336/Psy0TmQkSjqDQoYH80X4b2xS",
-  actions: [
-    {
-      action_id: "YkZIQ",
-      block_id: "actionblock789",
-      text: { type: "plain_text", text: "Submit", emoji: true },
-      value: "submit",
-      style: "primary",
-      type: "button",
-      action_ts: "1682043913.561467",
-    },
-  ],
-};
+router.post("/slack/order_info", slack, async (req, res) => {
+  console.log("/slack/order_info => Starting route.");
+
+  const order_number = req.body.text;
+
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
+
+  if (client !== "" && client !== "User not allowed") {
+    const response = await getOrderInfo(
+      client,
+      order_number,
+      req.body.channel_id
+    );
+
+    res.json(response);
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Currently not supported. Please reach out to Spoke.",
+    });
+  }
+
+  console.log("/slack/order_info => Finished route.");
+});
+
+router.post("/slack/outstanding_returns", slack, async (req, res) => {
+  console.log("/slack/outstanding_returns => Starting route.");
+  const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
+
+  if (client !== "" && client !== "User not allowed") {
+    const response = await getOutstandingReturns(client, req.body.channel_id);
+    res.json(response);
+  } else if (client === "User not allowed") {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Action currently not allowed by user. Please reach out to Spoke.",
+    });
+  } else {
+    res.json({
+      response_type: "in_channel",
+      channel: req.body.channel_id,
+      text: "Currently not supported. Please reach out to Spoke.",
+    });
+  }
+  console.log("/slack/outstanding_returns => Finished route.");
+});
+
+router.post("/slack/authorize", checkJwt, async (req, res) => {
+  const { code, client, user_email } = req.body;
+  console.log(`/slack/authorize/${client} => Starting route.`);
+
+  try {
+    const slack_teams = await spoke.getSlackTeams();
+
+    const team_index = slack_teams.findIndex((team) => team.client === client);
+
+    if (team_index > -1) {
+      try {
+        console.log(
+          `/slack/authorize/${client} => Checking user: ${user_email}`
+        );
+        const user_resp = await app.client.users.lookupByEmail({
+          token: slack_teams[team_index].access_token,
+          email: user_email,
+        });
+
+        if (
+          slack_teams[team_index].allowed_users.findIndex(
+            (user_id) => user_id === user_resp.user.id
+          ) < 0
+        ) {
+          console.log(
+            `/slack/authorize/${client} => Adding user: ${user_email}`
+          );
+          const add_user = await spoke.addNewUser(
+            slack_teams[team_index].id,
+            user_resp.user.id
+          );
+          res.json({ status: "Added user" });
+        } else {
+          console.log(`/slack/authorize/${client} => User already whitelisted`);
+          res.json({ status: "Already exists" });
+        }
+      } catch (e) {
+        console.log("/slack/authorize => Error in adding user:", e);
+        res.status(500).json({ status: "Error" });
+      }
+    } else {
+      console.log(
+        `/slack/authorize/${client} => Connecting to new client workspace`
+      );
+      try {
+        const oauth_resp = await app.client.oauth.v2.access({
+          code,
+          client_id: process.env.SLACK_CLIENT_ID,
+          client_secret: process.env.SLACK_CLIENT_SECRET,
+        });
+        console.log(
+          `/slack/authorize/${client} => Successfully connected to new workspace.`
+        );
+        const team_id = oauth_resp.team.id;
+        const team_name = oauth_resp.team.name;
+        const bot_access_token = oauth_resp.access_token;
+        const user_id = oauth_resp.authed_user.id;
+        const add_team = await spoke.newSlackTeam(
+          team_name,
+          team_id,
+          bot_access_token,
+          client,
+          user_id
+        );
+        console.log("/slack/authorize => Successfully authorized.");
+        res.json({ status: "Successful" });
+      } catch (e) {
+        console.log("/slack/authorize => Error:", e);
+        res.status(500).json({ status: "Error" });
+      }
+    }
+  } catch (e) {}
+
+  if (!res.headersSent) res.send("Yay");
+});
 
 export default router;
+
+export { slack, spoke };
