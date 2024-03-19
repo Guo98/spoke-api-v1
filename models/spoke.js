@@ -64,16 +64,26 @@ class Spoke {
     client,
     allowed_pages = ["Orders", "Inventory", "Marketplace", "Approvals"],
     org_id,
-    connections
+    connections,
+    employee_portal
   ) {
-    const { resource: doc } = await this.clientContainer.items.create({
+    let client_doc = {
       client,
       allowed_pages,
       users: [],
       entities: [],
       connections,
       org_id,
-    });
+      employee_portal,
+    };
+
+    if (employee_portal) {
+      client_doc.employees = [];
+    }
+
+    const { resource: doc } = await this.clientContainer.items.create(
+      client_doc
+    );
 
     return doc;
   }

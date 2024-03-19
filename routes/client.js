@@ -7,7 +7,7 @@ import { spoke } from "./slack.js";
 const router = Router();
 
 router.post("/client/new", checkJwt, async (req, res) => {
-  const { client_name, connections, allowed_pages } = req.body;
+  const { client_name, connections, allowed_pages, employee_portal } = req.body;
 
   const org_id = await createNewClient(
     client_name,
@@ -30,7 +30,8 @@ router.post("/client/new", checkJwt, async (req, res) => {
       client_name,
       allowed_pages,
       org_id,
-      enabled_connections
+      enabled_connections,
+      employee_portal
     );
   } else {
     res.status(500).json({ status: "Error" });
