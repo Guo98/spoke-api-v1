@@ -105,7 +105,7 @@ class Spoke {
     return client_obj;
   }
 
-  async addNewUserPortal(client, user_email) {
+  async addNewUserPortal(client, user_email, role) {
     const { resources: receivedList } = await this.clientContainer.items
       .readAll()
       .fetchAll();
@@ -114,7 +114,11 @@ class Spoke {
 
     if (client_index > -1) {
       let client_resource = receivedList[client_index];
-      client_resource.users.push(user_email);
+      if (role === "employee") {
+        client_resource.employees.push(user_email);
+      } else {
+        client_resource.users.push(user_email);
+      }
       const { resource: replaced } = await this.clientContainer
         .item(client_resource.id, client)
         .replace(client_resource);
