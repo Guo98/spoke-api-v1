@@ -57,4 +57,5 @@ export const rolesMappings = {
   windows: "rol_P2MEj5mrO5lLTa3o",
   mac: "rol_19cPtbQ7rKcFyECz",
   manager: "rol_iRdqYMgE20Ygmf3l",
+  employee: "rol_f4e3o7URbseMl3rC",
 };

@@ -75,7 +75,13 @@ async function getRecommendations(links, item_name, specs) {
   }
 }
 
-export async function checkItemStock(product_link, item_name, specs, supplier) {
+export async function checkItemStock(
+  product_link,
+  item_name,
+  specs,
+  supplier,
+  location
+) {
   let search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
     : item_name;
@@ -155,7 +161,8 @@ export async function newCheckStock(
   specs,
   supplier = "cdw",
   others,
-  color
+  color,
+  location
 ) {
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs

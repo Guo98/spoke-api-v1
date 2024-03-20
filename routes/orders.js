@@ -532,37 +532,38 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
 
   let db_obj = { ...req.body };
 
-  const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
-  if (yubikey_index > -1) {
-    console.log(`/newPurchase/${client} => Ordering yubikey.`);
-    try {
-      const yubikeyBody = {
-        firstname: req.body.first_name,
-        lastname: req.body.last_name,
-        email: req.body.email,
-        phone_number: req.body.phone_number,
-        address: {
-          addressLine: req.body.address_obj.al1,
-          addressLine2: req.body.address_obj.al2,
-          city: req.body.address_obj.city,
-          subdivision: req.body.address_obj.state,
-          postalCode: req.body.address_obj.postal_code,
-          country: req.body.address_obj.country_code,
-        },
-        quantity: parseInt(addons[yubikey_index].split("x")[0]),
-      };
+  if (addons) {
+    const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+    if (yubikey_index > -1) {
+      console.log(`/newPurchase/${client} => Ordering yubikey.`);
+      try {
+        const yubikeyBody = {
+          firstname: req.body.first_name,
+          lastname: req.body.last_name,
+          email: req.body.email,
+          phone_number: req.body.phone_number,
+          address: {
+            addressLine: req.body.address_obj.al1,
+            addressLine2: req.body.address_obj.al2,
+            city: req.body.address_obj.city,
+            subdivision: req.body.address_obj.state,
+            postalCode: req.body.address_obj.postal_code,
+            country: req.body.address_obj.country_code,
+          },
+          quantity: parseInt(addons[yubikey_index].split("x")[0]),
+        };
 
-      const shipmentId = await createYubikeyShipment(yubikeyBody);
-      console.log(
-        `/newPurchase/${client} => Successfully ordered yubikey:`,
-        shipmentId
-      );
-      db_obj.shipment_id = shipmentId;
-    } catch (e) {
-      console.log(`/newPurchase/${client} => Error in ordering yubikey.`, e);
+        const shipmentId = await createYubikeyShipment(yubikeyBody);
+        console.log(
+          `/newPurchase/${client} => Successfully ordered yubikey:`,
+          shipmentId
+        );
+        db_obj.shipment_id = shipmentId;
+      } catch (e) {
+        console.log(`/newPurchase/${client} => Error in ordering yubikey.`, e);
+      }
     }
   }
-
   try {
     console.log(`/newPurchase/${client} => Adding new request to db:`, db_obj);
     let orderRes = await orders.getAllOrders("Marketplace");
