@@ -35,7 +35,6 @@ export const clientIdList = [
   "org_H63xrX3lAC7uphzb",
   "org_sYEKDqL5lHPLnJ8e",
   "org_cTljsU08cE8ECjBp",
-  "org_cf0BFkW7yuXi9lTo",
   "org_BMQjF5J2inNZ8PoQ",
   "org_mwy5eCy2IyrXOY1E",
   "org_gaFIEnwpsXXm8z0D",
