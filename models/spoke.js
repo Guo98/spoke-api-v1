@@ -64,16 +64,26 @@ class Spoke {
     client,
     allowed_pages = ["Orders", "Inventory", "Marketplace", "Approvals"],
     org_id,
-    connections
+    connections,
+    employee_portal
   ) {
-    const { resource: doc } = await this.clientContainer.items.create({
+    let client_doc = {
       client,
       allowed_pages,
       users: [],
       entities: [],
       connections,
       org_id,
-    });
+      employee_portal,
+    };
+
+    if (employee_portal) {
+      client_doc.employees = [];
+    }
+
+    const { resource: doc } = await this.clientContainer.items.create(
+      client_doc
+    );
 
     return doc;
   }
@@ -95,7 +105,7 @@ class Spoke {
     return client_obj;
   }
 
-  async addNewUserPortal(client, user_email) {
+  async addNewUserPortal(client, user_email, role) {
     const { resources: receivedList } = await this.clientContainer.items
       .readAll()
       .fetchAll();
@@ -104,7 +114,11 @@ class Spoke {
 
     if (client_index > -1) {
       let client_resource = receivedList[client_index];
-      client_resource.users.push(user_email);
+      if (role === "employee") {
+        client_resource.employees.push(user_email);
+      } else {
+        client_resource.users.push(user_email);
+      }
       const { resource: replaced } = await this.clientContainer
         .item(client_resource.id, client)
         .replace(client_resource);

@@ -59,7 +59,7 @@ router.post("/invites", checkJwt, async (req, res) => {
   );
 
   try {
-    await spoke.addNewUserPortal(client, invite_email);
+    await spoke.addNewUserPortal(client, invite_email, role);
     console.log(
       `[POST] /invites/${client} => Successfully added new user to portal db.`
     );

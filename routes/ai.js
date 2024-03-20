@@ -20,14 +20,15 @@ const router = Router();
 // });
 
 router.post("/checkstock", checkJwt, async (req, res) => {
-  const { item_name, specs, supplier, others, color } = req.body;
+  const { item_name, specs, supplier, others, color, location } = req.body;
   try {
     if (req.body.product_link) {
       const aiResult = await checkItemStock(
         req.body.product_link,
         item_name,
         specs,
-        supplier
+        supplier,
+        location
       );
       res.json({ status: "Successful", data: aiResult });
     } else {
@@ -36,7 +37,8 @@ router.post("/checkstock", checkJwt, async (req, res) => {
         specs,
         supplier,
         others,
-        color
+        color,
+        location
       );
       res.json({ status: "Successful", data: aiResult });
     }
