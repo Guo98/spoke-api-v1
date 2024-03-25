@@ -77,6 +77,7 @@ export async function sendRollingNotification(client, name, email, address) {
             address: email,
           },
         ],
+        bcc: [{ address: "info@withspoke.com" }],
       },
     };
 
@@ -113,6 +114,7 @@ export async function sendManualReminder(body) {
         cc: cc_emails[client]
           ? [...cc_emails[client], { address: requestor_email }]
           : [{ address: requestor_email }],
+        bcc: [{ address: "info@withspoke.com" }],
       },
     };
 
