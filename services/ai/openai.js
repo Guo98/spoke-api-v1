@@ -27,7 +27,7 @@ export async function openaiCall(
 
     return response;
   } catch (e) {
-    console.log("openaiCall() => Error in calling openai:", e);
+    console.log("openaiCall() => Error in calling openai:", e.response.data);
     return null;
   }
 }

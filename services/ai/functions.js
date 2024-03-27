@@ -27,7 +27,7 @@ export async function selectBestMatch(
   specs,
   item_name
 ) {
-  console.log("selectBestMatch() => Starting function.");
+  console.log("selectBestMatch() => Starting function.", product_list[index]);
   if (product_list[index].details_url) {
     console.log("selectBestMatch() => Matched to a product family.");
     let product_url =
@@ -47,18 +47,20 @@ export async function selectBestMatch(
       let product_details = [];
 
       product_resp.data.pageProps.dehydratedQueries.queries[0].state.data.products.forEach(
-        (item) => {
+        (item, index) => {
           product_details.push({
             name: item.name,
             stock_level: item.availability.stockType,
-            price: item.price.gross,
-            currency: item.price.currencyId,
+            price: item.price?.gross || "",
+            currency: item.price?.currencyId || "",
             specs: item.topFeatures,
-            img_src: item.imagePath,
+            image_source: item.imagePath,
             description: item.description,
+            url_link: "https://www.bechtle.com" + item.pdpUrl,
           });
         }
       );
+
       const messages = [
         {
           role: "system",
@@ -69,7 +71,7 @@ export async function selectBestMatch(
           role: "assistant",
           content:
             "Here is the list of devices from the search criteria: " +
-            JSON.stringify(product_details),
+            JSON.stringify(product_details.splice(0, 10)),
         },
         {
           role: "user",
@@ -80,7 +82,7 @@ export async function selectBestMatch(
         },
       ];
 
-      const openai_resp = await openaiCall(messages, 1500, 0.5, 0);
+      const openai_resp = await openaiCall(messages, 750, 0.5, 0);
 
       if (
         openai_resp !== null &&
