@@ -28,6 +28,7 @@ export async function selectBestMatch(
   item_name
 ) {
   console.log("selectBestMatch() => Starting function.", product_list[index]);
+  let currency_sign = "";
   if (product_list[index].details_url) {
     console.log("selectBestMatch() => Matched to a product family.");
     let product_url =
@@ -48,6 +49,13 @@ export async function selectBestMatch(
 
       product_resp.data.pageProps.dehydratedQueries.queries[0].state.data.products.forEach(
         (item, index) => {
+          if (currency_sign === "") {
+            if (item.price && item.price.currencyId) {
+              if (item.price.currencyId === "EUR") {
+                currency_sign = "€";
+              }
+            }
+          }
           product_details.push({
             name: item.name,
             stock_level: item.availability.stockType,
@@ -99,7 +107,13 @@ export async function selectBestMatch(
             "selectBestMatch() => Matched the device to one in the product family."
           );
           let formattedResponse = returnItemInfo(args);
-
+          if (currency_sign !== "") {
+            if (formattedResponse.price.includes("$")) {
+              formattedResponse.price.replace("$", currency_sign);
+            } else {
+              formattedResponse.price = currency_sign + formattedResponse.price;
+            }
+          }
           return formattedResponse;
         }
       }
@@ -132,7 +146,13 @@ export async function selectBestMatch(
       );
       if (function_name === "returnItemInfo") {
         let formattedResponse = returnItemInfo(args);
-
+        if (currency_sign !== "") {
+          if (formattedResponse.price.includes("$")) {
+            formattedResponse.price.replace("$", currency_sign);
+          } else {
+            formattedResponse.price = currency_sign + formattedResponse.price;
+          }
+        }
         return formattedResponse;
       }
     }
