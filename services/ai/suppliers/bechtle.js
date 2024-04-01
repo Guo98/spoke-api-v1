@@ -13,6 +13,8 @@ export async function searchBechtle(product_name, specs, color, location) {
     let bechtle_search = await axios.get(
       "https://www.bechtle.com/api/find/entries?seo_name=hardware%2Fmobile-computing%2Fnotebooks--10007004--c&size=50&query=" +
         product_name +
+        " " +
+        specs +
         "&localization=" +
         search_code
     );
