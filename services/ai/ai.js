@@ -183,6 +183,8 @@ export async function newCheckStock(
 
   if (links.length > 0) {
     const temp_links = [...links];
+
+    const spliced_links = temp_links.splice(0, 10);
     let messages = [
       {
         role: "system",
@@ -192,8 +194,7 @@ export async function newCheckStock(
       {
         role: "assistant",
         content:
-          "Here is the list of devices: " +
-          JSON.stringify(temp_links.splice(0, 10)),
+          "Here is the list of devices: " + JSON.stringify(spliced_links),
       },
       {
         role: "user",
@@ -209,7 +210,7 @@ export async function newCheckStock(
           role: "system",
           content:
             "Given this list of devices " +
-            JSON.stringify(temp_links) +
+            JSON.stringify(spliced_links) +
             ", select the device in the list that best matches the requested device: " +
             item_name +
             " " +
