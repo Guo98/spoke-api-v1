@@ -69,32 +69,49 @@ export async function selectBestMatch(
         }
       );
 
+      if (product_details.length > 10) {
+        product_details.splice(0, 10);
+      }
+
+      // const messages_2 = [
+      //   {
+      //     role: "system",
+      //     content:
+      //       "Given a list of devices, match the requested device to one on the list and then return the info of the device in a formatted response. Has to be the same brand and device line. If there is no matches, return null.",
+      //   },
+      //   {
+      //     role: "assistant",
+      //     content:
+      //       "Here is the list of devices from the search criteria: " +
+      //       JSON.stringify(product_details.splice(0, 10)),
+      //   },
+      //   {
+      //     role: "user",
+      //     content: `Check if specs: ${specs.replace(
+      //       '"',
+      //       " inch"
+      //     )} for item: ${item_name} and color: ${color} is available in the list. Has to be the same device brand and line. If no devices in the list match the specified device, return null.`,
+      //   },
+      // ];
+
       const messages = [
         {
           role: "system",
-          content:
-            "Given a list of devices, best match the requested device to the list and then return the info of the device in a formatted response (NOT THE INDEX).",
-        },
-        {
-          role: "assistant",
-          content:
-            "Here is the list of devices from the search criteria: " +
-            JSON.stringify(product_details.splice(0, 10)),
+          content: `Given a list of devices, match the requested device to one in the list.`,
         },
         {
           role: "user",
-          content: `Check if specs: ${specs.replace(
-            '"',
-            " inch"
-          )} for item: ${item_name} and color: ${color} is available.`,
+          content: `Here is the requested device: [Device name: ${item_name}. Specs: ${specs}. Color: ${color}]. Here is the list of available devices: ${JSON.stringify(
+            product_details
+          )}. Return the selected device from the list in a formatted response.`,
         },
       ];
-
-      const openai_resp = await openaiCall(messages, 750, 0.5, 0);
+      console.log("message ::::::::::: ", messages);
+      const openai_resp = await openaiCall(messages, 800, 0.3, 0);
 
       if (
         openai_resp !== null &&
-        openai_resp.data.choices[0].finish_reason === "function_call"
+        openai_resp.data?.choices[0].finish_reason === "function_call"
       ) {
         const function_name =
           openai_resp.data.choices[0].message?.function_call?.name;
@@ -120,15 +137,27 @@ export async function selectBestMatch(
     }
   } else {
     console.log("selectBestMatch() => Matched device to a single product.");
-    const messages = [
+    const messages_2 = [
       {
         role: "system",
         content:
           "Given the device info, return the info in a formatted response.",
       },
       {
-        role: "assistant",
-        content: "Here is the device info: " + product_list[index],
+        role: "user",
+        content:
+          "Return this device's info: " +
+          product_list[index] +
+          " in a formatted way.",
+      },
+    ];
+
+    const messages = [
+      {
+        role: "system",
+        content:
+          "Return this device info in formatted way: " +
+          JSON.stringify(product_list[index]),
       },
     ];
 

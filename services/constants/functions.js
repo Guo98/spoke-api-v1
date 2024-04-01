@@ -131,7 +131,7 @@ export const bechtle_functions = [
   {
     name: "selectBestMatch",
     description:
-      "If the supplier is bechtle, return the index of the object in an array of objects that best matches requested item and specs",
+      "If the supplier is bechtle, return the index of the object in an array of objects that best matches requested item and specs.",
     parameters: {
       type: "object",
       properties: {

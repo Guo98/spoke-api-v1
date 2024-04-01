@@ -13,8 +13,6 @@ export async function searchBechtle(product_name, specs, color, location) {
     let bechtle_search = await axios.get(
       "https://www.bechtle.com/api/find/entries?seo_name=hardware%2Fmobile-computing%2Fnotebooks--10007004--c&size=50&query=" +
         product_name +
-        " " +
-        specs +
         "&localization=" +
         search_code
     );
@@ -27,16 +25,19 @@ export async function searchBechtle(product_name, specs, color, location) {
             item.SingleProductView.availability_view.delivery_hint_text,
           product_description: item.SingleProductView.description,
           sku: item.SingleProductView.manufacturer_product_id,
-          img_src: item.SingleProductView.thumbnail_path,
+          image_source: item.SingleProductView.thumbnail_path,
           price: item.SingleProductView.price.brutto,
           specs: item.SingleProductView.topFeatures,
+          currency: item.SingleProductView.price.currency_id,
+          url_link:
+            "https://www.bechtle.com" + item.SingleProductView.details_url,
         });
       } else if (item.ProductFamilyView) {
         product_desc_links.push({
           product_name: item.ProductFamilyView.name,
           details_url: item.ProductFamilyView.details_url,
           product_description: item.ProductFamilyView.description,
-          img_src: item.ProductFamilyView.thumbnail_path,
+          image_source: item.ProductFamilyView.thumbnail_path,
         });
       }
     });

@@ -183,7 +183,7 @@ export async function newCheckStock(
 
   if (links.length > 0) {
     const temp_links = [...links];
-    const messages = [
+    let messages = [
       {
         role: "system",
         content:
@@ -192,9 +192,7 @@ export async function newCheckStock(
       {
         role: "assistant",
         content:
-          "Here is the list of devices from the supplier " +
-          supplier +
-          ": " +
+          "Here is the list of devices: " +
           JSON.stringify(temp_links.splice(0, 10)),
       },
       {
@@ -205,11 +203,31 @@ export async function newCheckStock(
         )} for item: ${item_name} and color: ${color} to one in the list and return the info in a formatted response.`,
       },
     ];
+    if (supplier === "bechtle") {
+      messages = [
+        {
+          role: "system",
+          content:
+            "Given this list of devices " +
+            JSON.stringify(temp_links) +
+            ", select the device in the list that best matches the requested device: " +
+            item_name +
+            " " +
+            specs.replace('"', " inch") +
+            " " +
+            color,
+        },
+        {
+          role: "user",
+          content: `Select the device that matches the requested specs.`,
+        },
+      ];
+    }
     try {
       const response = await openaiCall(
         messages,
         500,
-        0.3,
+        0.4,
         supplier === "bechtle" ? 1 : 0
       );
 
