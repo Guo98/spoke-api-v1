@@ -57,6 +57,10 @@ router.get("/client/:user_email", checkJwt, async (req, res) => {
     delete client_obj._attachments;
     delete client_obj._ts;
 
+    if (client_obj.employee_portal) {
+      delete client_obj.employees;
+    }
+
     res.json({ status: "Successful", ...client_obj });
   } else {
     res.status(500).json({ status: "Error" });

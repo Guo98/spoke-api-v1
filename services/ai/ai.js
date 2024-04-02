@@ -1,9 +1,16 @@
 import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import axios from "axios";
-import { returnItemInfo, formatMultipleRecommendations } from "./functions.js";
-import { functions } from "../constants/functions.js";
+
+import { searchBechtle } from "./suppliers/bechtle.js";
+import {
+  returnItemInfo,
+  formatMultipleRecommendations,
+  selectBestMatch,
+} from "./functions.js";
+import { functions, bechtle_functions } from "../constants/functions.js";
 import { prompts } from "../constants/prompts.js";
+import { openaiCall } from "./openai.js";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
@@ -101,26 +108,24 @@ export async function checkItemStock(
     product_links = insight_search.links;
   }
 
-  const openairesp = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-0613",
-    messages: [
-      {
-        role: "system",
-        content:
-          "Given item info return in a formatted response. Parse out specs from the item name.",
-      },
-      {
-        role: "user",
-        content: "Here is the item info: " + JSON.stringify(productInfo),
-      },
-    ],
-    temperature: 0.5,
-    max_tokens: 3000,
-    functions: functions,
-    function_call: "auto",
-  });
+  const messages = [
+    {
+      role: "system",
+      content:
+        "Given item info return in a formatted response. Parse out specs from the item name.",
+    },
+    {
+      role: "user",
+      content: "Here is the item info: " + JSON.stringify(productInfo),
+    },
+  ];
 
-  if (openairesp.data.choices[0].finish_reason === "function_call") {
+  const openairesp = await openaiCall(messages, 3000, 0.5, 0);
+
+  if (
+    openairesp !== null &&
+    openairesp.data.choices[0].finish_reason === "function_call"
+  ) {
     const funcName = openairesp.data.choices[0].message?.function_call?.name;
 
     const retargs = JSON.parse(
@@ -172,40 +177,65 @@ export async function newCheckStock(
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
     links = await searchInsight(item_name + " " + specs);
+  } else if (supplier === "bechtle") {
+    links = await searchBechtle(item_name, specs, color, location);
   }
 
   if (links.length > 0) {
-    try {
-      const temp_links = [...links];
-      const response = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo-0613",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
-          },
-          {
-            role: "assistant",
-            content:
-              "Here is the list of devices: " +
-              JSON.stringify(temp_links.splice(0, 10)),
-          },
-          {
-            role: "user",
-            content: `Match specs: ${specs.replace(
-              '"',
-              " inch"
-            )} for item: ${item_name} and color: ${color} to one in the list and return the info in a formatted response.`,
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 500,
-        functions: functions,
-        function_call: "auto",
-      });
+    const temp_links = [...links];
 
-      if (response.data.choices[0].finish_reason === "function_call") {
+    const spliced_links = temp_links.splice(0, 10);
+    let messages = [
+      {
+        role: "system",
+        content:
+          "Given a list of devices, best match the requested device to the list. If it doesn't exist, get in stock recommendations for the requested device from the list.",
+      },
+      {
+        role: "assistant",
+        content:
+          "Here is the list of devices: " + JSON.stringify(spliced_links),
+      },
+      {
+        role: "user",
+        content: `Match specs: ${specs.replace(
+          '"',
+          " inch"
+        )} for item: ${item_name} and color: ${color} to one in the list and return the info in a formatted response.`,
+      },
+    ];
+    if (supplier === "bechtle") {
+      messages = [
+        {
+          role: "system",
+          content:
+            "Given this list of devices " +
+            JSON.stringify(spliced_links) +
+            ", select the device in the list that best matches the requested device: " +
+            item_name +
+            " " +
+            specs.replace('"', " inch") +
+            " " +
+            color,
+        },
+        {
+          role: "user",
+          content: `Select the device that matches the requested specs.`,
+        },
+      ];
+    }
+    try {
+      const response = await openaiCall(
+        messages,
+        500,
+        0.4,
+        supplier === "bechtle" ? 1 : 0
+      );
+
+      if (
+        response !== null &&
+        response.data.choices[0].finish_reason === "function_call"
+      ) {
         const functionName =
           response.data.choices[0].message?.function_call?.name;
 
@@ -232,6 +262,24 @@ export async function newCheckStock(
             return formattedResponse;
           } else {
             return formattedResponse;
+          }
+        } else if (functionName === "selectBestMatch") {
+          if (!isNaN(args.index) && args.index > -1) {
+            const response = await selectBestMatch(
+              links,
+              args.index,
+              color,
+              specs,
+              item_name
+            );
+
+            if (response !== null) {
+              return response;
+            }
+          } else {
+            console.log(
+              "newCheckStock() => Couldn't find a good match for device."
+            );
           }
         }
       }

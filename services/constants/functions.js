@@ -13,7 +13,8 @@ export const functions = [
         },
         stock_level: {
           type: "string",
-          description: 'Stock level of the item, e.g. "In Stock"',
+          description:
+            'Stock level of the item, either in stock or out of stock, e.g. "In Stock", "Out of Stock"',
         },
         url_link: {
           type: "string",
@@ -27,7 +28,7 @@ export const functions = [
         specs: {
           type: "string",
           description:
-            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD"',
+            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD". Return as a text string.',
         },
         image_source: {
           type: "string",
@@ -57,7 +58,7 @@ export const functions = [
   {
     name: "formatMultipleRecommendations",
     description:
-      "Returns the price, product description, iamge source and url of multiple recommended items in a formatted response.",
+      "Returns the price, product description, image source and url of multiple recommended items in a formatted response.",
     parameters: {
       type: "object",
       properties: {
@@ -123,6 +124,25 @@ export const functions = [
         },
       },
       required: ["recommendations"],
+    },
+  },
+];
+
+export const bechtle_functions = [
+  {
+    name: "selectBestMatch",
+    description:
+      "If the supplier is bechtle, return the index of the object in an array of objects that best matches requested item and specs.",
+    parameters: {
+      type: "object",
+      properties: {
+        index: {
+          type: "number",
+          description:
+            "Index of the object in the array, return -1 if there are no good matches, e.g. 3, 0",
+        },
+      },
+      required: ["index"],
     },
   },
 ];
