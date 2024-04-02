@@ -98,7 +98,16 @@ class Spoke {
     for (const client of receivedList) {
       if (client.users.findIndex((user) => user === user_email) > -1) {
         client_obj = client;
+        client_obj.role = "Admin";
         break;
+      }
+
+      if (client.employee_portal) {
+        if (client.employees.findIndex((user) => user === user_email) > -1) {
+          client_obj = client;
+          client_obj.role = "Employee";
+          break;
+        }
       }
     }
 
