@@ -27,7 +27,7 @@ export const functions = [
         specs: {
           type: "string",
           description:
-            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD"',
+            'Specifications of the item including the screen size, cpu, memory, storage, e.g. "14", i5, 16GB RAM, 512GB SSD". Return as a text string.',
         },
         image_source: {
           type: "string",
