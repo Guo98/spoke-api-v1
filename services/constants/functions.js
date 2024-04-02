@@ -13,7 +13,8 @@ export const functions = [
         },
         stock_level: {
           type: "string",
-          description: 'Stock level of the item, e.g. "In Stock"',
+          description:
+            'Stock level of the item, either in stock or out of stock, e.g. "In Stock", "Out of Stock"',
         },
         url_link: {
           type: "string",
