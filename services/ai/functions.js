@@ -54,12 +54,24 @@ export async function selectBestMatch(
               currency_sign = item.price.currencyId;
             }
           }
+
+          let specs_line = "";
+
+          if (item.topFeatures) {
+            Object.keys(item.topFeatures).forEach((key, index) => {
+              if (index === 0) {
+                specs_line = item.topFeatures[key];
+              } else {
+                specs_line = specs_line + ", " + item.topFeatures[key];
+              }
+            });
+          }
           product_details.push({
             name: item.name,
             stock_level: item.availability.stockType,
             price: item.price?.gross || "",
             currency: item.price?.currencyId || "",
-            specs: item.topFeatures,
+            specs: specs_line,
             image_source: item.imagePath,
             description: item.description,
             url_link: "https://www.bechtle.com" + item.pdpUrl,

@@ -21,6 +21,20 @@ export async function searchBechtle(product_name, specs, color, location) {
 
     bechtle_search.data.list_items.forEach((item) => {
       if (item.SingleProductView) {
+        let specs_line = "";
+
+        if (item.SingleProductView.topFeatures) {
+          Object.keys(item.SingleProductView.topFeatures).forEach(
+            (key, index) => {
+              if (index === 0) {
+                specs_line = item.SingleProductView.topFeatures[key];
+              } else {
+                specs_line =
+                  specs_line + ", " + item.SingleProductView.topFeatures[key];
+              }
+            }
+          );
+        }
         product_desc_links.push({
           product_name: item.SingleProductView.name,
           stock_level:
@@ -29,7 +43,7 @@ export async function searchBechtle(product_name, specs, color, location) {
           sku: item.SingleProductView.manufacturer_product_id,
           image_source: item.SingleProductView.thumbnail_path,
           price: item.SingleProductView.price.brutto,
-          specs: item.SingleProductView.topFeatures,
+          specs: specs_line,
           currency: item.SingleProductView.price.currency_id,
           url_link:
             "https://www.bechtle.com" + item.SingleProductView.details_url,
