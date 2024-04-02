@@ -51,9 +51,7 @@ export async function selectBestMatch(
         (item, index) => {
           if (currency_sign === "") {
             if (item.price && item.price.currencyId) {
-              if (item.price.currencyId === "EUR") {
-                currency_sign = "€";
-              }
+              currency_sign = item.price.currencyId;
             }
           }
           product_details.push({
@@ -68,9 +66,9 @@ export async function selectBestMatch(
           });
         }
       );
-
+      let spliced_links = product_details;
       if (product_details.length > 10) {
-        product_details.splice(0, 10);
+        spliced_links = product_details.splice(0, 10);
       }
 
       // const messages_2 = [
@@ -102,11 +100,11 @@ export async function selectBestMatch(
         {
           role: "user",
           content: `Here is the requested device: [Device name: ${item_name}. Specs: ${specs}. Color: ${color}]. Here is the list of available devices: ${JSON.stringify(
-            product_details
+            spliced_links
           )}. Return the selected device from the list in a formatted response.`,
         },
       ];
-      console.log("message ::::::::::: ", messages);
+
       const openai_resp = await openaiCall(messages, 800, 0.3, 0);
 
       if (
@@ -126,9 +124,16 @@ export async function selectBestMatch(
           let formattedResponse = returnItemInfo(args);
           if (currency_sign !== "") {
             if (formattedResponse.price.includes("$")) {
-              formattedResponse.price.replace("$", currency_sign);
-            } else {
-              formattedResponse.price = currency_sign + formattedResponse.price;
+              formattedResponse.price.replace("$", "");
+            }
+
+            if (
+              currency_sign === "EUR" &&
+              !formattedResponse.price.includes("€")
+            ) {
+              formattedResponse.price = "€" + formattedResponse.price;
+            } else if (currency_sign === "PLN") {
+              formattedResponse.price = formattedResponse.price + " PLN";
             }
           }
           return formattedResponse;
@@ -177,9 +182,16 @@ export async function selectBestMatch(
         let formattedResponse = returnItemInfo(args);
         if (currency_sign !== "") {
           if (formattedResponse.price.includes("$")) {
-            formattedResponse.price.replace("$", currency_sign);
-          } else {
-            formattedResponse.price = currency_sign + formattedResponse.price;
+            formattedResponse.price.replace("$", "");
+          }
+
+          if (
+            currency_sign === "EUR" &&
+            !formattedResponse.price.includes("€")
+          ) {
+            formattedResponse.price = "€" + formattedResponse.price;
+          } else if (currency_sign === "PLN") {
+            formattedResponse.price = formattedResponse.price + " PLN";
           }
         }
         return formattedResponse;
