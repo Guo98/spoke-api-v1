@@ -10,6 +10,7 @@ export const orgMappings = {
   public: "org_2cr6d5b5cEsEEtsR",
   Roivant: "org_lgsM9ZWjP1GdrDoA",
   Sona: "org_f0OJSheWDop7RPuc",
+  Life360: "org_6JDqHU4PVoWHs2Oq",
 };
 
 export const idToOrgMappings = {
@@ -23,6 +24,7 @@ export const idToOrgMappings = {
   org_ZQAwXjMDnevrYYIr: "NurseDash",
   org_lgsM9ZWjP1GdrDoA: "Roivant",
   org_f0OJSheWDop7RPuc: "Sona",
+  org_6JDqHU4PVoWHs2Oq: "Life360",
 };
 
 export const connectionsMappings = {
@@ -41,6 +43,7 @@ export const clientIdList = [
   "org_ZQAwXjMDnevrYYIr",
   "org_lgsM9ZWjP1GdrDoA",
   "org_f0OJSheWDop7RPuc",
+  "org_6JDqHU4PVoWHs2Oq",
 ];
 export const rolesMappings = {
   "flo-uk-emp": "rol_MJ75jZI9Ixe1pQKO",
