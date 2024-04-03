@@ -151,6 +151,14 @@ export async function selectBestMatch(
               formattedResponse.price = formattedResponse.price + " PLN";
             }
           }
+
+          if (
+            formattedResponse.stock_level.toLowerCase().includes("in stock")
+          ) {
+            formattedResponse.stock_level = "In Stock";
+          } else {
+            formattedResponse.stock_level = "Out of Stock";
+          }
           return formattedResponse;
         }
       }
@@ -211,6 +219,12 @@ export async function selectBestMatch(
           ) {
             formattedResponse.price = formattedResponse.price + " PLN";
           }
+        }
+
+        if (formattedResponse.stock_level.toLowerCase().includes("in stock")) {
+          formattedResponse.stock_level = "In Stock";
+        } else {
+          formattedResponse.stock_level = "Out of Stock";
         }
         return formattedResponse;
       }
