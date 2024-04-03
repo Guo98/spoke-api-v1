@@ -144,7 +144,10 @@ export async function selectBestMatch(
               !formattedResponse.price.includes("€")
             ) {
               formattedResponse.price = "€" + formattedResponse.price;
-            } else if (currency_sign === "PLN") {
+            } else if (
+              currency_sign === "PLN" &&
+              !formattedResponse.price.includes("PLN")
+            ) {
               formattedResponse.price = formattedResponse.price + " PLN";
             }
           }
@@ -154,20 +157,20 @@ export async function selectBestMatch(
     }
   } else {
     console.log("selectBestMatch() => Matched device to a single product.");
-    const messages_2 = [
-      {
-        role: "system",
-        content:
-          "Given the device info, return the info in a formatted response.",
-      },
-      {
-        role: "user",
-        content:
-          "Return this device's info: " +
-          product_list[index] +
-          " in a formatted way.",
-      },
-    ];
+    // const messages_2 = [
+    //   {
+    //     role: "system",
+    //     content:
+    //       "Given the device info, return the info in a formatted response.",
+    //   },
+    //   {
+    //     role: "user",
+    //     content:
+    //       "Return this device's info: " +
+    //       product_list[index] +
+    //       " in a formatted way.",
+    //   },
+    // ];
 
     const messages = [
       {
@@ -192,17 +195,20 @@ export async function selectBestMatch(
       );
       if (function_name === "returnItemInfo") {
         let formattedResponse = returnItemInfo(args);
-        if (currency_sign !== "") {
+        if (product_list[index].currency !== "") {
           if (formattedResponse.price.includes("$")) {
             formattedResponse.price.replace("$", "");
           }
 
           if (
-            currency_sign === "EUR" &&
+            product_list[index].currency === "EUR" &&
             !formattedResponse.price.includes("€")
           ) {
             formattedResponse.price = "€" + formattedResponse.price;
-          } else if (currency_sign === "PLN") {
+          } else if (
+            product_list[index].currency === "PLN" &&
+            !formattedResponse.price.includes("PLN")
+          ) {
             formattedResponse.price = formattedResponse.price + " PLN";
           }
         }
