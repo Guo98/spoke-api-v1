@@ -40,6 +40,7 @@ export async function slackMarketplaceRequestForm(channel_id, client) {
           },
           options: [],
         };
+
         market.items.forEach((item, i_index) => {
           option_group.options.push({
             text: {
@@ -49,6 +50,10 @@ export async function slackMarketplaceRequestForm(channel_id, client) {
             value: `${m_index}:${i_index}`,
           });
         });
+
+        if (option_group.options.length > 0) {
+          available_items.push(option_group);
+        }
       }
     }
   });
