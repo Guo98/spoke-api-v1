@@ -2,12 +2,13 @@ import { inventory } from "../../routes/inventory.js";
 import { recipient_form_inputs, slack_team_ids } from "./slack_mappings.js";
 
 export async function slackMarketplaceRequestForm(channel_id, client) {
+  console.log(`slackMarketplaceRequestForm(${client}) => Starting function.`);
   const marketplace_items = await inventory.getAll("MarketplaceInventory");
   let available_items = [];
 
   marketplace_items.forEach((market, m_index) => {
     if (market.client === client) {
-      if (market.type !== "accessories") {
+      if (market.item_type.toLowerCase() !== "accessories") {
         market.brands.forEach((brand, b_index) => {
           brand.types.forEach((line, l_index) => {
             let option_group = {
@@ -166,7 +167,7 @@ export async function slackMarketplaceRequestForm(channel_id, client) {
       },
     ],
   };
-
+  console.log(`slackMarketplaceRequestForm(${client}) => Finished function.`);
   return response;
 }
 

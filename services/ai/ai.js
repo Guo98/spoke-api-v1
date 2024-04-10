@@ -169,19 +169,27 @@ export async function newCheckStock(
   color,
   location
 ) {
+  console.log("newCheckStock() => Starting function.");
   const search_text = item_name.toLowerCase().includes("apple")
     ? item_name + " " + specs
     : item_name;
   let links = [];
   if (supplier === "cdw") {
+    console.log("newCheckStock() => Searching CDW.");
     links = await searchCDW(search_text);
   } else if (supplier === "insight") {
+    console.log("newCheckStock() => Searching Insight.");
     links = await searchInsight(item_name + " " + specs);
   } else if (supplier === "bechtle") {
+    console.log("newCheckStock() => Searching Bechtle.");
     links = await searchBechtle(item_name, specs, color, location);
   }
 
   if (links.length > 0) {
+    console.log(
+      "newCheckStock() => Got search results of length:",
+      links.length
+    );
     const temp_links = [...links];
 
     const spliced_links = temp_links.splice(0, 10);
@@ -205,6 +213,7 @@ export async function newCheckStock(
       },
     ];
     if (supplier === "bechtle") {
+      console.log("newCheckStock() => Updating messages for bechtle.");
       messages = [
         {
           role: "system",
@@ -225,6 +234,9 @@ export async function newCheckStock(
       ];
     }
     try {
+      console.log(
+        "newCheckStock() => Using openai to determine best match from list."
+      );
       const response = await openaiCall(
         messages,
         500,
@@ -236,6 +248,9 @@ export async function newCheckStock(
         response !== null &&
         response.data.choices[0].finish_reason === "function_call"
       ) {
+        console.log(
+          "newCheckStock() => OpenAI successfully return a function call."
+        );
         const functionName =
           response.data.choices[0].message?.function_call?.name;
 
@@ -244,12 +259,16 @@ export async function newCheckStock(
         );
 
         if (functionName === "returnItemInfo") {
+          console.log("newCheckStock() => Function call of returnItemInfo.");
           let formattedResponse = returnItemInfo(args);
 
           if (
             !formattedResponse.stock_level.toLowerCase().includes("in stock") ||
             others
           ) {
+            console.log(
+              "newCheckStock() => Matched device is not in stock, getting replacement recommendations."
+            );
             const recommendations = await getRecommendations(
               links,
               item_name,
@@ -257,6 +276,9 @@ export async function newCheckStock(
             );
 
             if (recommendations.length > 0) {
+              console.log(
+                "newCheckStock() => Successfully got recommendations."
+              );
               formattedResponse.recommendations = recommendations;
             }
             return formattedResponse;
@@ -264,6 +286,7 @@ export async function newCheckStock(
             return formattedResponse;
           }
         } else if (functionName === "selectBestMatch") {
+          console.log("newCheckStock() => Function call of selectBestMatch.");
           if (!isNaN(args.index) && args.index > -1) {
             const response = await selectBestMatch(
               links,
@@ -274,9 +297,13 @@ export async function newCheckStock(
             );
 
             if (response !== null) {
+              console.log(
+                "newCheckStock() => Successfully return best match in a formatted response."
+              );
               return response;
             }
           } else {
+            // should run recommendations here
             console.log(
               "newCheckStock() => Couldn't find a good match for device."
             );
@@ -284,7 +311,10 @@ export async function newCheckStock(
         }
       }
     } catch (e) {
-      console.log("Error :::::::::::::::: ", e.response.data);
+      console.log(
+        "newCheckStock() => Error in OpenAI function:",
+        e.response.data
+      );
     }
   }
 }

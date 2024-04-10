@@ -21,8 +21,10 @@ const router = Router();
 
 router.post("/checkstock", checkJwt, async (req, res) => {
   const { item_name, specs, supplier, others, color, location } = req.body;
+  console.log("/checkstock => Starting route.");
   try {
     if (req.body.product_link) {
+      console.log("/checkstock => Checking item stock by product link.");
       const aiResult = await checkItemStock(
         req.body.product_link,
         item_name,
@@ -30,8 +32,12 @@ router.post("/checkstock", checkJwt, async (req, res) => {
         supplier,
         location
       );
+      console.log(
+        "/checkstock => Successfully got item stock level from product link."
+      );
       res.json({ status: "Successful", data: aiResult });
     } else {
+      console.log("/checkstock => Checking item stock by specs.");
       const aiResult = await newCheckStock(
         item_name,
         specs,
@@ -39,6 +45,9 @@ router.post("/checkstock", checkJwt, async (req, res) => {
         others,
         color,
         location
+      );
+      console.log(
+        "/checkstock => Successfully got item stock level from specs."
       );
       res.json({ status: "Successful", data: aiResult });
     }
@@ -49,6 +58,7 @@ router.post("/checkstock", checkJwt, async (req, res) => {
     );
     res.status(500).json({ status: "Error" });
   }
+  console.log("/checkstock => Finished route.");
 });
 
 // router.get("/recommendations/:item_name", async (req, res) => {
