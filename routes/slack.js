@@ -409,8 +409,11 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
 });
 
 // router.get("/slack/test", async (req, res) => {
-//   const response = await slackMarketplaceRequestForm("test_channel", "public");
-//   console.log("response  >>>>>>>>>>>>>>>>>>>> ", response);
+//   const response = await slackMarketplaceRequestForm("test_channel", "Life360");
+//   console.log(
+//     "response  >>>>>>>>>>>>>>>>>>>> ",
+//     response.blocks[1].element.option_groups
+//   );
 //   res.send("Hello World");
 // });
 
