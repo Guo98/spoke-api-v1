@@ -14,7 +14,7 @@ export const functions = [
         stock_level: {
           type: "string",
           description:
-            'Stock level of the item, either in stock or out of stock, e.g. "In Stock", "Out of Stock"',
+            'Stock level of the item, convert stock_level value to be either "In Stock" or "Out of Stock". e.g. "In Stock", "Out of Stock"',
         },
         url_link: {
           type: "string",

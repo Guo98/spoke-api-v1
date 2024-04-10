@@ -83,27 +83,6 @@ export async function selectBestMatch(
         spliced_links = product_details.splice(0, 10);
       }
 
-      // const messages_2 = [
-      //   {
-      //     role: "system",
-      //     content:
-      //       "Given a list of devices, match the requested device to one on the list and then return the info of the device in a formatted response. Has to be the same brand and device line. If there is no matches, return null.",
-      //   },
-      //   {
-      //     role: "assistant",
-      //     content:
-      //       "Here is the list of devices from the search criteria: " +
-      //       JSON.stringify(product_details.splice(0, 10)),
-      //   },
-      //   {
-      //     role: "user",
-      //     content: `Check if specs: ${specs.replace(
-      //       '"',
-      //       " inch"
-      //     )} for item: ${item_name} and color: ${color} is available in the list. Has to be the same device brand and line. If no devices in the list match the specified device, return null.`,
-      //   },
-      // ];
-
       const messages = [
         {
           role: "system",
@@ -144,9 +123,20 @@ export async function selectBestMatch(
               !formattedResponse.price.includes("€")
             ) {
               formattedResponse.price = "€" + formattedResponse.price;
-            } else if (currency_sign === "PLN") {
+            } else if (
+              currency_sign === "PLN" &&
+              !formattedResponse.price.includes("PLN")
+            ) {
               formattedResponse.price = formattedResponse.price + " PLN";
             }
+          }
+
+          if (
+            formattedResponse.stock_level.toLowerCase().includes("in stock")
+          ) {
+            formattedResponse.stock_level = "In Stock";
+          } else {
+            formattedResponse.stock_level = "Out of Stock";
           }
           return formattedResponse;
         }
@@ -154,20 +144,6 @@ export async function selectBestMatch(
     }
   } else {
     console.log("selectBestMatch() => Matched device to a single product.");
-    const messages_2 = [
-      {
-        role: "system",
-        content:
-          "Given the device info, return the info in a formatted response.",
-      },
-      {
-        role: "user",
-        content:
-          "Return this device's info: " +
-          product_list[index] +
-          " in a formatted way.",
-      },
-    ];
 
     const messages = [
       {
@@ -192,19 +168,28 @@ export async function selectBestMatch(
       );
       if (function_name === "returnItemInfo") {
         let formattedResponse = returnItemInfo(args);
-        if (currency_sign !== "") {
+        if (product_list[index].currency !== "") {
           if (formattedResponse.price.includes("$")) {
             formattedResponse.price.replace("$", "");
           }
 
           if (
-            currency_sign === "EUR" &&
+            product_list[index].currency === "EUR" &&
             !formattedResponse.price.includes("€")
           ) {
             formattedResponse.price = "€" + formattedResponse.price;
-          } else if (currency_sign === "PLN") {
+          } else if (
+            product_list[index].currency === "PLN" &&
+            !formattedResponse.price.includes("PLN")
+          ) {
             formattedResponse.price = formattedResponse.price + " PLN";
           }
+        }
+
+        if (formattedResponse.stock_level.toLowerCase().includes("in stock")) {
+          formattedResponse.stock_level = "In Stock";
+        } else {
+          formattedResponse.stock_level = "Out of Stock";
         }
         return formattedResponse;
       }

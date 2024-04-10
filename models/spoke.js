@@ -124,9 +124,17 @@ class Spoke {
     if (client_index > -1) {
       let client_resource = receivedList[client_index];
       if (role === "employee") {
-        client_resource.employees.push(user_email);
+        if (client_resource.employees.findIndex((e) => e === user_email) < 0) {
+          client_resource.employees.push(user_email);
+        } else {
+          return "User already invited";
+        }
       } else {
-        client_resource.users.push(user_email);
+        if (client_resource.users.findIndex((u) => u === user_email) < 0) {
+          client_resource.users.push(user_email);
+        } else {
+          return "User already invited";
+        }
       }
       const { resource: replaced } = await this.clientContainer
         .item(client_resource.id, client)

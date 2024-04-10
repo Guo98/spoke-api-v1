@@ -160,7 +160,7 @@ router.post("/message", checkJwt, async (req, res) => {
 });
 
 router.post("/slack/order", slack, async (req, res) => {
-  console.log("/slackorder => Starting route.");
+  console.log("/slack/order => Starting route.");
   const client = await checkClientAndUsers(req.body.team_id, req.body.user_id);
 
   if (client !== "" && client !== "User not allowed") {
@@ -172,6 +172,7 @@ router.post("/slack/order", slack, async (req, res) => {
 
       res.json(response);
     } catch (e) {
+      console.log("/slack/order => Error in requesting order form:", e);
       res.json({
         response_type: "in_channel",
         channel: req.body.channel_id,
@@ -179,18 +180,21 @@ router.post("/slack/order", slack, async (req, res) => {
       });
     }
   } else if (client === "User not allowed") {
+    console.log("/slack/order => User doesn't have access.");
     res.json({
       response_type: "in_channel",
       channel: req.body.channel_id,
       text: "Action currently not allowed by user. Please reach out to Spoke.",
     });
   } else {
+    console.log("/slack/order => Command not supported.");
     res.json({
       response_type: "in_channel",
       channel: req.body.channel_id,
       text: "Functionality currently not supported. Please reach out to Spoke team for assistance.",
     });
   }
+  console.log("/slack/order => Finished route.");
 });
 
 router.post("/slack/return", slack, async (req, res) => {
@@ -403,6 +407,12 @@ router.post("/slack/authorize", checkJwt, async (req, res) => {
 
   if (!res.headersSent) res.send("Yay");
 });
+
+// router.get("/slack/test", async (req, res) => {
+//   const response = await slackMarketplaceRequestForm("test_channel", "public");
+//   console.log("response  >>>>>>>>>>>>>>>>>>>> ", response);
+//   res.send("Hello World");
+// });
 
 export default router;
 
