@@ -75,6 +75,23 @@ async function scrape_supplier_site(supplier_url) {
       });
       completion_tokens = completion_tokens - usage_info.usedTokens;
     }
+  } else if (supplier_url.includes("www.bechtle.com")) {
+    let html = await axios.request({
+      url: supplier_url,
+      method: "get",
+      headers: { "Content-Type": "text/html" },
+    });
+    const replaced_html = html.data
+      .replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "")
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .toString();
+    const script_index = replaced_html.indexOf('"props"');
+    const end_index = replaced_html.indexOf('"page"');
+
+    const specs_obj_str = replaced_html
+      .substring(script_index, end_index - 1)
+      .slice(8);
+    console.log("html bechtle data >>>>>>>>> ", JSON.parse(specs_obj_str));
   }
 
   if (messages.length > 0) {

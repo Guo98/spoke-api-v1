@@ -102,11 +102,21 @@ class Spoke {
         break;
       }
 
-      if (client.employee_portal) {
-        if (client.employees.findIndex((user) => user === user_email) > -1) {
-          client_obj = client;
-          client_obj.role = "Employee";
-          break;
+      // if (client.employee_portal) {
+      //   if (client.employees.findIndex((user) => user === user_email) > -1) {
+      //     client_obj = client;
+      //     client_obj.role = "Employee";
+      //     break;
+      //   }
+      // }
+
+      if (client.roles) {
+        for (const role of client.roles) {
+          if (client[role].findIndex((user) => user === user_email) > -1) {
+            client_obj = client;
+            client_obj.role = role;
+            break;
+          }
         }
       }
     }
@@ -123,17 +133,28 @@ class Spoke {
 
     if (client_index > -1) {
       let client_resource = receivedList[client_index];
-      if (role === "employee") {
-        if (client_resource.employees.findIndex((e) => e === user_email) < 0) {
-          client_resource.employees.push(user_email);
-        } else {
-          return "User already invited";
-        }
-      } else {
+      if (role === "admin") {
         if (client_resource.users.findIndex((u) => u === user_email) < 0) {
           client_resource.users.push(user_email);
         } else {
           return "User already invited";
+        }
+      } else {
+        if (client_resource[role]) {
+          if (client_resource[role].findIndex((e) => e === user_email) < 0) {
+            client_resource[role].push(user_email);
+          } else {
+            return "User already invited";
+          }
+        } else {
+          if (client_resource.roles) {
+            if (client_resource.roles.findIndex((r) => r === role) < 0) {
+              client_resource.roles.push(role);
+            }
+          } else {
+            client_resource.roles = [role];
+          }
+          client_resource[role] = [user_email];
         }
       }
       const { resource: replaced } = await this.clientContainer
