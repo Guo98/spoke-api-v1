@@ -91,7 +91,36 @@ async function scrape_supplier_site(supplier_url) {
     const specs_obj_str = replaced_html
       .substring(script_index, end_index - 1)
       .slice(8);
-    console.log("html bechtle data >>>>>>>>> ", JSON.parse(specs_obj_str));
+
+    const product_obj = JSON.parse(specs_obj_str);
+
+    const shortened_product_obj = {
+      name: product_obj.pageProps.product.name,
+      availability: product_obj.pageProps.availability,
+      properties: product_obj.pageProps.topProperties,
+    };
+
+    messages = [
+      {
+        role: "system",
+        content:
+          "Given data, get item info from data that best matches the url given: " +
+          supplier_url,
+      },
+      {
+        role: "user",
+        content:
+          "Scrape the data for device name, specs, price, and color. " +
+          JSON.stringify(shortened_product_obj),
+      },
+    ];
+
+    const usage_info = new GPTTokens({
+      model: "gpt-3.5-turbo-0613",
+      messages,
+    });
+
+    completion_tokens = completion_tokens - usage_info.usedTokens;
   }
 
   if (messages.length > 0) {

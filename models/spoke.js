@@ -102,14 +102,6 @@ class Spoke {
         break;
       }
 
-      // if (client.employee_portal) {
-      //   if (client.employees.findIndex((user) => user === user_email) > -1) {
-      //     client_obj = client;
-      //     client_obj.role = "Employee";
-      //     break;
-      //   }
-      // }
-
       if (client.roles) {
         for (const role of client.roles) {
           if (client[role].findIndex((user) => user === user_email) > -1) {
@@ -164,6 +156,38 @@ class Spoke {
     } else {
       return "";
     }
+  }
+
+  async doesUserExist(client, user_email) {
+    const { resources: receivedList } = await this.clientContainer.items
+      .readAll()
+      .fetchAll();
+
+    const client_index = receivedList.findIndex((c) => c.client === client);
+    let user_index = -1;
+    if (client_index > -1) {
+      const client_resource = receivedList[client_index];
+
+      if (client_resource.users) {
+        user_index = client_resource.users.findIndex((u) => u === user_email);
+
+        if (user_index > -1) {
+          return true;
+        }
+      }
+
+      if (client_resource.roles) {
+        for (const role of client_resource.roles) {
+          user_index = client_resource[role].findIndex((r) => r === user_email);
+
+          if (user_index > -1) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
   }
 }
 
