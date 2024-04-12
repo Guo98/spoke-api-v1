@@ -52,7 +52,11 @@ router.post("/invites", checkJwt, async (req, res) => {
             `[POST] /invites/${client} => Error in inviting ${invite_email}: `,
             err
           );
-          res.status(500).json({ status: "Error in inviting user" });
+          res.status(500).json({
+            status: "Error",
+            message:
+              "An error has occurred in inviting the user, please reach out to Spoke or try again later.",
+          });
         }
         console.log(
           `[POST] /invites/${client} => Successfully invited user: ${invite_email}.`
@@ -70,7 +74,11 @@ router.post("/invites", checkJwt, async (req, res) => {
       console.log(`[POST] /invites/${client} => Error in adding to db:`, e);
     }
   } else {
-    res.status(500).json({ status: "Error", message: "User already exists" });
+    res.status(500).json({
+      status: "Error",
+      message:
+        "User has already been invited. Please enter a new user email or reach out to Spoke in regards to this user.",
+    });
   }
   // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`[POST] /invites/${client} => Ending route.`);

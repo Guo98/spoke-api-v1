@@ -98,6 +98,7 @@ async function scrape_supplier_site(supplier_url) {
       name: product_obj.pageProps.product.name,
       availability: product_obj.pageProps.availability,
       properties: product_obj.pageProps.topProperties,
+      image_source: product_obj.pageProps.medias.images[0].pictureUrl,
     };
 
     messages = [
