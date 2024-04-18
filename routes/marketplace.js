@@ -8,7 +8,7 @@ import { addNewAccessory } from "../services/marketplace/add_accessories.js";
 
 const router = Router();
 
-router.post("/marketplace/specs", async (req, res) => {
+router.post("/marketplace/specs", checkJwt, async (req, res) => {
   console.log("/marketplace/specs => Starting route.");
   const { supplier_url } = req.body;
   try {
