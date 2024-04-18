@@ -23,48 +23,62 @@ router.post("/invites", checkJwt, async (req, res) => {
   const { client, connection, invite_email, role, hasIds } = req.body;
   console.log(`[POST] /invites/${client} => Starting route.`);
 
-  management.organizations.createInvitation(
-    { id: orgMappings[client] },
-    {
-      inviter: {
-        name: "Spoke",
-      },
-      invitee: {
-        email: invite_email.trim(),
-      },
-      client_id: process.env.AUTH0_UI_CLIENT_ID,
-      connection_id: hasIds ? connection : connectionsMappings[connection],
-      send_invitation_email: true,
-      roles: hasIds
-        ? role
-          ? role
-          : undefined
-        : role
-        ? [rolesMappings[role]]
-        : undefined,
-    },
-    function (err) {
-      if (err) {
-        console.log(
-          `[POST] /invites/${client} => Error in inviting ${invite_email}: `,
-          err
-        );
-        res.status(500).json({ status: "Error in inviting user" });
-      }
-      console.log(
-        `[POST] /invites/${client} => Successfully invited user: ${invite_email}.`
-      );
-      res.json({ status: "Successful" });
-    }
-  );
+  const does_user_exist = await spoke.doesUserExist(client, invite_email);
 
-  try {
-    await spoke.addNewUserPortal(client, invite_email, role);
-    console.log(
-      `[POST] /invites/${client} => Successfully added new user to portal db.`
+  if (!does_user_exist) {
+    management.organizations.createInvitation(
+      { id: orgMappings[client] },
+      {
+        inviter: {
+          name: "Spoke",
+        },
+        invitee: {
+          email: invite_email.trim(),
+        },
+        client_id: process.env.AUTH0_UI_CLIENT_ID,
+        connection_id: hasIds ? connection : connectionsMappings[connection],
+        send_invitation_email: true,
+        roles: hasIds
+          ? role
+            ? role
+            : undefined
+          : role
+          ? [rolesMappings[role]]
+          : undefined,
+      },
+      function (err) {
+        if (err) {
+          console.log(
+            `[POST] /invites/${client} => Error in inviting ${invite_email}: `,
+            err
+          );
+          res.status(500).json({
+            status: "Error",
+            message:
+              "An error has occurred in inviting the user, please reach out to Spoke or try again later.",
+          });
+        }
+        console.log(
+          `[POST] /invites/${client} => Successfully invited user: ${invite_email}.`
+        );
+        res.json({ status: "Successful" });
+      }
     );
-  } catch (e) {
-    console.log(`[POST] /invites/${client} => Error in adding to db:`, e);
+
+    try {
+      await spoke.addNewUserPortal(client, invite_email, role);
+      console.log(
+        `[POST] /invites/${client} => Successfully added new user to portal db.`
+      );
+    } catch (e) {
+      console.log(`[POST] /invites/${client} => Error in adding to db:`, e);
+    }
+  } else {
+    res.status(500).json({
+      status: "Error",
+      message:
+        "User has already been invited. Please enter a new user email or reach out to Spoke in regards to this user.",
+    });
   }
   // if (!res.headersSent) res.json({ status: "Nothing happened" });
   console.log(`[POST] /invites/${client} => Ending route.`);

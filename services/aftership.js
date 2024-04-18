@@ -6,7 +6,7 @@ function determineAftershipNumber(name) {
   if (name === "Returning" || name === "Offboarding") {
     return "Equipment Return Box";
   } else if (name.indexOf('"') > -1) {
-    return item.name.split('"')[0];
+    return name.split('"')[0];
   } else {
     return name;
   }
