@@ -60,6 +60,7 @@ async function placeCDWOrder(order_body) {
 
   try {
     // const accessToken = await client.getToken();
+
     console.log(`placeCDWOrder() => Placing order.`);
     const options = {
       method: "POST",

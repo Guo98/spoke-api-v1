@@ -529,50 +529,53 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
     addons,
   } = req.body;
   let approval_number = "";
+  let order_db_id = "";
 
   let db_obj = { ...req.body };
 
-  if (addons) {
-    const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
-    if (yubikey_index > -1) {
-      console.log(`/newPurchase/${client} => Ordering yubikey.`);
-      try {
-        const yubikeyBody = {
-          firstname: req.body.first_name,
-          lastname: req.body.last_name,
-          email: req.body.email,
-          phone_number: req.body.phone_number,
-          address: {
-            addressLine: req.body.address_obj.al1,
-            addressLine2: req.body.address_obj.al2,
-            city: req.body.address_obj.city,
-            subdivision: req.body.address_obj.state,
-            postalCode: req.body.address_obj.postal_code,
-            country: req.body.address_obj.country_code,
-          },
-          quantity: parseInt(addons[yubikey_index].split("x")[0]),
-        };
+  // if (addons) {
+  //   const yubikey_index = addons.findIndex((i) => i.includes("yubikey"));
+  //   if (yubikey_index > -1) {
+  //     console.log(`/newPurchase/${client} => Ordering yubikey.`);
+  //     try {
+  //       const yubikeyBody = {
+  //         firstname: req.body.first_name,
+  //         lastname: req.body.last_name,
+  //         email: req.body.email,
+  //         phone_number: req.body.phone_number,
+  //         address: {
+  //           addressLine: req.body.address_obj.al1,
+  //           addressLine2: req.body.address_obj.al2,
+  //           city: req.body.address_obj.city,
+  //           subdivision: req.body.address_obj.state,
+  //           postalCode: req.body.address_obj.postal_code,
+  //           country: req.body.address_obj.country_code,
+  //         },
+  //         quantity: parseInt(addons[yubikey_index].split("x")[0]),
+  //       };
 
-        const shipmentId = await createYubikeyShipment(yubikeyBody);
-        console.log(
-          `/newPurchase/${client} => Successfully ordered yubikey:`,
-          shipmentId
-        );
-        db_obj.shipment_id = shipmentId;
-      } catch (e) {
-        console.log(`/newPurchase/${client} => Error in ordering yubikey.`, e);
-      }
-    }
-  }
+  //       const shipmentId = await createYubikeyShipment(yubikeyBody);
+  //       console.log(
+  //         `/newPurchase/${client} => Successfully ordered yubikey:`,
+  //         shipmentId
+  //       );
+  //       db_obj.shipment_id = shipmentId;
+  //     } catch (e) {
+  //       console.log(`/newPurchase/${client} => Error in ordering yubikey.`, e);
+  //     }
+  //   }
+  // }
   try {
     console.log(`/newPurchase/${client} => Adding new request to db:`, db_obj);
     let orderRes = await orders.getAllOrders("Marketplace");
     approval_number = orderRes.length.toString().padStart(5, "0");
-    await orders.addOrderByContainer("Marketplace", {
+    const added_order = await orders.addOrderByContainer("Marketplace", {
       ...db_obj,
       status: "Received",
       market_order: approval_number,
     });
+    order_db_id = added_order.id;
+
     console.log(`/newPurchase/${client} => Finished adding new request to db.`);
   } catch (e) {
     console.log(`/newPurchase/${client} => Error in adding to database: ${e}`);
@@ -663,6 +666,20 @@ router.post("/newPurchase", checkJwt, async (req, res) => {
         throw new Error("Error in placing CDW order.");
       } else if (cdw_resp !== "") {
         console.log(`/newPurchase/${client} => Successfully placed CDW order.`);
+        let order_db_obj = await orders.getItemByContainer(
+          "Marketplace",
+          order_db_id,
+          client
+        );
+
+        order_db_obj = { ...order_db_obj, cdw_reference_number: cdw_resp };
+
+        await orders.updateItemByContainer(
+          "Marketplace",
+          order_db_id,
+          client,
+          order_db_obj
+        );
       } else {
         console.log(
           `/newPurchase/${client} => Nothing happened in placing CDW order.`
