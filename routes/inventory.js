@@ -44,7 +44,7 @@ router.get("/inventory/:company/:entity?", checkJwt, async (req, res) => {
       // const filteredRes = inventoryRes.filter(
       //   (inv) => inv.location.indexOf("USA") > -1
       // );
-      if (req.params.entity) {
+      if (req.params.entity && req.params.entity !== "undefined") {
         inventoryRes = inventoryRes.filter(
           (inv) => inv.entity === req.params.entity
         );
@@ -195,7 +195,7 @@ router.post("/offboarding", checkJwt, async (req, res) => {
     requestor_name,
     type,
     no_address,
-    device_name
+    device_name,
   } = req.body;
   console.log(`/offboarding/${client} => Starting route.`);
 
