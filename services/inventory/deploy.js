@@ -20,7 +20,7 @@ async function deployLaptop(res, body, inventoryDB) {
     id,
     addons,
   } = body;
-  console.log(`deployLaptop() => Starting function:`, body);
+  console.log(`deployLaptop(${client}) => Starting function:`, body);
   const containerId = determineContainer(client);
 
   if (containerId !== "") {
