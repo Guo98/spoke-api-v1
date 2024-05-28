@@ -25,7 +25,7 @@ export async function addNewDevice(
     let type_exists = false;
     let new_device = false;
 
-    marketplace.forEach(async (market) => {
+    for await (const market of marketplace) {
       let updated_marketplace = { ...market };
       if (market.client === client) {
         if (type.toLowerCase() === market.item_type.toLowerCase()) {
@@ -49,11 +49,12 @@ export async function addNewDevice(
                   line_exists = true;
                   // check specs to makes sure it hasn't been added already
                   let spec_exists = false;
-                  d_t.specs.forEach(async (d_s) => {
+                  d_t.specs.forEach(async (d_s, d_s_index) => {
                     if (type.toLowerCase() !== "phones") {
                       const no_spaces_spec = d_s.spec
                         .replace(" ", "")
                         .toLowerCase();
+                      let color_location_supplier_exists = false;
                       if (
                         no_spaces_spec.includes(screen_size) &&
                         no_spaces_spec.includes(cpu.toLowerCase()) &&
@@ -62,10 +63,89 @@ export async function addNewDevice(
                       ) {
                         spec_exists = true;
                         console.log(
-                          `/marketplace/add/${client} => Spec already exists.`
+                          `/marketplace/add/${client} => Spec exists.`
                         );
-                        return "exists";
+
+                        if (
+                          d_s.colors_by_location &&
+                          d_s.colors_by_location[locations[0]]
+                        ) {
+                          if (d_s.colors_by_location[locations[0]][color]) {
+                            if (
+                              d_s.colors_by_location[locations[0]][color][
+                                supplier
+                              ]
+                            ) {
+                              color_location_supplier_exists = true;
+                              console.log(
+                                `/marketplace/add/${client} => Spec with same location, color, and supplier exists.`
+                              );
+                              return "exists";
+                            } else {
+                              new_device = true;
+                              console.log(
+                                `/marketplace/add/${client} => Adding new supplier to spec.`
+                              );
+                              updated_marketplace.brands[brand_index].types[
+                                d_t_index
+                              ].specs[d_s_index].colors_by_location[
+                                locations[0]
+                              ][color] = {
+                                ...updated_marketplace.brands[brand_index]
+                                  .types[d_t_index].specs[d_s_index]
+                                  .colors_by_location[locations[0]][color],
+                                [supplier]: supplier_url,
+                              };
+                            }
+                          } else {
+                            new_device = true;
+                            console.log(
+                              `/marketplace/add/${client} => Adding new color to spec.`
+                            );
+                            updated_marketplace.brands[brand_index].types[
+                              d_t_index
+                            ].specs[d_s_index].colors_by_location[
+                              locations[0]
+                            ] = {
+                              ...updated_marketplace.brands[brand_index].types[
+                                d_t_index
+                              ].specs[d_s_index].colors_by_location[
+                                locations[0]
+                              ],
+                              [color]: {
+                                [supplier]: supplier_url,
+                              },
+                            };
+                          }
+                        } else {
+                          new_device = true;
+                          console.log(
+                            `/marketplace/add/${client} => Adding new location to spec.`
+                          );
+                          updated_marketplace.brands[brand_index].types[
+                            d_t_index
+                          ].specs[d_s_index].colors_by_location = {
+                            ...updated_marketplace.brands[brand_index].types[
+                              d_t_index
+                            ].specs[d_s_index].colors_by_location,
+                            [locations[0]]: {
+                              [color]: { [supplier]: supplier_url },
+                            },
+                          };
+                        }
                       }
+
+                      // if (!color_location_supplier_exists) {
+                      //   new_device = true;
+                      //   console.log(
+                      //     `/marketplace/add/${client} => Adding location, color, supplier.`
+                      //   );
+                      //   updated_marketplace.brands[brand_index].types[
+                      //     d_t_index
+                      //   ].specs[d_s_index].colors_by_location[locations[0]][
+                      //     color
+                      //   ][supplier] = supplier_url;
+                      // }
                     } else {
                       if (
                         d_s.spec.toLowerCase() === formatted_specs.toLowerCase()
@@ -86,28 +166,26 @@ export async function addNewDevice(
                       d_t_index
                     ].specs.push({
                       spec: formatted_specs,
-                      locations,
-                      supplier: {
-                        [supplier.toLowerCase()]: {
-                          [color]:
-                            supplier.toLowerCase() === "cdw"
-                              ? supplier_url
-                              : sku,
+                      colors_by_location: {
+                        [locations[0]]: {
+                          [color]: {
+                            [supplier]: supplier_url,
+                          },
                         },
                       },
                     });
 
-                    if (
-                      updated_marketplace.brands[brand_index].types[
-                        d_t_index
-                      ].colors.findIndex(
-                        (c) => c.toLowerCase() === color.toLowerCase()
-                      ) < 0
-                    ) {
-                      updated_marketplace.brands[brand_index].types[
-                        d_t_index
-                      ].colors.push(color);
-                    }
+                    // if (
+                    //   updated_marketplace.brands[brand_index].types[
+                    //     d_t_index
+                    //   ].colors.findIndex(
+                    //     (c) => c.toLowerCase() === color.toLowerCase()
+                    //   ) < 0
+                    // ) {
+                    //   updated_marketplace.brands[brand_index].types[
+                    //     d_t_index
+                    //   ].colors.push(color);
+                    // }
                   }
                 }
               });
@@ -120,20 +198,16 @@ export async function addNewDevice(
 
                 updated_marketplace.brands[brand_index].types.push({
                   type: device_line,
-                  colors: [color],
                   specs: [
                     {
                       spec: formatted_specs,
-                      locations,
-                      supplier: {
-                        [supplier.toLowerCase()]: {
-                          [color]:
-                            supplier.toLowerCase() === "cdw"
-                              ? supplier_url
-                              : req.body.sku,
+                      colors_by_location: {
+                        [locations[0]]: {
+                          [color]: {
+                            [supplier]: supplier_url,
+                          },
                         },
                       },
-                      colors: [color],
                     },
                   ],
                 });
@@ -152,18 +226,14 @@ export async function addNewDevice(
               types: [
                 {
                   type: device_line,
-                  colors: [color],
                   specs: [
                     {
                       spec: formatted_specs,
-                      locations,
-                      colors: [color],
-                      supplier: {
-                        [supplier.toLowerCase()]: {
-                          [color]:
-                            supplier.toLowerCase() === "cdw"
-                              ? supplier_url
-                              : req.body.sku,
+                      colors_by_location: {
+                        [locations[0]]: {
+                          [color]: {
+                            [supplier]: supplier_url,
+                          },
                         },
                       },
                     },
@@ -195,7 +265,7 @@ export async function addNewDevice(
           }
         }
       }
-    });
+    }
 
     if (!type_exists) {
       console.log(
@@ -213,13 +283,15 @@ export async function addNewDevice(
             types: [
               {
                 type: device_line,
-                colors: [color],
                 specs: [
                   {
                     spec: formatted_specs,
-                    locations,
-                    supplier: {
-                      [supplier.toLowerCase()]: { [color]: supplier_url },
+                    colors_by_location: {
+                      [locations[0]]: {
+                        [color]: {
+                          [supplier]: supplier_url,
+                        },
+                      },
                     },
                   },
                 ],

@@ -65,3 +65,42 @@ export async function searchBechtle(product_name, specs, color, location) {
 
   return product_desc_links;
 }
+
+export async function scrapeBechtle(supplier_url) {
+  let html = await axios.request({
+    url: supplier_url,
+    method: "get",
+    headers: { "Content-Type": "text/html" },
+  });
+  const replaced_html = html.data
+    .replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "")
+    .replace(/(\r\n|\n|\r)/gm, "")
+    .toString();
+  const script_index = replaced_html.indexOf('"props"');
+  const end_index = replaced_html.indexOf('"page"');
+
+  const specs_obj_str = replaced_html
+    .substring(script_index, end_index - 1)
+    .slice(8);
+
+  const product_obj = JSON.parse(specs_obj_str);
+
+  let est_price = "";
+
+  if (product_obj.pageProps.price.currencyId === "EUR") {
+    est_price = "€" + product_obj.pageProps.price.gross;
+  } else if (product_obj.pageProps.price.currencyId === "PLN") {
+    est_price = product_obj.pageProps.price.gross + " PLN";
+  }
+  const shortened_product_obj = {
+    name: product_obj.pageProps.product.name,
+    availability: product_obj.pageProps.availability.availabilityText,
+    properties: product_obj.pageProps.topProperties,
+    image_source: product_obj.pageProps.medias.images[0].pictureUrl,
+    product_link: supplier_url,
+    price: est_price,
+    description: product_obj.pageProps.product.description,
+  };
+
+  return shortened_product_obj;
+}

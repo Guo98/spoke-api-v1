@@ -14,7 +14,7 @@ export const functions = [
         stock_level: {
           type: "string",
           description:
-            'Stock level of the item, convert stock_level value to be either "In Stock" or "Out of Stock". e.g. "In Stock", "Out of Stock"',
+            'Stock level of the item. e.g. "In Stock", "Out of Stock", "3 in stock"',
         },
         url_link: {
           type: "string",
@@ -200,7 +200,7 @@ export const scrape_functions = [
         device_type: {
           type: "string",
           description:
-            'Type of device, can either be "laptops", "desktops", "phones", or "accessories"',
+            'Type of device, select from options: "laptops", "desktops", "phones", or "accessories". "accessories" includes any monitors, chargers, etc.',
         },
         device_line: {
           type: "string",
@@ -230,3 +230,5 @@ export const scrape_functions = [
     },
   },
 ];
+
+//'Stock level of the item, convert stock_level value to be either "In Stock" or "Out of Stock". e.g. "In Stock", "Out of Stock"',

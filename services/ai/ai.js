@@ -2,7 +2,7 @@ import { Configuration, OpenAIApi } from "openai";
 import { load } from "cheerio";
 import axios from "axios";
 
-import { searchBechtle } from "./suppliers/bechtle.js";
+import { searchBechtle, scrapeBechtle } from "./suppliers/bechtle.js";
 import {
   returnItemInfo,
   formatMultipleRecommendations,
@@ -97,9 +97,11 @@ export async function checkItemStock(
   let product_links = [];
   let return_response = {};
 
-  if (supplier !== "insight") {
+  if (supplier.toLowerCase() === "cdw") {
     productInfo = await scrapeLink(product_link, supplier);
-  } else {
+  } else if (supplier.toLowerCase() === "bechtle") {
+    productInfo = await scrapeBechtle(product_link);
+  } else if (supplier.toLowerCase() === "insight") {
     const insight_search = await searchInsight(
       item_name + " " + specs,
       product_link
@@ -452,7 +454,7 @@ async function searchCDW(search_text) {
 }
 
 async function scrapeLink(product_link, supplier) {
-  if (supplier === "cdw") {
+  if (supplier.toLowerCase() === "cdw") {
     let html = await axios.request({
       url: product_link,
       method: "get",
